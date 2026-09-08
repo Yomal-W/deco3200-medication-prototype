@@ -58,13 +58,33 @@ Scenarios: *Morning medication due*, *Prescription changed*. Plus *Reset
 prototype*. Switching a scenario resets state so every participant starts from
 the same place.
 
+## Medication imagery
+
+Medications are drawn locally as inline SVG — there are no photographs, no
+image files and no external image requests, so the prototype renders
+identically with or without internet.
+
+Medicines are told apart by **silhouette and relative size first** (small round,
+round scored, oval, caplet, capsule, large chalky tablet), never by colour
+alone, and every tablet is drawn to a consistent scale relative to the others.
+The imagery is **illustrative** and the interface says so: a medicine's real
+appearance varies by manufacturer and supplier, so the name, dose and verified
+routine stay authoritative.
+
+Why illustrations rather than product photography, and what to record if real
+images are added later: [`docs/asset-sources.md`](docs/asset-sources.md).
+
 ## Participant flows
 
 1. **Take a dose** — Today → Medication ready now → View medication →
    Dispense medication → dispensing animation → Medication dispensed →
    I've taken these → Morning medication complete → What's next?
 2. **Understand a change** — Today → prescription change notice → previous vs
-   new dose, when it starts, who verified it → I understand → back to Today.
+   new dose, when it starts, who changed it and who verified it → I understand
+   → back to Today.
+3. **Check a medication** — Medications → tap a medication → illustration,
+   times, instructions, purpose, prescriber and pharmacist
+   (`#/medications/metformin`).
 
 ## Structure
 

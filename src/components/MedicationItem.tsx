@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { DoseItem } from '../types'
 import { getMedication } from '../data/medications'
 import { Icon } from './Icon'
+import { MedicationVisualBox } from './MedicationVisual'
 
 interface MedicationItemProps {
   item: DoseItem
@@ -17,9 +18,7 @@ export function MedicationItem({ item, showInstruction = false, aside }: Medicat
 
   return (
     <li className="med-item">
-      <span className="med-item__icon" aria-hidden="true">
-        <Icon name="pill" size={26} />
-      </span>
+      <MedicationVisualBox appearance={medication.appearance} />
       <div className="med-item__body">
         <p className="med-item__name">{medication.name}</p>
         <p className="med-item__dose">

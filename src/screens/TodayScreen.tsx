@@ -5,6 +5,7 @@ import { ChangeNotice } from '../components/ChangeNotice'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
 import { Icon } from '../components/Icon'
+import { MedicationThumbs } from '../components/MedicationTray'
 import { StatusPill } from '../components/StatusPill'
 import { doseMedicationNames, doseSummary } from '../utils/dose'
 import { countLabel, formatTime, joinNames } from '../utils/time'
@@ -49,7 +50,7 @@ export function TodayScreen({
             <Card tone="accent" raised className="due-card">
               <div className="due-card__top">
                 <DoseStatusPill dose={activeDose} />
-                <Icon name="device" size={30} />
+                <MedicationThumbs items={activeDose.items} />
               </div>
 
               <h1 className="due-card__title">

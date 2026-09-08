@@ -4,7 +4,7 @@ import { AppHeader } from './components/AppHeader'
 import { AppNav } from './components/AppNav'
 import { FacilitatorPanel } from './components/FacilitatorPanel'
 import { Icon } from './components/Icon'
-import { user } from './data/medications'
+import { findMedication, user } from './data/medications'
 import { usePrefersReducedMotion } from './state/usePrefersReducedMotion'
 import { usePrototype } from './state/usePrototype'
 import { hashToScreen, screenToHash } from './utils/routes'
@@ -17,6 +17,7 @@ import { CompleteScreen } from './screens/CompleteScreen'
 import { WhatsNextScreen } from './screens/WhatsNextScreen'
 import { ChangeScreen } from './screens/ChangeScreen'
 import { MedicationsScreen } from './screens/MedicationsScreen'
+import { MedicationDetailScreen } from './screens/MedicationDetailScreen'
 import { HelpScreen } from './screens/HelpScreen'
 
 const tabScreens: TabName[] = ['today', 'medications', 'help']
@@ -125,7 +126,25 @@ function App() {
   const renderScreen = () => {
     switch (screen.name) {
       case 'medications':
-        return <MedicationsScreen change={change} />
+        return (
+          <MedicationsScreen
+            change={change}
+            onOpenMedication={(medicationId) => goTo({ name: 'medication', medicationId })}
+          />
+        )
+
+      case 'medication': {
+        const medication = findMedication(screen.medicationId)
+        if (!medication) return null
+        return (
+          <MedicationDetailScreen
+            medication={medication}
+            change={change}
+            onBack={() => goToTab('medications')}
+            onOpenChange={() => goTo({ name: 'change' })}
+          />
+        )
+      }
 
       case 'help':
         return (
@@ -208,7 +227,13 @@ function App() {
         title={activeTab ? `${greetingFor(clock)}, ${user.firstName}` : formatTime(clock)}
         meta={activeTab ? `${user.today} · ${formatTime(clock)}` : user.today}
         onOpenFacilitator={openFacilitator}
-        back={activeTab || isDispensing ? undefined : { label: 'Today', onClick: goHome }}
+        back={
+          activeTab || isDispensing
+            ? undefined
+            : screen.name === 'medication'
+              ? { label: 'Medications', onClick: () => goToTab('medications') }
+              : { label: 'Today', onClick: goHome }
+        }
         verified={
           activeTab === 'today' || activeTab === 'medications'
             ? { label: 'Routine verified', detail: `Pharmacist · ${user.routineVerifiedOn}` }

@@ -1,7 +1,7 @@
 import type { Dose } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
-import { DeviceGraphic } from '../components/DeviceGraphic'
+import { MedicationTray } from '../components/MedicationTray'
 import { Icon } from '../components/Icon'
 import { MedicationItem } from '../components/MedicationItem'
 import { user } from '../data/medications'
@@ -21,12 +21,12 @@ export function CollectScreen({ dose, onConfirm, onLater }: CollectScreenProps) 
   return (
     <div className="flow flow--wide">
       <Card tone="accent" className="hero-status hero-status--accent hero-status--row">
-        <DeviceGraphic state="ready" />
+        <MedicationTray items={dose.items} />
         <div className="hero-status__content">
           <h1 className="hero-status__title">Medication dispensed</h1>
           <p className="hero-status__lead">
-            Your {countLabel(dose.items.length).toLowerCase()} are in the tray below the screen.
-            Please collect them.
+            Please collect your {countLabel(dose.items.length).toLowerCase()} from the tray below
+            the screen.
           </p>
           <p className="record-line record-line--inline">
             <Icon name="device" size={24} className="record-line__icon" />

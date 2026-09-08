@@ -1,5 +1,5 @@
 import type { Dose, PrescriptionChange, Scenario, ScenarioId } from '../types'
-import { user } from './medications'
+import { getMedication, user } from './medications'
 
 /**
  * PROTOTYPE DATA ONLY.
@@ -84,6 +84,7 @@ const ramiprilChange: PrescriptionChange = {
   id: 'ramipril-increase',
   kind: 'changed',
   medicationName: 'Ramipril',
+  medicationId: 'ramipril',
   previousSummary: '5 mg each morning',
   previousDetail: '1 tablet with breakfast',
   newSummary: '10 mg each morning',
@@ -92,6 +93,7 @@ const ramiprilChange: PrescriptionChange = {
   startsDetail: `${user.tomorrow} · 8:00 AM`,
   plainNote:
     'Your older box may still say 5 mg. The routine shown on this device is the one your pharmacist has verified.',
+  changedBy: getMedication('ramipril').prescribedBy,
   verifiedBy: `${user.pharmacist} · ${user.pharmacy}`,
   verifiedAt: user.routineVerifiedOn,
 }

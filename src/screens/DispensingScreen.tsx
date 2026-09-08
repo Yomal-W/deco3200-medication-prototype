@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Dose } from '../types'
 import { DeviceGraphic } from '../components/DeviceGraphic'
+import { getMedication } from '../data/medications'
 import { usePrefersReducedMotion } from '../state/usePrefersReducedMotion'
 import { countLabel } from '../utils/time'
 
@@ -38,7 +39,9 @@ export function DispensingScreen({ dose, onComplete }: DispensingScreenProps) {
     <div className="dispensing">
       <h1 className="dispensing__title">Preparing your medication</h1>
 
-      <DeviceGraphic state="running" />
+      <DeviceGraphic
+        appearances={dose.items.map((item) => getMedication(item.medicationId).appearance)}
+      />
 
       <p className="dispensing__status" role="status" aria-live="polite">
         {steps[step]}

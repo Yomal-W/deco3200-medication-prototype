@@ -2,6 +2,8 @@ import type { PrescriptionChange } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
+import { MedicationVisual } from '../components/MedicationVisual'
+import { findMedication, user } from '../data/medications'
 import { changeKindLabel, changeKindTag } from '../utils/change'
 
 interface ChangeScreenProps {
@@ -22,12 +24,19 @@ export function ChangeScreen({
   onAcknowledge,
   onBackToToday,
 }: ChangeScreenProps) {
+  const medication = findMedication(change.medicationId)
+
   return (
     <div className="flow flow--full">
       <div className="flow__intro">
-        <h1 className="flow__title">
-          {changeKindLabel[change.kind]}: {change.medicationName}
-        </h1>
+        <div className="change__identity">
+          {medication ? (
+            <MedicationVisual appearance={medication.appearance} size={68} />
+          ) : null}
+          <h1 className="flow__title">
+            {changeKindLabel[change.kind]}: {change.medicationName}
+          </h1>
+        </div>
         <p className="change__tag">
           <Icon name="swap" size={18} strokeWidth={2.4} />
           {changeKindTag[change.kind]}
@@ -77,14 +86,23 @@ export function ChangeScreen({
             </div>
           </div>
 
-          <div className="fact">
-            <Icon name="shieldCheck" size={26} className="fact__icon" />
-            <div>
-              <p className="fact__label">Source</p>
-              <p className="fact__value">Pharmacist verified</p>
-              <p className="fact__detail">
-                {change.verifiedBy} · {change.verifiedAt}
-              </p>
+          <div className="fact-pair">
+            <div className="fact">
+              <Icon name="person" size={26} className="fact__icon" />
+              <div>
+                <p className="fact__label">Changed by</p>
+                <p className="fact__value">{change.changedBy.name}</p>
+                <p className="fact__detail">{change.changedBy.role}</p>
+              </div>
+            </div>
+
+            <div className="fact">
+              <Icon name="shieldCheck" size={26} className="fact__icon" />
+              <div>
+                <p className="fact__label">Verified by</p>
+                <p className="fact__value">{user.pharmacist}</p>
+                <p className="fact__detail">Pharmacist · {user.pharmacy}</p>
+              </div>
             </div>
           </div>
 

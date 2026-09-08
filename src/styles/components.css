@@ -835,3 +835,71 @@
     display: none;
   }
 }
+
+/* --- Medication illustrations --------------------------------------------- */
+
+/* A consistent neutral surface behind every illustration, so cards line up
+   even though the tablets themselves are deliberately different sizes. */
+.med-visual {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--warm-100);
+  border: 1px solid var(--color-border);
+}
+
+.med-visual--card {
+  width: 5.75rem;
+  height: 4.5rem;
+}
+
+.med-visual--hero {
+  width: 10.5rem;
+  height: 8.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.med-visual__svg {
+  display: block;
+}
+
+/* Overlapping thumbnails: a glanceable "these three" on the Today card. */
+.med-thumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.med-thumbs__item {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 2.875rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-accent);
+}
+
+/* Illustrative-appearance caveat. Quiet, and never the loudest thing around. */
+.appearance-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  text-align: left;
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* The device's collection tray, holding this dose's medications. */
+.med-tray {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border-strong);
+  box-shadow: inset 0 3px 8px rgba(18, 35, 63, 0.07);
+}

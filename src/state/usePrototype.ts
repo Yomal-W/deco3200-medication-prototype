@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { Dose, Screen, ScenarioId, TabName } from '../types'
+import { findMedication } from '../data/medications'
 import { defaultScenarioId, getScenario } from '../data/scenarios'
 import { formatTime } from '../utils/time'
 
@@ -48,6 +49,9 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
     next.name === 'whats-next'
   ) {
     return next
+  }
+  if (next.name === 'medication') {
+    return findMedication(next.medicationId) ? next : { name: 'medications' }
   }
 
   const dose = state.doses.find((item) => item.id === next.doseId)

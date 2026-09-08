@@ -14,6 +14,43 @@ export type DayPart = 'early-morning' | 'morning' | 'afternoon' | 'evening'
 /** The kind of change a pharmacist has made to the routine. */
 export type ChangeKind = 'started' | 'stopped' | 'changed'
 
+/**
+ * How a medication is drawn.
+ *
+ * These are ILLUSTRATIVE representations, not identification data. A real
+ * medicine's appearance varies by manufacturer, supplier and market, so the
+ * name, dose and verified routine always remain the authoritative information.
+ *
+ * Sizes are given in a shared 100-unit drawing space so that tablets are drawn
+ * to a consistent scale relative to each other. Medications are distinguished
+ * by silhouette and size first, never by colour alone.
+ */
+export interface MedicationAppearance {
+  shape: 'round' | 'oval' | 'oblong' | 'capsule'
+  width: number
+  height: number
+  /** Body fill. */
+  tint: string
+  /** Edge colour, so pale tablets stay visible on a white card. */
+  edge: string
+  /** Second colour for the cap half of a capsule. */
+  capTint?: string
+  /** Film-coated tablets catch the light; chalky ones do not. */
+  finish: 'film' | 'matte'
+  /** A break line pressed into the tablet. */
+  score?: 'single'
+  /** Short description used for alt text, e.g. "small round scored tablet". */
+  describedAs: string
+}
+
+/** Who put a medication on the routine. */
+export interface Prescriber {
+  name: string
+  /** e.g. "GP", "Endocrinologist" */
+  role: string
+  practice: string
+}
+
 /** A medication in Margaret's current, pharmacist-verified routine. */
 export interface Medication {
   id: string
@@ -26,6 +63,12 @@ export interface Medication {
   plainPurpose: string
   /** Short human summary of when it is taken, for the medication list. */
   scheduleSummary: string
+  /** The times of day this medication is taken, for the detail screen. */
+  times: string[]
+  /** Practical instruction shared across this medication's doses. */
+  instruction: string
+  prescribedBy: Prescriber
+  appearance: MedicationAppearance
 }
 
 /** One medication as it appears inside a specific scheduled dose. */
@@ -71,8 +114,12 @@ export interface PrescriptionChange {
   startsDetail: string
   /** Plain-language note about the change. Never advice. */
   plainNote: string
+  /** The clinician who made the change. */
+  changedBy: Prescriber
   verifiedBy: string
   verifiedAt: string
+  /** Which medication in the routine this change applies to. */
+  medicationId: string
 }
 
 /** Facilitator-selectable demo scenarios. */
@@ -94,6 +141,7 @@ export interface Scenario {
 export type Screen =
   | { name: 'today' }
   | { name: 'medications' }
+  | { name: 'medication'; medicationId: string }
   | { name: 'help' }
   | { name: 'dose'; doseId: string }
   | { name: 'dispensing'; doseId: string }

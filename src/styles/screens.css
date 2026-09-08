@@ -402,28 +402,19 @@
 }
 
 .device-graphic__pill {
-  fill: var(--color-accent);
   opacity: 0;
+  animation: pill-drop 1500ms var(--ease) infinite;
 }
 
-.device-graphic.is-running .device-graphic__pill {
-  animation: pill-drop 1400ms var(--ease) infinite;
+.device-graphic__pill--2 {
+  animation-delay: 340ms;
 }
 
-.device-graphic.is-running .device-graphic__pill--2 {
-  animation-delay: 320ms;
+.device-graphic__pill--3 {
+  animation-delay: 680ms;
 }
 
-.device-graphic.is-running .device-graphic__pill--3 {
-  animation-delay: 640ms;
-}
-
-.device-graphic.is-ready .device-graphic__pill {
-  opacity: 1;
-  transform: translateY(58px);
-}
-
-.device-graphic.is-running .device-graphic__glow {
+.device-graphic__glow {
   animation: glow-pulse 2200ms ease-in-out infinite;
 }
 
@@ -437,11 +428,11 @@
   }
   70% {
     opacity: 1;
-    transform: translateY(58px);
+    transform: translateY(60px);
   }
   100% {
     opacity: 0;
-    transform: translateY(58px);
+    transform: translateY(60px);
   }
 }
 
@@ -456,14 +447,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .device-graphic.is-running .device-graphic__pill,
-  .device-graphic.is-running .device-graphic__glow {
+  .device-graphic__pill,
+  .device-graphic__glow {
     animation: none;
   }
 
-  .device-graphic.is-running .device-graphic__pill {
+  .device-graphic__pill {
     opacity: 1;
-    transform: translateY(58px);
+    transform: translateY(60px);
   }
 }
 
@@ -603,8 +594,8 @@
 .fact {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -641,7 +632,7 @@
 
 .med-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
   gap: var(--space-4);
 }
 
@@ -674,10 +665,6 @@
 .device-graphic__glow {
   fill: var(--color-accent);
   opacity: 0.22;
-}
-
-.device-graphic.is-ready .device-graphic__glow {
-  opacity: 0.4;
 }
 
 .panel__note {
@@ -717,6 +704,10 @@
 
 .hero-status .device-graphic {
   width: min(8rem, 34vw);
+  flex: none;
+}
+
+.hero-status .med-tray {
   flex: none;
 }
 
@@ -836,7 +827,7 @@
 }
 
 .change__compare--stacked .change__side {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-5);
 }
 
 /* Two large actions still fit side by side inside a split column. */
@@ -847,4 +838,105 @@
 .split__column .screen-actions .btn {
   flex: 1 1 8rem;
   padding-inline: var(--space-4);
+}
+
+/* --- Medication cards ----------------------------------------------------- */
+
+.med-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease),
+    background-color var(--duration-fast) var(--ease);
+}
+
+.med-card:active {
+  background: var(--color-surface-accent);
+  border-color: var(--color-accent);
+}
+
+.med-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.med-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.med-card__name {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.med-card__dose {
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--color-text);
+}
+
+.med-card__meta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.med-card__chevron {
+  color: var(--color-text-muted);
+  align-self: center;
+  flex: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .med-card:hover:not(:active) {
+    border-color: var(--color-accent);
+    background: var(--color-surface-accent);
+  }
+}
+
+/* --- Medication detail ---------------------------------------------------- */
+
+.med-detail__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.fact--wide {
+  grid-column: 1 / -1;
+}
+
+.change__identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.fact-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
 }
