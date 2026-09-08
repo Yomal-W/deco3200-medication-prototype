@@ -1,121 +1,254 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { TabName } from './types'
+import { AppHeader } from './components/AppHeader'
+import { AppNav } from './components/AppNav'
+import { FacilitatorPanel } from './components/FacilitatorPanel'
+import { Icon } from './components/Icon'
+import { user } from './data/medications'
+import { usePrefersReducedMotion } from './state/usePrefersReducedMotion'
+import { usePrototype } from './state/usePrototype'
+import { hashToScreen, screenToHash } from './utils/routes'
+import { formatTime, greetingFor } from './utils/time'
+import { TodayScreen } from './screens/TodayScreen'
+import { DoseScreen } from './screens/DoseScreen'
+import { DispensingScreen } from './screens/DispensingScreen'
+import { CollectScreen } from './screens/CollectScreen'
+import { CompleteScreen } from './screens/CompleteScreen'
+import { WhatsNextScreen } from './screens/WhatsNextScreen'
+import { ChangeScreen } from './screens/ChangeScreen'
+import { MedicationsScreen } from './screens/MedicationsScreen'
+import { HelpScreen } from './screens/HelpScreen'
+
+const tabScreens: TabName[] = ['today', 'medications', 'help']
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    scenarioId,
+    doses,
+    change,
+    changeAcknowledgedAt,
+    clock,
+    screen,
+    navReplace,
+    activeDose,
+    nextDose,
+    findDose,
+    loadScenario,
+    resetPrototype,
+    goTo,
+    goToTab,
+    applyHistoryScreen,
+    openDose,
+    startDispensing,
+    finishDispensing,
+    confirmTaken,
+    acknowledgeChange,
+  } = usePrototype()
+
+  const [facilitatorOpen, setFacilitatorOpen] = useState(false)
+  const [hasMoreBelow, setHasMoreBelow] = useState(false)
+  const bodyRef = useRef<HTMLElement>(null)
+  const reduceMotion = usePrefersReducedMotion()
+
+  // Laptop entry point to facilitator mode. The tablet entry point is five
+  // taps on the device mark in the header.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd') {
+        event.preventDefault()
+        setFacilitatorOpen((open) => !open)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  // Keep the URL in step with the current screen.
+  useEffect(() => {
+    const path = screenToHash(screen)
+    if (window.location.hash === path) return
+    if (navReplace) window.history.replaceState(null, '', path)
+    else window.history.pushState(null, '', path)
+  }, [screen, navReplace])
+
+  // Browser Back/Forward — including an accidental iPad edge swipe — moves
+  // within the prototype rather than leaving it.
+  useEffect(() => {
+    const onHistoryMove = () => applyHistoryScreen(hashToScreen(window.location.hash))
+    window.addEventListener('popstate', onHistoryMove)
+    window.addEventListener('hashchange', onHistoryMove)
+    return () => {
+      window.removeEventListener('popstate', onHistoryMove)
+      window.removeEventListener('hashchange', onHistoryMove)
+    }
+  }, [applyHistoryScreen])
+
+  // Every screen starts at the top, and the participant is told when there is
+  // more content below the fold.
+  useEffect(() => {
+    const element = bodyRef.current
+    if (!element) return
+
+    element.scrollTop = 0
+    const update = () =>
+      setHasMoreBelow(element.scrollTop + element.clientHeight < element.scrollHeight - 48)
+
+    const frame = window.requestAnimationFrame(update)
+    element.addEventListener('scroll', update, { passive: true })
+    const observer = new ResizeObserver(update)
+    observer.observe(element)
+    if (element.firstElementChild) observer.observe(element.firstElementChild)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      element.removeEventListener('scroll', update)
+      observer.disconnect()
+    }
+  }, [screen])
+
+  const scrollDown = useCallback(() => {
+    const element = bodyRef.current
+    if (!element) return
+    element.scrollBy({
+      top: element.clientHeight * 0.75,
+      behavior: reduceMotion ? 'auto' : 'smooth',
+    })
+  }, [reduceMotion])
+
+  const goHome = useCallback(() => goTo({ name: 'today' }), [goTo])
+  const openFacilitator = useCallback(() => setFacilitatorOpen(true), [])
+  const closeFacilitator = useCallback(() => setFacilitatorOpen(false), [])
+
+  const activeTab = tabScreens.includes(screen.name as TabName) ? (screen.name as TabName) : null
+  const isDispensing = screen.name === 'dispensing'
+
+  const renderScreen = () => {
+    switch (screen.name) {
+      case 'medications':
+        return <MedicationsScreen change={change} />
+
+      case 'help':
+        return (
+          <HelpScreen
+            onGoToToday={() => goToTab('today')}
+            onGoToMedications={() => goToTab('medications')}
+          />
+        )
+
+      case 'dose': {
+        const dose = findDose(screen.doseId)
+        if (!dose) return null
+        return <DoseScreen dose={dose} onBack={goHome} onDispense={startDispensing} />
+      }
+
+      case 'dispensing': {
+        const dose = findDose(screen.doseId)
+        if (!dose) return null
+        return <DispensingScreen dose={dose} onComplete={finishDispensing} />
+      }
+
+      case 'collect': {
+        const dose = findDose(screen.doseId)
+        if (!dose) return null
+        return <CollectScreen dose={dose} onConfirm={confirmTaken} onLater={goHome} />
+      }
+
+      case 'complete': {
+        const dose = findDose(screen.doseId)
+        if (!dose) return null
+        return (
+          <CompleteScreen
+            dose={dose}
+            onWhatsNext={() => goTo({ name: 'whats-next' })}
+            onBackToToday={goHome}
+          />
+        )
+      }
+
+      case 'whats-next':
+        return (
+          <WhatsNextScreen
+            doses={doses}
+            activeDose={activeDose}
+            nextDose={nextDose}
+            onOpenDose={openDose}
+            onBackToToday={goHome}
+          />
+        )
+
+      case 'change':
+        return change ? (
+          <ChangeScreen
+            change={change}
+            acknowledgedAt={changeAcknowledgedAt}
+            onAcknowledge={acknowledgeChange}
+            onBackToToday={goHome}
+          />
+        ) : null
+
+      case 'today':
+        return (
+          <TodayScreen
+            doses={doses}
+            activeDose={activeDose}
+            nextDose={nextDose}
+            change={change}
+            changeAcknowledgedAt={changeAcknowledgedAt}
+            onOpenDose={openDose}
+            onOpenChange={() => goTo({ name: 'change' })}
+            onOpenWhatsNext={() => goTo({ name: 'whats-next' })}
+          />
+        )
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="device">
+      <AppHeader
+        title={activeTab ? `${greetingFor(clock)}, ${user.firstName}` : formatTime(clock)}
+        meta={activeTab ? `${user.today} · ${formatTime(clock)}` : user.today}
+        onOpenFacilitator={openFacilitator}
+        back={activeTab || isDispensing ? undefined : { label: 'Today', onClick: goHome }}
+        verified={
+          activeTab === 'today' || activeTab === 'medications'
+            ? { label: 'Routine verified', detail: `Pharmacist · ${user.routineVerifiedOn}` }
+            : undefined
+        }
+      />
 
-      <div className="ticks"></div>
+      <div className="device__scroll">
+        <main className="device__body" ref={bodyRef}>
+          <div className="shell">{renderScreen()}</div>
+        </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {hasMoreBelow && !isDispensing ? (
+          <>
+            <span className="scroll-fade" aria-hidden="true" />
+            <button type="button" className="scroll-hint" onClick={scrollDown}>
+              <Icon name="arrowDown" size={20} />
+              More below
+            </button>
+          </>
+        ) : null}
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {isDispensing ? null : <AppNav active={activeTab} onSelect={goToTab} />}
+
+      {facilitatorOpen ? (
+        <FacilitatorPanel
+          scenarioId={scenarioId}
+          onSelectScenario={(id) => {
+            loadScenario(id)
+            setFacilitatorOpen(false)
+          }}
+          onReset={() => {
+            resetPrototype()
+            setFacilitatorOpen(false)
+          }}
+          onClose={closeFacilitator}
+        />
+      ) : null}
+    </div>
   )
 }
 

@@ -1,0 +1,850 @@
+/* ---------------------------------------------------------------------------
+   Screen-level layouts.
+   --------------------------------------------------------------------------- */
+
+.screen-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.screen-head__titles {
+  min-width: 0;
+}
+
+.screen-head__eyebrow {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  /* Comfortable separation so a finger cannot catch the neighbouring action. */
+  gap: var(--space-6);
+}
+
+.screen-actions .btn {
+  flex: 1 1 15rem;
+}
+
+.screen-actions .btn:first-child {
+  flex-grow: 1.6;
+}
+
+/* --- Today ---------------------------------------------------------------- */
+
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.today__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 62rem) {
+  .today__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.today__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.today__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* --- Primary "medication ready now" card ---------------------------------- */
+
+.due-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+/* The timeline beside it already answers "what is next", so this only earns
+   its place when the layout stacks into a single column. */
+@media (min-width: 62.001rem) {
+  .today__after {
+    display: none;
+  }
+}
+
+@media (max-width: 44rem) {
+  .due-card {
+    padding: var(--space-5);
+  }
+}
+
+.due-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.due-card__title {
+  font-size: var(--fs-h1);
+  margin-bottom: var(--space-4);
+}
+
+.due-card__headline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.due-card__time {
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+  line-height: 1;
+}
+
+.due-card__period {
+  font-size: var(--fs-lead);
+  font-weight: 650;
+  color: var(--color-text);
+}
+
+.due-card__summary {
+  font-size: var(--fs-lead);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.due-card__instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.due-card__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-accent);
+  font-size: var(--fs-meta);
+  color: var(--color-text);
+}
+
+/* --- Panel with a heading ------------------------------------------------- */
+
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.panel__title {
+  font-size: var(--fs-h3);
+}
+
+.panel__head .btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+.panel__subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* --- Next-up strip -------------------------------------------------------- */
+
+.next-up {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.next-up__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent-text);
+  flex: none;
+}
+
+.next-up__body {
+  min-width: 0;
+}
+
+.next-up__label {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.next-up__value {
+  margin-top: var(--space-1);
+  font-size: var(--fs-lead);
+  font-weight: 650;
+  color: var(--color-heading);
+}
+
+.next-up__detail {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* --- Focused flow screens (dose, dispensing, collect, complete) ------------ */
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 54rem;
+  margin: 0 auto;
+}
+
+.flow--wide {
+  max-width: 62rem;
+}
+
+.flow__intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.flow__title {
+  font-size: var(--fs-h1);
+}
+
+.flow__subtitle {
+  margin-top: var(--space-3);
+  font-size: var(--fs-lead);
+  color: var(--color-text-muted);
+}
+
+.flow__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-meta);
+  color: var(--color-text);
+}
+
+.flow__note-icon {
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+/* --- Big status hero (dispensed / complete) ------------------------------- */
+
+.hero-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+.hero-status__badge {
+  width: 4.75rem;
+  height: 4.75rem;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+  border: 3px solid currentColor;
+}
+
+.hero-status--success .hero-status__badge {
+  color: var(--color-success);
+}
+
+.hero-status--accent .hero-status__badge {
+  color: var(--color-accent);
+}
+
+.hero-status__title {
+  font-size: var(--fs-h1);
+}
+
+.hero-status__lead {
+  font-size: var(--fs-lead);
+  color: var(--color-text);
+  max-width: 34rem;
+}
+
+/* --- Record lines ("dispensed at" / "you confirmed at") ------------------- */
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.record-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.record-line__icon {
+  color: var(--color-accent-text);
+  flex: none;
+}
+
+.record-line__label {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.record-line__value {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+/* --- Dispensing animation ------------------------------------------------- */
+
+.dispensing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  text-align: center;
+  min-height: 100%;
+  padding: var(--space-6) var(--space-5);
+}
+
+.dispensing__title {
+  font-size: var(--fs-h1);
+}
+
+.dispensing__status {
+  font-size: var(--fs-lead);
+  color: var(--color-text-muted);
+  min-height: 2em;
+}
+
+.device-graphic {
+  width: min(15rem, 42vw);
+  height: auto;
+}
+
+.device-graphic__body {
+  fill: var(--color-accent-soft);
+  stroke: var(--blue-200);
+  stroke-width: 3;
+}
+
+.device-graphic__panel {
+  fill: var(--color-surface);
+  stroke: var(--blue-200);
+  stroke-width: 3;
+}
+
+.device-graphic__slot {
+  fill: var(--blue-300);
+}
+
+.device-graphic__tray {
+  fill: var(--color-surface);
+  stroke: var(--color-border-strong);
+  stroke-width: 3;
+}
+
+.device-graphic__pill {
+  fill: var(--color-accent);
+  opacity: 0;
+}
+
+.device-graphic.is-running .device-graphic__pill {
+  animation: pill-drop 1400ms var(--ease) infinite;
+}
+
+.device-graphic.is-running .device-graphic__pill--2 {
+  animation-delay: 320ms;
+}
+
+.device-graphic.is-running .device-graphic__pill--3 {
+  animation-delay: 640ms;
+}
+
+.device-graphic.is-ready .device-graphic__pill {
+  opacity: 1;
+  transform: translateY(58px);
+}
+
+.device-graphic.is-running .device-graphic__glow {
+  animation: glow-pulse 2200ms ease-in-out infinite;
+}
+
+@keyframes pill-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(58px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(58px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .device-graphic.is-running .device-graphic__pill,
+  .device-graphic.is-running .device-graphic__glow {
+    animation: none;
+  }
+
+  .device-graphic.is-running .device-graphic__pill {
+    opacity: 1;
+    transform: translateY(58px);
+  }
+}
+
+/* --- Progress ------------------------------------------------------------- */
+
+.progress {
+  width: min(28rem, 82vw);
+  height: 0.875rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  animation-name: progress-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes progress-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress__bar {
+    animation: none;
+    width: 100%;
+  }
+}
+
+/* --- Prescription change -------------------------------------------------- */
+
+.change__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-attention-soft);
+  border: 2px solid var(--color-attention-mark);
+  color: var(--color-attention);
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.change__compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-4);
+}
+
+@media (max-width: 48rem) {
+  .change__compare {
+    grid-template-columns: 1fr;
+  }
+
+  .change__arrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}
+
+.change__arrow {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  align-self: center;
+}
+
+.change__side {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.change__side--new {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.change__side-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.change__side--new .change__side-label {
+  color: var(--color-accent-text);
+}
+
+.change__dose {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-tight);
+}
+
+.change__dose--previous {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.change__detail {
+  margin-top: var(--space-2);
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+}
+
+.change__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-4);
+}
+
+.fact {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.fact__icon {
+  color: var(--color-accent-text);
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+.fact__label {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.fact__value {
+  margin-top: var(--space-1);
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--color-heading);
+}
+
+.fact__detail {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* --- Medications list ----------------------------------------------------- */
+
+.med-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 30rem) {
+  .med-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Help ----------------------------------------------------------------- */
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--space-5);
+}
+
+.help-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.help-card__text {
+  color: var(--color-text);
+  margin-bottom: var(--space-5);
+}
+
+.device-graphic__glow {
+  fill: var(--color-accent);
+  opacity: 0.22;
+}
+
+.device-graphic.is-ready .device-graphic__glow {
+  opacity: 0.4;
+}
+
+.panel__note {
+  margin-top: var(--space-5);
+}
+
+.section-title {
+  font-size: var(--fs-h3);
+  margin-bottom: var(--space-4);
+}
+
+.record-line__label,
+.record-line__value {
+  display: block;
+}
+
+.record-line--inline {
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.record-line--inline .record-line__label,
+.record-line--inline .record-line__value {
+  display: inline;
+}
+
+.record-line--inline .record-line__icon {
+  margin-right: var(--space-2);
+}
+
+.next-up__body,
+.next-up__label,
+.next-up__value,
+.next-up__detail {
+  display: block;
+}
+
+.hero-status .device-graphic {
+  width: min(8rem, 34vw);
+  flex: none;
+}
+
+.change__tag {
+  flex: none;
+}
+
+/* --- Two-column layout for landscape tablets ------------------------------ */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (max-width: 62rem) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.split__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* --- Compact pharmacist-verified line ------------------------------------- */
+
+.verified-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-accent);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-text);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+
+.verified-line__detail {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* --- Horizontal hero for landscape --------------------------------------- */
+
+@media (min-width: 62rem) {
+  .hero-status--row {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: var(--space-6);
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .hero-status--row .hero-status__content {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .hero-status--row .hero-status__lead {
+    max-width: none;
+  }
+
+  .hero-status--row .record-list {
+    margin: 0;
+  }
+}
+
+.hero-status__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.record-list--wide {
+  max-width: none;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.record-list--wide .record-line {
+  flex: 1 1 16rem;
+}
+
+.verified-line__detail {
+  display: inline;
+}
+
+.flow--full {
+  max-width: none;
+}
+
+.change__facts {
+  margin-top: var(--space-5);
+}
+
+.change__facts .fact {
+  background: var(--color-surface-sunken);
+}
+
+/* Stacked comparison, for when the change sits in one column of a split. */
+.change__compare--stacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.change__compare--stacked .change__arrow {
+  justify-self: center;
+  transform: none;
+}
+
+.change__compare--stacked .change__side {
+  padding: var(--space-4) var(--space-5);
+}
+
+/* Two large actions still fit side by side inside a split column. */
+.split__column .screen-actions {
+  gap: var(--space-4);
+}
+
+.split__column .screen-actions .btn {
+  flex: 1 1 8rem;
+  padding-inline: var(--space-4);
+}

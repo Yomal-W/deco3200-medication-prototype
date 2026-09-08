@@ -1,0 +1,837 @@
+/* ---------------------------------------------------------------------------
+   Reusable interface components.
+   --------------------------------------------------------------------------- */
+
+/* --- App shell ------------------------------------------------------------ */
+
+.device {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* Dynamic viewport units so the layout follows iPad browser chrome as it
+     grows and shrinks, instead of assuming one fixed height. */
+  height: 100dvh;
+  background: var(--color-bg);
+}
+
+/* Positioning context for the "more below" affordance. */
+.device__scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* The single vertical scrolling surface. The header and bottom navigation
+   sit outside it, so navigation can never cover content. */
+.device__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5.5rem;
+  background: linear-gradient(to bottom, rgba(251, 249, 246, 0), var(--color-bg));
+  pointer-events: none;
+}
+
+.scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 3.25rem;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  box-shadow: var(--shadow-raised);
+  cursor: pointer;
+}
+
+.scroll-hint:active {
+  transform: translateX(-50%) translateY(1px);
+  background: var(--color-surface-sunken);
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  /* Generous side margins keep every control away from the iPad browser's
+     left and right edge-gesture zones. Extra space at the bottom clears the
+     "more below" affordance. */
+  padding: var(--space-5) calc(var(--space-7) + env(safe-area-inset-right))
+    var(--space-7) calc(var(--space-7) + env(safe-area-inset-left));
+}
+
+@media (max-width: 48rem) {
+  .shell {
+    padding: var(--space-5) calc(var(--space-5) + env(safe-area-inset-right)) var(--space-8)
+      calc(var(--space-5) + env(safe-area-inset-left));
+  }
+}
+
+/* --- Header --------------------------------------------------------------- */
+
+.app-header {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: var(--space-3) calc(var(--space-6) + env(safe-area-inset-right)) var(--space-3)
+    calc(var(--space-6) + env(safe-area-inset-left));
+  min-height: 4.75rem;
+}
+
+.app-header__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.app-header__titles {
+  min-width: 0;
+}
+
+.app-header__greeting {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-tight);
+}
+
+.app-header__meta {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header__spacer {
+  flex: 1;
+}
+
+/* --- Brand mark (also the hidden facilitator entry point) ------------------ */
+
+.brand {
+  display: inline-flex;
+  /* Repeated tapping must never raise the iOS text-selection callout. */
+  -webkit-touch-callout: none;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+.brand__mark {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.875rem;
+  background: var(--color-accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.brand__name {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--color-heading);
+}
+
+@media (max-width: 52rem) {
+  .brand__name {
+    display: none;
+  }
+}
+
+/* --- Verified chip -------------------------------------------------------- */
+
+.verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-text);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+
+.verified-chip__detail {
+  display: block;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 64rem) {
+  .verified-chip__detail {
+    display: none;
+  }
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-6);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body);
+  font-weight: 650;
+  line-height: var(--lh-snug);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--lg {
+  min-height: 4rem;
+  font-size: var(--fs-lead);
+  padding: var(--space-4) var(--space-7);
+  border-radius: var(--radius-lg);
+}
+
+.btn--xl {
+  min-height: 4.75rem;
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  padding: var(--space-5) var(--space-8);
+  border-radius: var(--radius-lg);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.btn--primary:active {
+  background: var(--color-accent-active);
+  border-color: var(--color-accent-active);
+}
+
+.btn--secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-heading);
+}
+
+.btn--secondary:active {
+  background: var(--color-surface-accent);
+  border-color: var(--color-accent);
+}
+
+.btn--quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-accent-text);
+  padding-inline: var(--space-4);
+}
+
+.btn--quiet:active {
+  background: var(--color-accent-soft);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- Back control --------------------------------------------------------- */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-5) var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  font-size: var(--fs-body);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.back-button:active {
+  background: var(--color-surface-accent);
+  border-color: var(--color-accent);
+}
+
+/* --- Bottom navigation ---------------------------------------------------- */
+
+.app-nav {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  /* Clears the iPad home indicator when the browser is in full screen. */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-nav__inner {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+}
+
+.app-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 3.75rem;
+  padding: var(--space-2);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.app-nav__item:active {
+  background: var(--color-surface-sunken);
+  color: var(--color-heading);
+}
+
+.app-nav__item.is-active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent-text);
+}
+
+/* --- Cards ---------------------------------------------------------------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+}
+
+.card--raised {
+  box-shadow: var(--shadow-raised);
+}
+
+.card--accent {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  box-shadow: none;
+}
+
+.card--success {
+  background: var(--color-success-soft);
+  border-color: var(--color-success-border);
+  box-shadow: none;
+}
+
+.card--attention {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+  box-shadow: none;
+}
+
+.card--sunken {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+.card__label {
+  display: block;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* --- Status pill ---------------------------------------------------------- */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.status-pill--success {
+  background: var(--color-success-soft);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+.status-pill--due {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.status-pill--next {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent-text);
+}
+
+.status-pill--later {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-muted);
+}
+
+.status-pill--attention {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+  color: var(--color-attention);
+}
+
+.status-pill--danger {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+/* --- Medication rows ------------------------------------------------------ */
+
+.med-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Side by side on a landscape tablet so a whole dose fits one viewport. */
+.med-list--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+
+.med-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.med-item__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  display: grid;
+  place-items: center;
+}
+
+.med-item__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.med-item__name {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-tight);
+}
+
+.med-item__dose {
+  margin-top: var(--space-1);
+  font-size: var(--fs-lead);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.med-item__instruction {
+  margin-top: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.med-item__aside {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+  text-align: right;
+  padding-top: var(--space-1);
+}
+
+@media (max-width: 44rem) {
+  .med-item {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .med-item__aside {
+    display: none;
+  }
+}
+
+/* --- Timeline ------------------------------------------------------------- */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.timeline__row {
+  display: grid;
+  grid-template-columns: 5rem 2rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease);
+}
+
+.timeline__row:active {
+  background: var(--color-surface-sunken);
+}
+
+.timeline__row.is-current {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+}
+
+.timeline__time {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.timeline__marker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.timeline__marker--completed {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.timeline__marker--due {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.timeline__marker--missed {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.timeline__title {
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.timeline__detail {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.timeline__record {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.timeline__record-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 44rem) {
+  .timeline__row {
+    grid-template-columns: 4.75rem 2rem minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+.timeline__heading .status-pill {
+  padding: var(--space-1) var(--space-3);
+}
+
+.timeline__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* --- Notice / change banner ----------------------------------------------- */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-attention-mark);
+  background: var(--color-attention-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease);
+}
+
+.notice:active {
+  background: var(--color-attention-border);
+}
+
+.notice--acknowledged:active {
+  background: var(--color-success-border);
+}
+
+.notice--acknowledged {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.notice__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-attention-border);
+  color: var(--color-attention);
+}
+
+.notice--acknowledged .notice__icon {
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+.notice__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notice__title {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.notice__detail {
+  margin-top: var(--space-2);
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+.notice__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-accent-text);
+}
+
+/* --- Prototype marker ----------------------------------------------------- */
+
+.prototype-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.prototype-note__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  flex: none;
+}
+
+.timeline__content {
+  display: block;
+  min-width: 0;
+}
+
+.timeline__title,
+.timeline__detail {
+  display: block;
+}
+
+.notice__body,
+.notice__title,
+.notice__detail {
+  display: block;
+}
+
+/* Hover states are for pointer devices only. On the iPad a tapped
+   control must not keep a stuck hover appearance. */
+@media (hover: hover) and (pointer: fine) {
+  .btn--primary:hover:not(:active) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+  }
+
+  .btn--secondary:hover:not(:active) {
+    background: var(--color-surface-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-text);
+  }
+
+  .btn--quiet:hover:not(:active) {
+    background: var(--color-accent-soft);
+  }
+
+  .back-button:hover:not(:active) {
+    background: var(--color-surface-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-text);
+  }
+
+  .app-nav__item:hover:not(:active) {
+    background: var(--color-surface-sunken);
+    color: var(--color-heading);
+  }
+
+  .timeline__row:hover:not(:active) {
+    background: var(--color-surface-sunken);
+  }
+
+  .notice:hover:not(:active) {
+    background: var(--color-attention-border);
+  }
+
+  .notice--acknowledged:hover:not(:active) {
+    background: var(--color-success-border);
+  }
+}
+
+/* Discreet, always-present reminder that this is not a real medication record. */
+.prototype-chip {
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Below tablet width the header keeps the greeting, the clock and the
+   prototype marker; the verification chip moves out of the way. */
+@media (max-width: 44rem) {
+  .app-header__inner {
+    gap: var(--space-3);
+  }
+
+  .app-header__greeting {
+    font-size: var(--fs-lead);
+  }
+
+  .verified-chip {
+    display: none;
+  }
+}

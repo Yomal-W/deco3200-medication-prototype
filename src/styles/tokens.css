@@ -1,0 +1,140 @@
+/* ---------------------------------------------------------------------------
+   Design tokens for the Steady home medication device.
+   Calm, high-contrast, warm-white surfaces with a royal blue accent.
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* --- Palette ------------------------------------------------------------ */
+  --blue-900: #0e2244;
+  --blue-800: #16337a;
+  --blue-700: #17399f;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-300: #9dbdf4;
+  --blue-200: #c6dafb;
+  --blue-100: #dfeafd;
+  --blue-050: #eef4fe;
+
+  --green-800: #125632;
+  --green-700: #186b3f;
+  --green-500: #2e9a5e;
+  --green-100: #d6ecdf;
+  --green-050: #eaf5ee;
+
+  --amber-800: #8a4b00;
+  --amber-600: #b96b00;
+  --amber-500: #e08a00;
+  --amber-100: #f9e3c2;
+  --amber-050: #fdf4e5;
+
+  --red-800: #8f1f18;
+  --red-700: #b3261e;
+  --red-100: #f6d8d5;
+  --red-050: #fdeeec;
+
+  --warm-000: #ffffff;
+  --warm-050: #fbf9f6;
+  --warm-100: #f4f1ea;
+  --warm-200: #e8e3da;
+  --warm-300: #d5cfc3;
+
+  --ink-900: #12233f;
+  --ink-800: #1e3151;
+  --ink-700: #33425a;
+  --ink-500: #55627a;
+
+  /* --- Semantic ----------------------------------------------------------- */
+  --color-bg: var(--warm-050);
+  --color-surface: var(--warm-000);
+  --color-surface-sunken: var(--warm-100);
+  --color-surface-accent: var(--blue-050);
+  --color-border: var(--warm-200);
+  --color-border-strong: var(--warm-300);
+  --color-border-accent: var(--blue-200);
+
+  --color-heading: var(--blue-900);
+  --color-text: var(--ink-900);
+  --color-text-muted: var(--ink-500);
+  --color-text-on-accent: #ffffff;
+
+  --color-accent: var(--blue-600);
+  --color-accent-hover: var(--blue-700);
+  --color-accent-active: var(--blue-800);
+  --color-accent-soft: var(--blue-050);
+  --color-accent-text: var(--blue-800);
+
+  --color-success: var(--green-700);
+  --color-success-soft: var(--green-050);
+  --color-success-border: var(--green-100);
+
+  --color-attention: var(--amber-800);
+  --color-attention-soft: var(--amber-050);
+  --color-attention-border: var(--amber-100);
+  --color-attention-mark: var(--amber-500);
+
+  --color-danger: var(--red-700);
+  --color-danger-soft: var(--red-050);
+  --color-danger-border: var(--red-100);
+
+  /* --- Typography ---------------------------------------------------------- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --fs-display: clamp(2.125rem, 1.45rem + 2.2vw, 3.25rem); /* 34 – 52 */
+  --fs-h1: clamp(1.75rem, 1.35rem + 1.3vw, 2.5rem); /* 28 – 40 */
+  --fs-h2: clamp(1.375rem, 1.15rem + 0.75vw, 1.75rem); /* 22 – 28 */
+  --fs-h3: clamp(1.1875rem, 1.05rem + 0.45vw, 1.4375rem); /* 19 – 23 */
+  --fs-lead: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); /* 18 – 22 */
+  --fs-body: clamp(1.0625rem, 0.99rem + 0.3vw, 1.25rem); /* 17 – 20 */
+  --fs-meta: clamp(1rem, 0.96rem + 0.2vw, 1.125rem); /* 16 – 18 */
+
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-body: 1.55;
+
+  /* --- Space --------------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3rem;
+  --space-10: 4rem;
+
+  /* --- Shape --------------------------------------------------------------- */
+  --radius-sm: 0.625rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-pill: 999px;
+
+  --tap-target: 3.5rem; /* 56px */
+
+  /* --- Elevation (used sparingly) ------------------------------------------ */
+  --shadow-card: 0 1px 2px rgba(18, 35, 63, 0.05);
+  --shadow-raised: 0 6px 20px rgba(18, 35, 63, 0.08);
+  --shadow-overlay: 0 18px 48px rgba(18, 35, 63, 0.22);
+
+  /* --- Motion -------------------------------------------------------------- */
+  --ease: cubic-bezier(0.3, 0.7, 0.4, 1);
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+
+  /* --- Layout -------------------------------------------------------------- */
+  --shell-max: 78rem;
+  --focus-ring: 0 0 0 3px var(--color-bg), 0 0 0 6px var(--blue-500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+}
