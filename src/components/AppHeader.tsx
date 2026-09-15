@@ -1,49 +1,52 @@
-import { BrandMark } from './BrandMark'
 import { Icon } from './Icon'
+import { useSecretTap } from '../state/useSecretTap'
 
 interface AppHeaderProps {
+  /** e.g. "Good morning, Margaret" */
   title: string
+  /** e.g. "Tuesday 8 September · 8:02 AM" */
   meta: string
   onOpenFacilitator: () => void
-  /** Shown on focused flow screens instead of a greeting. */
+  /** Shown on focused screens. The centred block stays put. */
   back?: { label: string; onClick: () => void }
-  /** Reassurance that the routine on the device is the pharmacist's current one. */
-  verified?: { label: string; detail?: string }
 }
 
-export function AppHeader({ title, meta, onOpenFacilitator, back, verified }: AppHeaderProps) {
+/**
+ * A quiet status strip rather than an app chrome bar: the greeting and the
+ * clock sit in the middle, and contextual navigation sits beside them without
+ * pushing them off centre.
+ *
+ * The date line is also the tablet entry point to facilitator mode (five
+ * taps). It looks like plain text, which is the point.
+ */
+export function AppHeader({ title, meta, onOpenFacilitator, back }: AppHeaderProps) {
+  const handleSecretTap = useSecretTap(onOpenFacilitator)
+
   return (
     <header className="app-header">
       <div className="app-header__inner">
-        <div className="app-header__lead">
-          <BrandMark onSecretActivate={onOpenFacilitator} />
+        <div className="app-header__side">
           {back ? (
             <button type="button" className="back-button" onClick={back.onClick}>
               <Icon name="arrowLeft" size={22} />
               {back.label}
             </button>
           ) : null}
-          <div className="app-header__titles">
-            <p className="app-header__greeting">{title}</p>
-            <p className="app-header__meta">{meta}</p>
-          </div>
         </div>
 
-        <div className="app-header__spacer" />
+        <div className="app-header__centre">
+          <p className="app-header__greeting">{title}</p>
+          <button
+            type="button"
+            className="app-header__meta"
+            onClick={handleSecretTap}
+            aria-label={`${meta}. Tap five times for facilitator controls.`}
+          >
+            {meta}
+          </button>
+        </div>
 
-        <p className="prototype-chip">Prototype</p>
-
-        {verified ? (
-          <p className="verified-chip">
-            <Icon name="shieldCheck" size={22} />
-            <span>
-              {verified.label}
-              {verified.detail ? (
-                <span className="verified-chip__detail">{verified.detail}</span>
-              ) : null}
-            </span>
-          </p>
-        ) : null}
+        <div className="app-header__side app-header__side--end" />
       </div>
     </header>
   )

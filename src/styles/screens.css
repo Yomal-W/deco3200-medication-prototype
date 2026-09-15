@@ -915,15 +915,6 @@
   }
 }
 
-/* --- Medication detail ---------------------------------------------------- */
-
-.med-detail__visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-}
-
 .fact--wide {
   grid-column: 1 / -1;
 }
@@ -939,4 +930,356 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: var(--space-4);
+}
+
+/* --- Setup (activity 1) --------------------------------------------------- */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.step__number {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-size: var(--fs-body);
+  font-weight: 700;
+}
+
+.step__text {
+  font-size: var(--fs-lead);
+  color: var(--color-text);
+}
+
+.loading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.loading-row__item {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 3.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  opacity: 0.25;
+  animation: load-in 2400ms var(--ease) infinite;
+}
+
+@keyframes load-in {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30%,
+  70% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-row__item {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.loaded-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-4);
+}
+
+.loaded-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.loaded-item__name {
+  margin-top: var(--space-2);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.loaded-item__dose {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* --- Empty device --------------------------------------------------------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+.empty-state__title {
+  font-size: var(--fs-h1);
+}
+
+.empty-state__lead {
+  font-size: var(--fs-lead);
+  color: var(--color-text);
+  max-width: 34rem;
+}
+
+.empty-state .btn {
+  margin-top: var(--space-3);
+  min-width: min(22rem, 100%);
+}
+
+.empty-state__cartridges {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+/* --- Balanced Today columns ----------------------------------------------- */
+
+@media (min-width: 62.001rem) {
+  .today__columns {
+    align-items: stretch;
+  }
+
+  .today__main,
+  .today__aside {
+    height: 100%;
+  }
+
+  .today__main > .card:first-child,
+  .today__aside > .card {
+    flex: 1;
+  }
+
+  /* The extra height becomes breathing room above the action rather than
+     stretched content, so the two panels finish on the same line. */
+  .due-card--fill {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .due-card--fill .due-card__action {
+    margin-top: auto;
+  }
+}
+
+.today--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.today--empty .empty-state {
+  max-width: 44rem;
+}
+
+/* --- Stock on a medication card ------------------------------------------- */
+
+.med-card__stock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  color: var(--color-text-muted);
+}
+
+.med-card__stock--low {
+  color: var(--color-attention);
+}
+
+.med-card--low {
+  border-color: var(--color-attention-border);
+}
+
+/* --- Medication detail ---------------------------------------------------- */
+
+.detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* What it looks like, beside how much of it is left. */
+.detail-physical {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-4);
+}
+
+.detail-physical__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--warm-100);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.detail-physical__item--stock {
+  background: var(--color-surface);
+}
+
+.detail-stock__label {
+  margin-top: var(--space-2);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.detail-stock__value {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-tight);
+}
+
+.detail-stock__value--low {
+  color: var(--color-attention);
+}
+
+.detail-stock__status {
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+}
+
+.restock-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+}
+
+.restock-confirmation__icon {
+  color: var(--color-success);
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.restock-confirmation__title {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.restock-confirmation__detail {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text);
+}
+
+/* One cohesive information list rather than a grid of fragmented boxes. */
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detail-row:first-child {
+  padding-top: 0;
+}
+
+.detail-row:last-child {
+  border-bottom: 0;
+}
+
+.detail-row__label {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  line-height: var(--lh-snug);
+}
+
+.detail-row__value {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.detail-row__detail {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.detail-actions {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 40rem) {
+  .detail-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+}
+
+.detail-physical__caption {
+  margin-top: var(--space-2);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }

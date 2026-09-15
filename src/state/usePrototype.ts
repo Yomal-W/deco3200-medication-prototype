@@ -1,7 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { Dose, Screen, ScenarioId, TabName } from '../types'
+import type { Dose, Inventory, PrescriptionChange, Screen, SessionStage, TabName } from '../types'
 import { findMedication } from '../data/medications'
-import { defaultScenarioId, getScenario } from '../data/scenarios'
+import {
+  LOW_STOCK_REMAINING,
+  SESSION_START_MINUTES,
+  buildDoses,
+  buildInventory,
+  buildPrescriptionChange,
+  pickLowStockMedicationId,
+} from '../data/session'
 import { formatTime } from '../utils/time'
 
 /** Simulated minutes between pressing Dispense and the tray being ready. */
@@ -10,9 +17,18 @@ const DISPENSE_MINUTES = 2
 const CONFIRM_MINUTES = 2
 
 interface PrototypeState {
-  scenarioId: ScenarioId
+  stage: SessionStage
+  /** Empty until the device has been stocked. */
   doses: Dose[]
-  change: ReturnType<typeof getScenario>['change']
+  /** Empty until the device has been stocked. */
+  inventory: Inventory
+  /**
+   * Which medication runs low in this session. Chosen once when the session
+   * is created so it stays stable across navigation and re-renders.
+   */
+  lowStockMedicationId: string
+  restockRequestedAt: string | null
+  change: PrescriptionChange | null
   changeAcknowledgedAt: string | null
   clock: number
   screen: Screen
@@ -20,36 +36,78 @@ interface PrototypeState {
   navReplace: boolean
 }
 
-function initialState(id: ScenarioId): PrototypeState {
-  const scenario = getScenario(id)
+interface SessionOptions {
+  /** Keep the medication the facilitator pinned, rather than picking a new one. */
+  lowStockMedicationId?: string
+  includeChange?: boolean
+}
+
+/** A brand new session: an empty device, ready for activity 1. */
+function newSession(options: SessionOptions = {}): PrototypeState {
   return {
-    scenarioId: scenario.id,
-    doses: scenario.doses,
-    change: scenario.change,
+    stage: 'empty',
+    doses: [],
+    inventory: {},
+    lowStockMedicationId: options.lowStockMedicationId ?? pickLowStockMedicationId(),
+    restockRequestedAt: null,
+    change: options.includeChange ? buildPrescriptionChange() : null,
     changeAcknowledgedAt: null,
-    clock: scenario.startMinutes,
+    clock: SESSION_START_MINUTES,
     screen: { name: 'today' },
     navReplace: true,
   }
 }
 
+/** Stocking the device: the routine and the medication both become available. */
+function stocked(state: PrototypeState): PrototypeState {
+  return {
+    ...state,
+    stage: 'ready',
+    doses: buildDoses(),
+    inventory: buildInventory(),
+    restockRequestedAt: null,
+  }
+}
+
+/** One medication has run down. Everything else stays as it was. */
+function withLowStock(state: PrototypeState): PrototypeState {
+  const base = state.stage === 'empty' ? stocked(state) : state
+  const level = base.inventory[base.lowStockMedicationId]
+  if (!level) return base
+  return {
+    ...base,
+    stage: 'low-stock',
+    inventory: {
+      ...base.inventory,
+      [base.lowStockMedicationId]: { ...level, remaining: LOW_STOCK_REMAINING },
+    },
+  }
+}
+
+/** Nothing beyond Today and Help exists until the device has been stocked. */
+function isStocked(state: PrototypeState): boolean {
+  return state.stage !== 'empty'
+}
+
 /**
- * A screen restored from browser history is only shown if it still makes sense
- * for the current state. This keeps Back/Forward safe after a facilitator
- * reset, when old history entries no longer match the medication state.
+ * A screen restored from browser history — or typed into the address bar — is
+ * only shown if it makes sense for the current session. This keeps
+ * Back/Forward safe after a reset and stops setup being bypassed by URL.
  */
 function screenForHistory(next: Screen, state: PrototypeState): Screen {
-  if (next.name === 'change') {
-    return state.change ? next : { name: 'today' }
+  if (next.name === 'today' || next.name === 'help') return next
+
+  if (next.name === 'setup' || next.name === 'setup-loading' || next.name === 'setup-ready') {
+    // Setup only exists while the device is still empty, and the loading
+    // animation is never re-entered from history.
+    if (isStocked(state)) return { name: 'today' }
+    return next.name === 'setup-loading' ? { name: 'setup' } : next
   }
-  if (
-    next.name === 'today' ||
-    next.name === 'medications' ||
-    next.name === 'help' ||
-    next.name === 'whats-next'
-  ) {
-    return next
-  }
+
+  if (!isStocked(state)) return { name: 'today' }
+
+  if (next.name === 'change') return state.change ? next : { name: 'today' }
+  if (next.name === 'medications' || next.name === 'whats-next') return next
   if (next.name === 'medication') {
     return findMedication(next.medicationId) ? next : { name: 'medications' }
   }
@@ -65,23 +123,15 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
 }
 
 /**
- * All prototype state lives here: which scenario is loaded, the simulated
- * clock, the state of today's doses and which screen is showing.
+ * All prototype state lives here: how far the session has progressed, the
+ * simulated clock, today's doses, what is left in the device and which screen
+ * is showing.
  *
  * Frontend state only — nothing is persisted, so refreshing restarts the
- * prototype from a predictable state.
+ * session from an empty device.
  */
 export function usePrototype() {
-  const [state, setState] = useState(() => initialState(defaultScenarioId))
-  const { scenarioId, doses, change, changeAcknowledgedAt, clock, screen, navReplace } = state
-
-  const loadScenario = useCallback((id: ScenarioId) => {
-    setState(initialState(id))
-  }, [])
-
-  const resetPrototype = useCallback(() => {
-    setState((current) => initialState(current.scenarioId))
-  }, [])
+  const [state, setState] = useState<PrototypeState>(() => newSession())
 
   const goTo = useCallback((next: Screen) => {
     setState((current) => ({ ...current, screen: next, navReplace: false }))
@@ -100,6 +150,27 @@ export function usePrototype() {
     }))
   }, [])
 
+  // --- Activity 1: stocking the device -------------------------------------
+
+  const openSetup = useCallback(() => {
+    setState((current) => ({ ...current, screen: { name: 'setup' }, navReplace: false }))
+  }, [])
+
+  const startLoading = useCallback(() => {
+    setState((current) => ({ ...current, screen: { name: 'setup-loading' }, navReplace: false }))
+  }, [])
+
+  /** The loading animation finished: the device now knows what it holds. */
+  const finishLoading = useCallback(() => {
+    setState((current) => ({
+      ...stocked(current),
+      screen: { name: 'setup-ready' },
+      navReplace: true,
+    }))
+  }, [])
+
+  // --- Activity 2: the daily routine ---------------------------------------
+
   /**
    * Opening a dose from Today or the timeline. A dose that has already been
    * dispensed but not confirmed goes straight back to the collection step.
@@ -117,7 +188,6 @@ export function usePrototype() {
     })
   }, [])
 
-  /** Pressing "Dispense medication" — starts the simulated device animation. */
   const startDispensing = useCallback((doseId: string) => {
     setState((current) => ({
       ...current,
@@ -127,17 +197,26 @@ export function usePrototype() {
   }, [])
 
   /**
-   * The animation finished: the device has released the medication. This
-   * replaces the history entry so Back never re-runs the animation.
+   * The animation finished: the device has released the medication, and its
+   * own stock has gone down by what it released.
    */
   const finishDispensing = useCallback((doseId: string) => {
     setState((current) => {
       const clockAfter = current.clock + DISPENSE_MINUTES
+      const dose = current.doses.find((item) => item.id === doseId)
+      const inventory = { ...current.inventory }
+      dose?.items.forEach((item) => {
+        const level = inventory[item.medicationId]
+        if (level) {
+          inventory[item.medicationId] = { ...level, remaining: Math.max(0, level.remaining - 1) }
+        }
+      })
       return {
         ...current,
         clock: clockAfter,
-        doses: current.doses.map((dose) =>
-          dose.id === doseId ? { ...dose, dispensedAt: formatTime(clockAfter) } : dose,
+        inventory,
+        doses: current.doses.map((item) =>
+          item.id === doseId ? { ...item, dispensedAt: formatTime(clockAfter) } : item,
         ),
         screen: { name: 'collect', doseId },
         navReplace: true,
@@ -145,11 +224,16 @@ export function usePrototype() {
     })
   }, [])
 
-  /** The user says they have taken the medication. Self-reported, not verified. */
+  /**
+   * The user says they have taken the medication. Self-reported, not verified.
+   *
+   * Finishing a routine is also what brings the low-stock condition into view,
+   * so activity 3 follows activity 2 without any facilitator input.
+   */
   const confirmTaken = useCallback((doseId: string) => {
     setState((current) => {
       const clockAfter = current.clock + CONFIRM_MINUTES
-      return {
+      const next: PrototypeState = {
         ...current,
         clock: clockAfter,
         doses: current.doses.map((dose) =>
@@ -160,6 +244,7 @@ export function usePrototype() {
         screen: { name: 'complete', doseId },
         navReplace: true,
       }
+      return current.stage === 'ready' ? withLowStock(next) : next
     })
   }, [])
 
@@ -170,48 +255,104 @@ export function usePrototype() {
     }))
   }, [])
 
+  // --- Activity 3: restocking ----------------------------------------------
+
+  /** Tell the connected pharmacy the device needs more. Frontend state only. */
+  const requestRestock = useCallback(() => {
+    setState((current) => ({
+      ...current,
+      restockRequestedAt: current.restockRequestedAt ?? formatTime(current.clock),
+    }))
+  }, [])
+
+  // --- Facilitator ----------------------------------------------------------
+
+  /** Jump the session to a stage, keeping the pinned low-stock medication. */
+  const setStage = useCallback((stage: SessionStage) => {
+    setState((current) => {
+      const base = newSession({
+        lowStockMedicationId: current.lowStockMedicationId,
+        includeChange: current.change !== null,
+      })
+      if (stage === 'empty') return base
+      if (stage === 'ready') return { ...stocked(base), navReplace: true }
+      return { ...withLowStock(stocked(base)), navReplace: true }
+    })
+  }, [])
+
+  /** Pin the low-stock medication, for repeatable demonstrations. */
+  const setLowStockMedication = useCallback((medicationId: string) => {
+    setState((current) => {
+      const pinned = { ...current, lowStockMedicationId: medicationId, restockRequestedAt: null }
+      if (current.stage !== 'low-stock') return pinned
+      const restored: PrototypeState = {
+        ...pinned,
+        stage: 'ready',
+        inventory: buildInventory(),
+      }
+      return withLowStock(restored)
+    })
+  }, [])
+
+  const setIncludeChange = useCallback((include: boolean) => {
+    setState((current) => ({
+      ...current,
+      change: include ? buildPrescriptionChange() : null,
+      changeAcknowledgedAt: null,
+      screen: current.screen.name === 'change' && !include ? { name: 'today' } : current.screen,
+      navReplace: true,
+    }))
+  }, [])
+
+  /** Between participants: a fresh empty device and a fresh low-stock pick. */
+  const resetSession = useCallback(() => {
+    setState((current) => newSession({ includeChange: current.change !== null }))
+  }, [])
+
+  // --- Derived --------------------------------------------------------------
+
   const sortedDoses = useMemo(
-    () => [...doses].sort((a, b) => a.scheduledMinutes - b.scheduledMinutes),
-    [doses],
+    () => [...state.doses].sort((a, b) => a.scheduledMinutes - b.scheduledMinutes),
+    [state.doses],
   )
 
-  /** The dose the device is currently offering, if any. */
   const activeDose = useMemo(
     () => sortedDoses.find((dose) => dose.status === 'due' || dose.status === 'missed') ?? null,
     [sortedDoses],
   )
 
-  /** The first dose still ahead of the user after the active one. */
   const nextDose = useMemo(
     () => sortedDoses.find((dose) => dose.status === 'upcoming') ?? null,
     [sortedDoses],
   )
 
   const findDose = useCallback(
-    (doseId: string): Dose | null => doses.find((dose) => dose.id === doseId) ?? null,
-    [doses],
+    (doseId: string): Dose | null => state.doses.find((dose) => dose.id === doseId) ?? null,
+    [state.doses],
   )
 
   return {
-    scenarioId,
+    ...state,
     doses: sortedDoses,
-    change,
-    changeAcknowledgedAt,
-    clock,
-    screen,
-    navReplace,
+    stocked: isStocked(state),
     activeDose,
     nextDose,
     findDose,
-    loadScenario,
-    resetPrototype,
     goTo,
     goToTab,
     applyHistoryScreen,
+    openSetup,
+    startLoading,
+    finishLoading,
     openDose,
     startDispensing,
     finishDispensing,
     confirmTaken,
     acknowledgeChange,
+    requestRestock,
+    setStage,
+    setLowStockMedication,
+    setIncludeChange,
+    resetSession,
   }
 }

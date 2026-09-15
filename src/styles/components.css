@@ -69,6 +69,8 @@
 
 .shell {
   width: 100%;
+  /* Lets the locked waiting screens centre themselves in the viewport. */
+  min-height: 100%;
   max-width: var(--shell-max);
   margin: 0 auto;
   /* Generous side margins keep every control away from the iPad browser's
@@ -93,26 +95,35 @@
 }
 
 .app-header__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
   width: 100%;
   max-width: var(--shell-max);
   margin: 0 auto;
-  padding: var(--space-3) calc(var(--space-6) + env(safe-area-inset-right)) var(--space-3)
+  padding: var(--space-2) calc(var(--space-6) + env(safe-area-inset-right)) var(--space-2)
     calc(var(--space-6) + env(safe-area-inset-left));
   min-height: 4.75rem;
 }
 
-.app-header__lead {
+.app-header__side {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
   min-width: 0;
 }
 
-.app-header__titles {
+.app-header__side--end {
+  justify-content: flex-end;
+}
+
+/* The calm focal point of the header. */
+.app-header__centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   min-width: 0;
+  text-align: center;
 }
 
 .app-header__greeting {
@@ -120,86 +131,23 @@
   font-weight: 700;
   color: var(--color-heading);
   line-height: var(--lh-tight);
-}
-
-.app-header__meta {
-  margin-top: var(--space-1);
-  font-size: var(--fs-meta);
-  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.app-header__spacer {
-  flex: 1;
-}
-
-/* --- Brand mark (also the hidden facilitator entry point) ------------------ */
-
-.brand {
-  display: inline-flex;
-  /* Repeated tapping must never raise the iOS text-selection callout. */
-  -webkit-touch-callout: none;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2);
-  margin: calc(var(--space-2) * -1);
+.app-header__meta {
+  /* Padded to a comfortable hit area for the facilitator without changing
+     how the line looks or where it sits. */
+  margin-top: calc(var(--space-1) * -1);
+  padding: var(--space-2) var(--space-3);
   border: 0;
   background: none;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-}
-
-.brand__mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.875rem;
-  background: var(--color-accent);
-  color: #fff;
-  display: grid;
-  place-items: center;
-}
-
-.brand__name {
-  font-size: var(--fs-h3);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--color-heading);
-}
-
-@media (max-width: 52rem) {
-  .brand__name {
-    display: none;
-  }
-}
-
-/* --- Verified chip -------------------------------------------------------- */
-
-.verified-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  border: 1px solid var(--color-border-accent);
-  color: var(--color-accent-text);
   font-size: var(--fs-meta);
-  font-weight: 600;
-  line-height: var(--lh-snug);
-}
-
-.verified-chip__detail {
-  display: block;
-  font-weight: 500;
   color: var(--color-text-muted);
-}
-
-@media (max-width: 64rem) {
-  .verified-chip__detail {
-    display: none;
-  }
+  white-space: nowrap;
+  cursor: default;
 }
 
 /* --- Buttons -------------------------------------------------------------- */
@@ -806,22 +754,7 @@
   }
 }
 
-/* Discreet, always-present reminder that this is not a real medication record. */
-.prototype-chip {
-  flex: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-muted);
-  font-size: var(--fs-meta);
-  font-weight: 650;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* Below tablet width the header keeps the greeting, the clock and the
-   prototype marker; the verification chip moves out of the way. */
+/* Below tablet width the greeting shrinks so the header stays on one line. */
 @media (max-width: 44rem) {
   .app-header__inner {
     gap: var(--space-3);
@@ -829,10 +762,6 @@
 
   .app-header__greeting {
     font-size: var(--fs-lead);
-  }
-
-  .verified-chip {
-    display: none;
   }
 }
 
@@ -868,15 +797,16 @@
 .med-thumbs {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-2);
 }
 
 .med-thumbs__item {
   display: grid;
   place-items: center;
-  width: 3.5rem;
-  height: 2.875rem;
-  border-radius: var(--radius-sm);
+  width: 4.25rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border-accent);
 }
@@ -902,4 +832,41 @@
   background: var(--color-surface);
   border: 2px solid var(--color-border-strong);
   box-shadow: inset 0 3px 8px rgba(18, 35, 63, 0.07);
+}
+
+/* --- Medication stock cartridge ------------------------------------------- */
+
+.cartridge {
+  display: block;
+  flex: none;
+}
+
+.cartridge__cap {
+  fill: var(--color-border-strong);
+}
+
+.cartridge__collar {
+  fill: var(--warm-200);
+}
+
+.cartridge__interior {
+  fill: var(--warm-100);
+}
+
+.cartridge__tube {
+  stroke: var(--color-border-strong);
+  stroke-width: 3;
+}
+
+.cartridge__gloss {
+  fill: #ffffff;
+  opacity: 0.55;
+}
+
+.cartridge--low .cartridge__tube {
+  stroke: var(--color-attention-mark);
+}
+
+.cartridge--low .cartridge__cap {
+  fill: var(--color-attention-mark);
 }

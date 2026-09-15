@@ -46,45 +46,47 @@ Touch-first details worth knowing:
   per screen, and a **More below** control appears when there is more to see.
 - Browser zoom and pinch-to-zoom are left enabled.
 
+## The three user-testing activities
+
+A session is one continuous journey through an empty device becoming a stocked,
+in-use one. The three think-aloud activities follow each other without any
+facilitator input:
+
+| Stage | What the participant does |
+| --- | --- |
+| **1. Empty** | Steady has nothing in it. They load the pharmacy pack and the six medications appear. |
+| **2. Ready** | Today is now populated. They complete the morning routine. |
+| **3. Low stock** | Confirming the morning dose is what reveals that one medication has run low. They find it in Medications and ask the pharmacy to restock. |
+
+Which medication runs low is **picked at random once per session** and then held
+in state, so it never changes as the participant navigates. A reset picks a new
+one for the next participant.
+
+Nothing beyond Today and Help exists until the device has been stocked —
+`#/medications`, `#/medications/:id`, `#/dose/*` and `#/whats-next` all fall
+back to the empty Today, so setup cannot be skipped by typing a URL.
+
+Two different physical actions, kept linguistically separate:
+
+- **Load medication** — putting the pharmacy pack into the device (activity 1).
+- **Dispense medication** — the device releasing the dose that is due now
+  into the tray (activity 2).
+
 ## Facilitator mode
 
 For the research team at the user-testing fair:
 
 - **Laptop:** `Ctrl` + `Shift` + `D`
-- **Tablet:** tap the `Steady` device mark in the header **five times**
+- **Tablet:** tap the date under the greeting **five times**
 - Close with `Esc`
 
-Scenarios: *Morning medication due*, *Prescription changed*. Plus *Reset
-prototype*. Switching a scenario resets state so every participant starts from
-the same place.
+Controls: jump to any of the three session stages, see (or pin) which
+medication is low this session, toggle the optional prescription-change
+scenario, and reset the session for the next participant. Reset returns to an
+empty device at `#/today`, scrolled to the top, with a fresh random pick.
 
-## Medication imagery
-
-Medications are drawn locally as inline SVG — there are no photographs, no
-image files and no external image requests, so the prototype renders
-identically with or without internet.
-
-Medicines are told apart by **silhouette and relative size first** (small round,
-round scored, oval, caplet, capsule, large chalky tablet), never by colour
-alone, and every tablet is drawn to a consistent scale relative to the others.
-The imagery is **illustrative** and the interface says so: a medicine's real
-appearance varies by manufacturer and supplier, so the name, dose and verified
-routine stay authoritative.
-
-Why illustrations rather than product photography, and what to record if real
-images are added later: [`docs/asset-sources.md`](docs/asset-sources.md).
-
-## Participant flows
-
-1. **Take a dose** — Today → Medication ready now → View medication →
-   Dispense medication → dispensing animation → Medication dispensed →
-   I've taken these → Morning medication complete → What's next?
-2. **Understand a change** — Today → prescription change notice → previous vs
-   new dose, when it starts, who changed it and who verified it → I understand
-   → back to Today.
-3. **Check a medication** — Medications → tap a medication → illustration,
-   times, instructions, purpose, prescriber and pharmacist
-   (`#/medications/metformin`).
+The three activities run in sequence on their own — these controls are for
+resetting, recovering and demonstrating.
 
 ## Structure
 

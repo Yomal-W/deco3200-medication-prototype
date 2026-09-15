@@ -188,3 +188,36 @@
     background: rgba(255, 255, 255, 0.12);
   }
 }
+
+.facilitator__readout {
+  margin-bottom: var(--space-3);
+  font-size: var(--fs-meta);
+  color: #c4d2e6;
+}
+
+.facilitator__readout strong {
+  color: #ffffff;
+}
+
+.facilitator__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.facilitator__chip {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.facilitator__chip.is-active {
+  border-color: #7fa8f5;
+  background: rgba(127, 168, 245, 0.28);
+}

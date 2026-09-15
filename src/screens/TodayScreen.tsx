@@ -4,13 +4,18 @@ import { Card } from '../components/Card'
 import { ChangeNotice } from '../components/ChangeNotice'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
+import { EmptyDeviceCard } from '../components/EmptyDeviceCard'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
 import { StatusPill } from '../components/StatusPill'
+import { user } from '../data/medications'
 import { doseMedicationNames, doseSummary } from '../utils/dose'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
 interface TodayScreenProps {
+  /** False until the device has been stocked in activity 1. */
+  stocked: boolean
+  onLoadMedication: () => void
   doses: Dose[]
   activeDose: Dose | null
   nextDose: Dose | null
@@ -23,6 +28,8 @@ interface TodayScreenProps {
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
 export function TodayScreen({
+  stocked,
+  onLoadMedication,
   doses,
   activeDose,
   nextDose,
@@ -33,6 +40,17 @@ export function TodayScreen({
   onOpenWhatsNext,
 }: TodayScreenProps) {
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
+
+  if (!stocked) {
+    return (
+      <div className="today today--empty">
+        <EmptyDeviceCard
+          onLoad={onLoadMedication}
+          lead={`${user.deviceName} has no medication in it yet. Once you load your pack, your routine for the day will appear here.`}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="today">
@@ -47,10 +65,9 @@ export function TodayScreen({
       <div className="today__columns">
         <div className="today__main">
           {activeDose ? (
-            <Card tone="accent" raised className="due-card">
+            <Card tone="accent" raised className="due-card due-card--fill">
               <div className="due-card__top">
                 <DoseStatusPill dose={activeDose} />
-                <MedicationThumbs items={activeDose.items} />
               </div>
 
               <h1 className="due-card__title">
@@ -68,6 +85,8 @@ export function TodayScreen({
                 {joinNames(doseMedicationNames(activeDose))}
               </p>
 
+              <MedicationThumbs items={activeDose.items} size={64} />
+
               {activeDose.items[0]?.instruction ? (
                 <p className="due-card__instruction">
                   <Icon name="info" size={20} />
@@ -78,6 +97,7 @@ export function TodayScreen({
               <Button
                 size="xl"
                 block
+                className="due-card__action"
                 icon="arrowRight"
                 iconPosition="end"
                 onClick={() => onOpenDose(activeDose.id)}
@@ -93,7 +113,7 @@ export function TodayScreen({
               ) : null}
             </Card>
           ) : (
-            <Card tone="success" raised className="due-card">
+            <Card tone="success" raised className="due-card due-card--fill">
               <div className="due-card__top">
                 <StatusPill tone="success" icon="checkCircle">
                   Up to date
@@ -106,7 +126,14 @@ export function TodayScreen({
                   ? `Your next medication is at ${formatTime(nextDose.scheduledMinutes)}.`
                   : 'You have finished your medication for today.'}
               </p>
-              <Button size="xl" block icon="arrowRight" iconPosition="end" onClick={onOpenWhatsNext}>
+              <Button
+                size="xl"
+                block
+                className="due-card__action"
+                icon="arrowRight"
+                iconPosition="end"
+                onClick={onOpenWhatsNext}
+              >
                 See what happens next
               </Button>
             </Card>

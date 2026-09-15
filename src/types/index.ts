@@ -63,6 +63,10 @@ export interface Medication {
   plainPurpose: string
   /** Short human summary of when it is taken, for the medication list. */
   scheduleSummary: string
+  /** Doses the pharmacy pack holds when the device is freshly stocked. */
+  capacity: number
+  /** Doses present right after loading. Slightly varied, as real packs are. */
+  loadedDoses: number
   /** The times of day this medication is taken, for the detail screen. */
   times: string[]
   /** Practical instruction shared across this medication's doses. */
@@ -122,24 +126,37 @@ export interface PrescriptionChange {
   medicationId: string
 }
 
-/** Facilitator-selectable demo scenarios. */
-export type ScenarioId = 'morning-due' | 'prescription-change'
+/**
+ * How far the session has progressed. The three user-testing activities map
+ * onto these stages, and they are meant to happen in sequence during one
+ * continuous session rather than as separate demo modes.
+ *
+ *  empty     — a new device with nothing in it (activity 1 starts here)
+ *  ready     — medication loaded, the routine is available (activity 2)
+ *  low-stock — one medication has run low and needs a restock (activity 3)
+ */
+export type SessionStage = 'empty' | 'ready' | 'low-stock'
 
-export interface Scenario {
-  id: ScenarioId
-  /** Shown in the facilitator panel. */
-  label: string
-  /** One line describing what the participant will see. */
-  facilitatorNote: string
-  /** Simulated clock at the start of the scenario, in minutes after midnight. */
-  startMinutes: number
-  doses: Dose[]
-  change: PrescriptionChange | null
+/** How much of one medication is currently inside the device. */
+export interface StockLevel {
+  /** Doses still in the device. */
+  remaining: number
+  /** How many doses the device's compartment holds when freshly stocked. */
+  capacity: number
 }
+
+/** Stock described in words, so the state never depends on colour alone. */
+export type StockStatus = 'ok' | 'low' | 'empty'
+
+/** Live stock for every loaded medication, keyed by medication id. */
+export type Inventory = Record<string, StockLevel>
 
 /** Screens the participant can be on. Deliberately a small, flat set. */
 export type Screen =
   | { name: 'today' }
+  | { name: 'setup' }
+  | { name: 'setup-loading' }
+  | { name: 'setup-ready' }
   | { name: 'medications' }
   | { name: 'medication'; medicationId: string }
   | { name: 'help' }

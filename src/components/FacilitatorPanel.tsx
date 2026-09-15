@@ -1,22 +1,51 @@
 import { useEffect, useRef } from 'react'
-import type { ScenarioId } from '../types'
-import { scenarioSummaries } from '../data/scenarios'
+import type { SessionStage } from '../types'
+import { medications } from '../data/medications'
 import { Icon } from './Icon'
 
+const stages: { id: SessionStage; label: string; note: string }[] = [
+  {
+    id: 'empty',
+    label: 'Empty device',
+    note: 'Activity 1 — nothing loaded. This is where a session starts.',
+  },
+  {
+    id: 'ready',
+    label: 'Medication loaded',
+    note: 'Activity 2 — skips setup and goes straight to the morning routine.',
+  },
+  {
+    id: 'low-stock',
+    label: 'One medication low',
+    note: 'Activity 3 — skips ahead to the restock task.',
+  },
+]
+
 interface FacilitatorPanelProps {
-  scenarioId: ScenarioId
-  onSelectScenario: (id: ScenarioId) => void
+  stage: SessionStage
+  lowStockMedicationId: string
+  includeChange: boolean
+  onSetStage: (stage: SessionStage) => void
+  onSetLowStockMedication: (medicationId: string) => void
+  onSetIncludeChange: (include: boolean) => void
   onReset: () => void
   onClose: () => void
 }
 
 /**
  * Research-team controls. Opened with Ctrl + Shift + D, or by tapping the
- * device mark five times on a tablet. Not part of the participant experience.
+ * date under the greeting five times. Not part of the participant experience.
+ *
+ * The three activities run in sequence on their own — these controls are for
+ * resetting between participants, recovering, and demonstrating.
  */
 export function FacilitatorPanel({
-  scenarioId,
-  onSelectScenario,
+  stage,
+  lowStockMedicationId,
+  includeChange,
+  onSetStage,
+  onSetLowStockMedication,
+  onSetIncludeChange,
   onReset,
   onClose,
 }: FacilitatorPanelProps) {
@@ -31,6 +60,9 @@ export function FacilitatorPanel({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onClose])
 
+  const lowStockName =
+    medications.find((medication) => medication.id === lowStockMedicationId)?.name ?? '—'
+
   return (
     <div
       className="facilitator"
@@ -44,8 +76,8 @@ export function FacilitatorPanel({
           <div>
             <h2 className="facilitator__title">Facilitator controls</h2>
             <p className="facilitator__subtitle">
-              Research team only. Switching a scenario resets the prototype to a predictable
-              starting point.
+              Research team only. The three activities run in sequence on their own — use these to
+              reset, recover or skip ahead.
             </p>
           </div>
           <button
@@ -60,22 +92,22 @@ export function FacilitatorPanel({
         </div>
 
         <div>
-          <p className="facilitator__section-label">Scenarios</p>
+          <p className="facilitator__section-label">Session stage</p>
           <div className="facilitator__list">
-            {scenarioSummaries.map((scenario, index) => (
+            {stages.map((item, index) => (
               <button
-                key={scenario.id}
+                key={item.id}
                 type="button"
-                className={`facilitator__option${scenario.id === scenarioId ? ' is-active' : ''}`}
-                aria-pressed={scenario.id === scenarioId}
-                onClick={() => onSelectScenario(scenario.id)}
+                className={`facilitator__option${item.id === stage ? ' is-active' : ''}`}
+                aria-pressed={item.id === stage}
+                onClick={() => onSetStage(item.id)}
               >
-                <Icon name={scenario.id === scenarioId ? 'checkCircle' : 'sliders'} size={22} />
+                <Icon name={item.id === stage ? 'checkCircle' : 'sliders'} size={22} />
                 <span>
                   <span className="facilitator__option-name">
-                    {index + 1}. {scenario.label}
+                    {index + 1}. {item.label}
                   </span>
-                  <span className="facilitator__option-note">{scenario.facilitatorNote}</span>
+                  <span className="facilitator__option-note">{item.note}</span>
                 </span>
               </button>
             ))}
@@ -83,10 +115,50 @@ export function FacilitatorPanel({
         </div>
 
         <div>
+          <p className="facilitator__section-label">Low-stock medication</p>
+          <p className="facilitator__readout">
+            This session: <strong>{lowStockName}</strong> (picked at random)
+          </p>
+          <div className="facilitator__chips">
+            {medications.map((medication) => (
+              <button
+                key={medication.id}
+                type="button"
+                className={`facilitator__chip${
+                  medication.id === lowStockMedicationId ? ' is-active' : ''
+                }`}
+                aria-pressed={medication.id === lowStockMedicationId}
+                onClick={() => onSetLowStockMedication(medication.id)}
+              >
+                {medication.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Extras</p>
+          <button
+            type="button"
+            className={`facilitator__option${includeChange ? ' is-active' : ''}`}
+            aria-pressed={includeChange}
+            onClick={() => onSetIncludeChange(!includeChange)}
+          >
+            <Icon name={includeChange ? 'checkCircle' : 'sliders'} size={22} />
+            <span>
+              <span className="facilitator__option-name">Prescription change</span>
+              <span className="facilitator__option-note">
+                Adds the pharmacist-verified Ramipril dose change to Today.
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <div>
           <p className="facilitator__section-label">Controls</p>
           <button type="button" className="facilitator__reset" onClick={onReset}>
             <Icon name="refresh" size={22} />
-            Reset prototype
+            Reset session for next participant
           </button>
         </div>
 
@@ -96,9 +168,9 @@ export function FacilitatorPanel({
         </button>
 
         <p className="facilitator__hint">
-          Open with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>, or tap the device mark five
-          times. Close with <kbd>Esc</kbd>. Nothing is saved — refreshing the page also resets the
-          prototype.
+          Open with <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>, or tap the date under the
+          greeting five times. Close with <kbd>Esc</kbd>. Nothing is saved — refreshing the page
+          also starts a fresh session.
         </p>
       </div>
     </div>

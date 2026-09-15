@@ -27,6 +27,12 @@ export function screenToHash(screen: Screen): string {
       return `#/dose/${screen.doseId}/collect`
     case 'complete':
       return `#/dose/${screen.doseId}/complete`
+    case 'setup':
+      return '#/setup'
+    case 'setup-loading':
+      return '#/setup/loading'
+    case 'setup-ready':
+      return '#/setup/ready'
     case 'today':
       return '#/today'
   }
@@ -41,6 +47,11 @@ export function hashToScreen(hash: string): Screen {
     if (third === 'collect') return { name: 'collect', doseId: second }
     if (third === 'complete') return { name: 'complete', doseId: second }
     return { name: 'dose', doseId: second }
+  }
+  if (first === 'setup') {
+    if (second === 'loading') return { name: 'setup-loading' }
+    if (second === 'ready') return { name: 'setup-ready' }
+    return { name: 'setup' }
   }
   if (first === 'medications') {
     return second ? { name: 'medication', medicationId: second } : { name: 'medications' }

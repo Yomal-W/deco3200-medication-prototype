@@ -18,14 +18,21 @@ import { WhatsNextScreen } from './screens/WhatsNextScreen'
 import { ChangeScreen } from './screens/ChangeScreen'
 import { MedicationsScreen } from './screens/MedicationsScreen'
 import { MedicationDetailScreen } from './screens/MedicationDetailScreen'
+import { SetupScreen } from './screens/SetupScreen'
+import { SetupLoadingScreen } from './screens/SetupLoadingScreen'
+import { SetupReadyScreen } from './screens/SetupReadyScreen'
 import { HelpScreen } from './screens/HelpScreen'
 
 const tabScreens: TabName[] = ['today', 'medications', 'help']
 
 function App() {
   const {
-    scenarioId,
+    stage,
+    stocked,
     doses,
+    inventory,
+    lowStockMedicationId,
+    restockRequestedAt,
     change,
     changeAcknowledgedAt,
     clock,
@@ -34,16 +41,22 @@ function App() {
     activeDose,
     nextDose,
     findDose,
-    loadScenario,
-    resetPrototype,
     goTo,
     goToTab,
     applyHistoryScreen,
+    openSetup,
+    startLoading,
+    finishLoading,
     openDose,
     startDispensing,
     finishDispensing,
     confirmTaken,
     acknowledgeChange,
+    requestRestock,
+    setStage,
+    setLowStockMedication,
+    setIncludeChange,
+    resetSession,
   } = usePrototype()
 
   const [facilitatorOpen, setFacilitatorOpen] = useState(false)
@@ -121,13 +134,27 @@ function App() {
   const closeFacilitator = useCallback(() => setFacilitatorOpen(false), [])
 
   const activeTab = tabScreens.includes(screen.name as TabName) ? (screen.name as TabName) : null
-  const isDispensing = screen.name === 'dispensing'
+  // Locked waiting states: no navigation while the device is working.
+  const isBusy = screen.name === 'dispensing' || screen.name === 'setup-loading'
 
   const renderScreen = () => {
     switch (screen.name) {
+      case 'setup':
+        return <SetupScreen onStartLoading={startLoading} onBack={() => goToTab('today')} />
+
+      case 'setup-loading':
+        return <SetupLoadingScreen onComplete={finishLoading} />
+
+      case 'setup-ready':
+        return <SetupReadyScreen onContinue={() => goToTab('today')} />
+
       case 'medications':
         return (
           <MedicationsScreen
+            stocked={stocked}
+            onLoadMedication={openSetup}
+            inventory={inventory}
+            restockRequestedAt={restockRequestedAt}
             change={change}
             onOpenMedication={(medicationId) => goTo({ name: 'medication', medicationId })}
           />
@@ -139,8 +166,11 @@ function App() {
         return (
           <MedicationDetailScreen
             medication={medication}
+            level={inventory[medication.id]}
+            restockRequestedAt={restockRequestedAt}
             change={change}
             onBack={() => goToTab('medications')}
+            onRequestRestock={requestRestock}
             onOpenChange={() => goTo({ name: 'change' })}
           />
         )
@@ -208,6 +238,8 @@ function App() {
       case 'today':
         return (
           <TodayScreen
+            stocked={stocked}
+            onLoadMedication={openSetup}
             doses={doses}
             activeDose={activeDose}
             nextDose={nextDose}
@@ -224,20 +256,17 @@ function App() {
   return (
     <div className="device">
       <AppHeader
-        title={activeTab ? `${greetingFor(clock)}, ${user.firstName}` : formatTime(clock)}
-        meta={activeTab ? `${user.today} · ${formatTime(clock)}` : user.today}
+        title={`${greetingFor(clock)}, ${user.firstName}`}
+        meta={`${user.today} · ${formatTime(clock)}`}
         onOpenFacilitator={openFacilitator}
         back={
-          activeTab || isDispensing
+          activeTab || isBusy
             ? undefined
             : screen.name === 'medication'
               ? { label: 'Medications', onClick: () => goToTab('medications') }
-              : { label: 'Today', onClick: goHome }
-        }
-        verified={
-          activeTab === 'today' || activeTab === 'medications'
-            ? { label: 'Routine verified', detail: `Pharmacist · ${user.routineVerifiedOn}` }
-            : undefined
+              : screen.name === 'setup' || screen.name === 'setup-ready'
+                ? { label: 'Today', onClick: () => goToTab('today') }
+                : { label: 'Today', onClick: goHome }
         }
       />
 
@@ -246,7 +275,7 @@ function App() {
           <div className="shell">{renderScreen()}</div>
         </main>
 
-        {hasMoreBelow && !isDispensing ? (
+        {hasMoreBelow && !isBusy ? (
           <>
             <span className="scroll-fade" aria-hidden="true" />
             <button type="button" className="scroll-hint" onClick={scrollDown}>
@@ -257,17 +286,21 @@ function App() {
         ) : null}
       </div>
 
-      {isDispensing ? null : <AppNav active={activeTab} onSelect={goToTab} />}
+      {isBusy ? null : <AppNav active={activeTab} onSelect={goToTab} />}
 
       {facilitatorOpen ? (
         <FacilitatorPanel
-          scenarioId={scenarioId}
-          onSelectScenario={(id) => {
-            loadScenario(id)
+          stage={stage}
+          lowStockMedicationId={lowStockMedicationId}
+          includeChange={change !== null}
+          onSetStage={(next) => {
+            setStage(next)
             setFacilitatorOpen(false)
           }}
+          onSetLowStockMedication={setLowStockMedication}
+          onSetIncludeChange={setIncludeChange}
           onReset={() => {
-            resetPrototype()
+            resetSession()
             setFacilitatorOpen(false)
           }}
           onClose={closeFacilitator}
