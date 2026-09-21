@@ -1,5 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { Dose, Inventory, PrescriptionChange, Screen, SessionStage, TabName } from '../types'
+import type {
+  Dose,
+  DoseRecord,
+  DoseStatus,
+  Inventory,
+  PrescriptionChange,
+  Screen,
+  SessionStage,
+  TabName,
+} from '../types'
 import { findMedication } from '../data/medications'
 import {
   LOW_STOCK_REMAINING,
@@ -19,7 +28,7 @@ const CONFIRM_MINUTES = 2
 interface PrototypeState {
   stage: SessionStage
   /** Empty until the device has been stocked. */
-  doses: Dose[]
+  doses: DoseRecord[]
   /** Empty until the device has been stocked. */
   inventory: Inventory
   /**
@@ -82,6 +91,34 @@ function withLowStock(state: PrototypeState): PrototypeState {
       [base.lowStockMedicationId]: { ...level, remaining: LOW_STOCK_REMAINING },
     },
   }
+}
+
+/**
+ * A dose's state follows the simulated clock: once the clock reaches its time
+ * it is due, and it is complete once the user has confirmed it. Nothing else
+ * needs updating when time moves forward.
+ */
+function deriveStatus(dose: DoseRecord, clock: number): DoseStatus {
+  if (dose.confirmedAt) return 'completed'
+  return clock >= dose.scheduledMinutes ? 'due' : 'upcoming'
+}
+
+/** A dose whose time has come but which the user has not confirmed yet. */
+function unresolvedDose(state: PrototypeState): DoseRecord | null {
+  return (
+    [...state.doses]
+      .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
+      .find((dose) => !dose.confirmedAt && state.clock >= dose.scheduledMinutes) ?? null
+  )
+}
+
+/** The next routine time still ahead of the simulated clock. */
+function upcomingDose(state: PrototypeState): DoseRecord | null {
+  return (
+    [...state.doses]
+      .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
+      .find((dose) => dose.scheduledMinutes > state.clock && !dose.confirmedAt) ?? null
+  )
 }
 
 /** Nothing beyond Today and Help exists until the device has been stocked. */
@@ -178,8 +215,7 @@ export function usePrototype() {
   const openDose = useCallback((doseId: string) => {
     setState((current) => {
       const dose = current.doses.find((item) => item.id === doseId)
-      const awaitingConfirmation =
-        dose?.status === 'due' && dose.dispensedAt !== null && dose.confirmedAt === null
+      const awaitingConfirmation = dose?.dispensedAt != null && dose.confirmedAt == null
       return {
         ...current,
         screen: { name: awaitingConfirmation ? 'collect' : 'dose', doseId },
@@ -237,14 +273,36 @@ export function usePrototype() {
         ...current,
         clock: clockAfter,
         doses: current.doses.map((dose) =>
-          dose.id === doseId
-            ? { ...dose, status: 'completed' as const, confirmedAt: formatTime(clockAfter) }
-            : dose,
+          dose.id === doseId ? { ...dose, confirmedAt: formatTime(clockAfter) } : dose,
         ),
         screen: { name: 'complete', doseId },
         navReplace: true,
       }
       return current.stage === 'ready' ? withLowStock(next) : next
+    })
+  }, [])
+
+  /**
+   * "Skip the wait" — moves the simulated clock forward to the next routine
+   * time so a later dose can be tested without waiting hours.
+   *
+   * Only the clock moves. Doses are not touched, so nothing is duplicated,
+   * marked complete or dispensed by skipping; the later dose simply becomes
+   * due because the clock has reached it. Forward only, and only once the
+   * dose that is currently due has been dealt with.
+   */
+  const skipToNextDose = useCallback(() => {
+    setState((current) => {
+      if (unresolvedDose(current)) return current
+      const target = upcomingDose(current)
+      if (!target) return current
+      return {
+        ...current,
+        clock: target.scheduledMinutes,
+        // Already on Today; replacing keeps the clock change out of history.
+        screen: { name: 'today' },
+        navReplace: true,
+      }
     })
   }, [])
 
@@ -304,6 +362,16 @@ export function usePrototype() {
     }))
   }, [])
 
+  /** Facilitator recovery: move the simulated clock anywhere in the day. */
+  const setClock = useCallback((minutes: number) => {
+    setState((current) => ({
+      ...current,
+      clock: minutes,
+      screen: { name: 'today' },
+      navReplace: true,
+    }))
+  }, [])
+
   /** Between participants: a fresh empty device and a fresh low-stock pick. */
   const resetSession = useCallback(() => {
     setState((current) => newSession({ includeChange: current.change !== null }))
@@ -311,9 +379,12 @@ export function usePrototype() {
 
   // --- Derived --------------------------------------------------------------
 
-  const sortedDoses = useMemo(
-    () => [...state.doses].sort((a, b) => a.scheduledMinutes - b.scheduledMinutes),
-    [state.doses],
+  const sortedDoses: Dose[] = useMemo(
+    () =>
+      [...state.doses]
+        .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
+        .map((dose) => ({ ...dose, status: deriveStatus(dose, state.clock) })),
+    [state.doses, state.clock],
   )
 
   const activeDose = useMemo(
@@ -326,9 +397,12 @@ export function usePrototype() {
     [sortedDoses],
   )
 
+  /** Whether "skip the wait" is available right now. */
+  const canSkipAhead = activeDose === null && nextDose !== null
+
   const findDose = useCallback(
-    (doseId: string): Dose | null => state.doses.find((dose) => dose.id === doseId) ?? null,
-    [state.doses],
+    (doseId: string): Dose | null => sortedDoses.find((dose) => dose.id === doseId) ?? null,
+    [sortedDoses],
   )
 
   return {
@@ -337,6 +411,7 @@ export function usePrototype() {
     stocked: isStocked(state),
     activeDose,
     nextDose,
+    canSkipAhead,
     findDose,
     goTo,
     goToTab,
@@ -348,11 +423,13 @@ export function usePrototype() {
     startDispensing,
     finishDispensing,
     confirmTaken,
+    skipToNextDose,
     acknowledgeChange,
     requestRestock,
     setStage,
     setLowStockMedication,
     setIncludeChange,
+    setClock,
     resetSession,
   }
 }

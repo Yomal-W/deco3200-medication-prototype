@@ -1,4 +1,4 @@
-import type { Dose, Inventory, PrescriptionChange } from '../types'
+import type { DoseRecord, Inventory, PrescriptionChange } from '../types'
 import { getMedication, medications, user } from './medications'
 
 /**
@@ -17,8 +17,13 @@ export const LOW_STOCK_THRESHOLD = 5
 /** Doses left when a medication has gone low. */
 export const LOW_STOCK_REMAINING = 3
 
-/** Margaret's routine for the day, available once the device is stocked. */
-export function buildDoses(): Dose[] {
+/**
+ * Margaret's routine for the day, available once the device is stocked.
+ *
+ * Only the early-morning dose carries history, because it happened before
+ * the session starts. Everything else is decided by the simulated clock.
+ */
+export function buildDoses(): DoseRecord[] {
   return [
     {
       id: 'early-morning',
@@ -33,7 +38,6 @@ export function buildDoses(): Dose[] {
           instruction: 'Before breakfast, with water',
         },
       ],
-      status: 'completed',
       dispensedAt: '7:31 AM',
       confirmedAt: '7:33 AM',
     },
@@ -48,7 +52,6 @@ export function buildDoses(): Dose[] {
         { medicationId: 'ramipril', quantity: '1 tablet', instruction: 'With breakfast' },
         { medicationId: 'aspirin', quantity: '1 tablet', instruction: 'With breakfast' },
       ],
-      status: 'due',
       dispensedAt: null,
       confirmedAt: null,
     },
@@ -59,7 +62,6 @@ export function buildDoses(): Dose[] {
       periodLabel: 'Afternoon',
       scheduledMinutes: 13 * 60,
       items: [{ medicationId: 'metformin', quantity: '1 tablet', instruction: 'With lunch' }],
-      status: 'upcoming',
       dispensedAt: null,
       confirmedAt: null,
     },
@@ -81,7 +83,6 @@ export function buildDoses(): Dose[] {
           instruction: 'With your evening meal',
         },
       ],
-      status: 'upcoming',
       dispensedAt: null,
       confirmedAt: null,
     },

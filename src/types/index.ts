@@ -1,5 +1,5 @@
 /**
- * Shared types for the Steady home medication device prototype.
+ * Shared types for the MediFlow home medication device prototype.
  *
  * Everything here describes *mock* prototype state only. There is no backend,
  * no clinical logic and no real medication record behind any of it.
@@ -101,6 +101,13 @@ export interface Dose {
   /** Simulated time the *user* said they had taken it, e.g. "8:06 AM". */
   confirmedAt: string | null
 }
+
+/**
+ * A dose as it is stored. `status` is deliberately absent: it is derived from
+ * the simulated clock and the dose's own history, so moving the clock forward
+ * is the only thing needed to make a later routine become due.
+ */
+export type DoseRecord = Omit<Dose, 'status'>
 
 /** A pharmacist-verified change to the routine. */
 export interface PrescriptionChange {

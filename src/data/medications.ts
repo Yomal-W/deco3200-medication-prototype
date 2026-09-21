@@ -13,7 +13,7 @@ import type { Medication, Prescriber } from '../types'
 
 export const user = {
   firstName: 'Margaret',
-  deviceName: 'Steady',
+  deviceName: 'MediFlow',
   pharmacy: 'Riverbend Pharmacy',
   pharmacist: 'Ada Whitfield',
   /** When the routine on the device was last verified by the pharmacist. */

@@ -24,6 +24,9 @@ interface TodayScreenProps {
   onOpenDose: (doseId: string) => void
   onOpenChange: () => void
   onOpenWhatsNext: () => void
+  /** True once the dose that was due has been dealt with. */
+  canSkipAhead: boolean
+  onSkipToNext: () => void
 }
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
@@ -38,6 +41,8 @@ export function TodayScreen({
   onOpenDose,
   onOpenChange,
   onOpenWhatsNext,
+  canSkipAhead,
+  onSkipToNext,
 }: TodayScreenProps) {
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
 
@@ -123,19 +128,42 @@ export function TodayScreen({
               <h1 className="due-card__title">Nothing to take right now</h1>
               <p className="due-card__summary">
                 {nextDose
-                  ? `Your next medication is at ${formatTime(nextDose.scheduledMinutes)}.`
+                  ? `Your next medication is ${nextDose.periodLabel.toLowerCase()}, at ${formatTime(
+                      nextDose.scheduledMinutes,
+                    )}.`
                   : 'You have finished your medication for today.'}
               </p>
-              <Button
-                size="xl"
-                block
-                className="due-card__action"
-                icon="arrowRight"
-                iconPosition="end"
-                onClick={onOpenWhatsNext}
-              >
-                See what happens next
-              </Button>
+
+              {canSkipAhead && nextDose ? (
+                <div className="due-card__action skip-ahead">
+                  <p className="skip-ahead__note">
+                    You can skip the wait and go there now.
+                  </p>
+                  <Button
+                    size="xl"
+                    block
+                    icon="arrowRight"
+                    iconPosition="end"
+                    onClick={onSkipToNext}
+                  >
+                    Skip to {formatTime(nextDose.scheduledMinutes)}
+                  </Button>
+                  <Button variant="quiet" icon="clock" onClick={onOpenWhatsNext}>
+                    See the rest of today
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="xl"
+                  block
+                  className="due-card__action"
+                  icon="arrowRight"
+                  iconPosition="end"
+                  onClick={onOpenWhatsNext}
+                >
+                  See what happens next
+                </Button>
+              )}
             </Card>
           )}
 

@@ -23,6 +23,10 @@ const stages: { id: SessionStage; label: string; note: string }[] = [
 
 interface FacilitatorPanelProps {
   stage: SessionStage
+  /** Routine times in this session, for jumping the simulated clock. */
+  routineTimes: { id: string; label: string; time: string; minutes: number }[]
+  clock: number
+  onSetClock: (minutes: number) => void
   lowStockMedicationId: string
   includeChange: boolean
   onSetStage: (stage: SessionStage) => void
@@ -41,6 +45,9 @@ interface FacilitatorPanelProps {
  */
 export function FacilitatorPanel({
   stage,
+  routineTimes,
+  clock,
+  onSetClock,
   lowStockMedicationId,
   includeChange,
   onSetStage,
@@ -113,6 +120,30 @@ export function FacilitatorPanel({
             ))}
           </div>
         </div>
+
+        {routineTimes.length > 0 ? (
+          <div>
+            <p className="facilitator__section-label">Jump to a routine time</p>
+            <p className="facilitator__readout">
+              Participants can skip forward from Today on their own. These are for recovery.
+            </p>
+            <div className="facilitator__chips">
+              {routineTimes.map((routine) => (
+                <button
+                  key={routine.id}
+                  type="button"
+                  className={`facilitator__chip${
+                    routine.minutes === clock ? ' is-active' : ''
+                  }`}
+                  aria-pressed={routine.minutes === clock}
+                  onClick={() => onSetClock(routine.minutes)}
+                >
+                  {routine.label} · {routine.time}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div>
           <p className="facilitator__section-label">Low-stock medication</p>

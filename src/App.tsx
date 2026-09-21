@@ -40,6 +40,7 @@ function App() {
     navReplace,
     activeDose,
     nextDose,
+    canSkipAhead,
     findDose,
     goTo,
     goToTab,
@@ -51,11 +52,13 @@ function App() {
     startDispensing,
     finishDispensing,
     confirmTaken,
+    skipToNextDose,
     acknowledgeChange,
     requestRestock,
     setStage,
     setLowStockMedication,
     setIncludeChange,
+    setClock,
     resetSession,
   } = usePrototype()
 
@@ -248,6 +251,8 @@ function App() {
             onOpenDose={openDose}
             onOpenChange={() => goTo({ name: 'change' })}
             onOpenWhatsNext={() => goTo({ name: 'whats-next' })}
+            canSkipAhead={canSkipAhead}
+            onSkipToNext={skipToNextDose}
           />
         )
     }
@@ -291,6 +296,17 @@ function App() {
       {facilitatorOpen ? (
         <FacilitatorPanel
           stage={stage}
+          clock={clock}
+          routineTimes={doses.map((dose) => ({
+            id: dose.id,
+            label: dose.periodLabel,
+            time: formatTime(dose.scheduledMinutes),
+            minutes: dose.scheduledMinutes,
+          }))}
+          onSetClock={(minutes) => {
+            setClock(minutes)
+            setFacilitatorOpen(false)
+          }}
           lowStockMedicationId={lowStockMedicationId}
           includeChange={change !== null}
           onSetStage={(next) => {

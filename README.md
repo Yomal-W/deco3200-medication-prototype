@@ -1,8 +1,8 @@
-# Steady — Home Medication Device (Prototype)
+# MediFlow — Home Medication Device (Prototype)
 
 Interactive prototype for **DECO3200**, University of Sydney.
 
-`Steady` is the touchscreen interface of a proposed **pharmacist-connected home
+`MediFlow` is the touchscreen interface of a proposed **pharmacist-connected home
 medication device**. The device receives a pharmacist-verified routine and
 presents/dispenses the correct scheduled medication at the right time, so an
 older adult can keep managing their medication independently.
@@ -54,9 +54,16 @@ facilitator input:
 
 | Stage | What the participant does |
 | --- | --- |
-| **1. Empty** | Steady has nothing in it. They load the pharmacy pack and the six medications appear. |
+| **1. Empty** | MediFlow has nothing in it. They load the pharmacy pack and the six medications appear. |
 | **2. Ready** | Today is now populated. They complete the morning routine. |
 | **3. Low stock** | Confirming the morning dose is what reveals that one medication has run low. They find it in Medications and ask the pharmacy to restock. |
+
+Because a session cannot wait several hours for the afternoon and evening
+routines, Today offers **"Skip to 1:00 PM"** once the dose that was due has
+been completed. It moves the simulated clock to the next routine time and
+nothing else — no dose is dispensed, completed or duplicated by skipping, and
+earlier history stays exactly as it was recorded. It only ever moves forward,
+and it is hidden while a dose is still waiting to be dealt with.
 
 Which medication runs low is **picked at random once per session** and then held
 in state, so it never changes as the participant navigates. A reset picks a new

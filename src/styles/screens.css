@@ -1087,15 +1087,16 @@
     flex: 1;
   }
 
-  /* The extra height becomes breathing room above the action rather than
-     stretched content, so the two panels finish on the same line. */
+  /* The panels still finish on the same line, but the action stays directly
+     under the content it belongs to. Anchoring it to the bottom pushed it off
+     screen once the routine filled up with completed history. */
   .due-card--fill {
     display: flex;
     flex-direction: column;
   }
 
   .due-card--fill .due-card__action {
-    margin-top: auto;
+    margin-bottom: auto;
   }
 }
 
@@ -1282,4 +1283,23 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-text-muted);
+}
+
+/* --- Skip the wait (user-testing convenience, in plain language) ---------- */
+
+.skip-ahead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.skip-ahead__note {
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.skip-ahead .btn--quiet {
+  min-height: 3rem;
 }

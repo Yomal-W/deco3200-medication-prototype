@@ -3,7 +3,7 @@ import { TabletShape } from './TabletShape'
 import { stockRatio } from '../utils/stock'
 
 /**
- * The medication cartridge inside Steady, drawn as a physical container
+ * The medication cartridge inside MediFlow, drawn as a physical container
  * rather than a progress bar: a see-through tube with the medication stacked
  * in the bottom of it.
  *
