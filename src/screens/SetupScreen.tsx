@@ -32,7 +32,7 @@ export function SetupScreen({ onStartLoading, onBack }: SetupScreenProps) {
             <span className="step__number" aria-hidden="true">
               1
             </span>
-            <span className="step__text">Open the door on the front of the device.</span>
+            <span className="step__text">Open the door on the back of the device.</span>
           </li>
           <li className="step">
             <span className="step__number" aria-hidden="true">
