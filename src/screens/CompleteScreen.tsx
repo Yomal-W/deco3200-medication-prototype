@@ -9,10 +9,17 @@ interface CompleteScreenProps {
   dose: Dose
   onWhatsNext: () => void
   onBackToToday: () => void
+  /** Set when a travel plan was waiting on this dose. */
+  onResumeTravel?: () => void
 }
 
 /** Strong, calm success state after the user confirms they have taken a dose. */
-export function CompleteScreen({ dose, onWhatsNext, onBackToToday }: CompleteScreenProps) {
+export function CompleteScreen({
+  dose,
+  onWhatsNext,
+  onBackToToday,
+  onResumeTravel,
+}: CompleteScreenProps) {
   return (
     <div className="flow">
       <Card tone="success" className="hero-status hero-status--success">
@@ -41,9 +48,15 @@ export function CompleteScreen({ dose, onWhatsNext, onBackToToday }: CompleteScr
       </Card>
 
       <div className="screen-actions">
-        <Button size="xl" icon="arrowRight" iconPosition="end" onClick={onWhatsNext}>
-          What&rsquo;s next?
-        </Button>
+        {onResumeTravel ? (
+          <Button size="xl" icon="suitcase" onClick={onResumeTravel}>
+            Continue travel plan
+          </Button>
+        ) : (
+          <Button size="xl" icon="arrowRight" iconPosition="end" onClick={onWhatsNext}>
+            What&rsquo;s next?
+          </Button>
+        )}
         <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
           Back to today
         </Button>

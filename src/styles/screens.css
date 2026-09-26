@@ -1329,9 +1329,23 @@
   box-shadow: var(--shadow-card);
 }
 
-.away-option:active {
+.away-option:active:not(:disabled) {
   background: var(--color-surface-accent);
   border-color: var(--color-accent);
+}
+
+/* Unavailable choices stay readable; the reason is given in words. */
+.away-option:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+  box-shadow: none;
+}
+
+.away-option:disabled .away-option__count {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-muted);
 }
 
 .away-option__body {
@@ -1379,9 +1393,106 @@
   color: var(--color-heading);
 }
 
-.away-banner__actions,
+.away-card__action,
 .away-entry__action {
   margin-top: var(--space-5);
+}
+
+.away-card__note {
+  margin-top: var(--space-5);
+}
+
+.away-eyebrow {
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-text);
+}
+
+/* Headings receive focus when a travel step changes; the move is announced,
+   not drawn. */
+.flow [tabindex='-1']:focus {
+  outline: none;
+}
+
+/* A note that carries its own action, e.g. "Get help". */
+.away-help {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.away-help > span {
+  flex: 1 1 16rem;
+}
+
+/* Three answers, each a full-size touch target, side by side when there is room. */
+.travel-report {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.away-report__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.away-report__head .section-title {
+  margin-bottom: var(--space-2);
+}
+
+.away-report__med {
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+.away-record {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.away-record .record-line__value {
+  font-weight: 650;
+}
+
+.away-outstanding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.away-outstanding__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-attention-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  text-align: left;
+  cursor: pointer;
+}
+
+.away-outstanding__row:active {
+  background: var(--color-attention-soft);
+}
+
+.away-outstanding__text {
+  flex: 1;
+  font-size: var(--fs-body);
+  font-weight: 700;
 }
 
 @media (max-width: 44rem) {
@@ -1391,6 +1502,20 @@
 }
 
 /* A simple phone, only to show that a reminder arrives there. */
+.phone-example {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.phone-example__label {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .phone {
   justify-self: center;
   width: min(100%, 20rem);
@@ -1436,12 +1561,6 @@
   font-size: var(--fs-meta);
   font-weight: 700;
   color: var(--color-accent-text);
-}
-
-.phone__when {
-  margin-left: auto;
-  font-weight: 400;
-  color: var(--color-text-muted);
 }
 
 .phone__title {

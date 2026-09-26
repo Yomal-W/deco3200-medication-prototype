@@ -9,6 +9,7 @@ import { usePrefersReducedMotion } from './state/usePrefersReducedMotion'
 import { usePrototype } from './state/usePrototype'
 import { hashToScreen, screenToHash } from './utils/routes'
 import { formatTime, greetingFor } from './utils/time'
+import { trayDose } from './utils/travel'
 import { TodayScreen } from './screens/TodayScreen'
 import { DoseScreen } from './screens/DoseScreen'
 import { DispensingScreen } from './screens/DispensingScreen'
@@ -36,7 +37,7 @@ function App() {
     restockRequestedAt,
     change,
     changeAcknowledgedAt,
-    away,
+    trip,
     clock,
     screen,
     navReplace,
@@ -56,8 +57,16 @@ function App() {
     confirmTaken,
     skipToNextDose,
     acknowledgeChange,
-    startAway,
-    endAway,
+    chooseAwayOption,
+    cancelAway,
+    startTravelPreparation,
+    startTravelDispensing,
+    finishTravelDispensing,
+    confirmTravelPacked,
+    leaveForTrip,
+    returnHome,
+    reportTravel,
+    finishReturnHome,
     requestRestock,
     setStage,
     setLowStockMedication,
@@ -137,6 +146,18 @@ function App() {
   }, [reduceMotion])
 
   const goHome = useCallback(() => goTo({ name: 'today' }), [goTo])
+  const openAway = useCallback(() => goTo({ name: 'away' }), [goTo])
+  const openHelp = useCallback(() => goToTab('help'), [goToTab])
+  const inTray = trayDose(doses)
+  // A trip waiting on a dose at the station, so it can be picked up again afterwards.
+  const tripWaiting = trip?.status === 'reviewing' || trip?.status === 'preparing'
+  // Doses from a finished trip that are still out of the station or uncertain.
+  const outstandingTravelDoses = doses.filter(
+    (dose) =>
+      dose.travel?.packedAt &&
+      (dose.travel.outcome === 'in-case' || dose.travel.outcome === 'unsure') &&
+      !trip?.doseIds.includes(dose.id),
+  )
   const openFacilitator = useCallback(() => setFacilitatorOpen(true), [])
   const closeFacilitator = useCallback(() => setFacilitatorOpen(false), [])
 
@@ -194,13 +215,32 @@ function App() {
       case 'dose': {
         const dose = findDose(screen.doseId)
         if (!dose) return null
-        return <DoseScreen dose={dose} onBack={goHome} onDispense={startDispensing} />
+        return (
+          <DoseScreen
+            dose={dose}
+            onBack={goHome}
+            onDispense={startDispensing}
+            trayDoseId={inTray?.id ?? null}
+            travelReportable={
+              dose.travel?.packedAt != null &&
+              !(trip?.status === 'preparing' && trip.doseIds.includes(dose.id))
+            }
+            onReport={reportTravel}
+            onOpenDose={openDose}
+            onOpenAway={openAway}
+            onGetHelp={openHelp}
+          />
+        )
       }
 
       case 'dispensing': {
         const dose = findDose(screen.doseId)
         if (!dose) return null
-        return <DispensingScreen dose={dose} onComplete={finishDispensing} />
+        return screen.forTravel ? (
+          <DispensingScreen dose={dose} onComplete={finishTravelDispensing} forTravel />
+        ) : (
+          <DispensingScreen dose={dose} onComplete={finishDispensing} />
+        )
       }
 
       case 'collect': {
@@ -217,6 +257,7 @@ function App() {
             dose={dose}
             onWhatsNext={() => goTo({ name: 'whats-next' })}
             onBackToToday={goHome}
+            onResumeTravel={tripWaiting ? openAway : undefined}
           />
         )
       }
@@ -245,13 +286,21 @@ function App() {
       case 'away':
         return (
           <AwayScreen
+            trip={trip}
             doses={doses}
-            activeDose={activeDose}
             clock={clock}
-            plan={away}
-            onConfirm={startAway}
-            onReturnHome={endAway}
+            onChooseOption={chooseAwayOption}
+            onCancel={cancelAway}
+            onStartPreparing={startTravelPreparation}
+            onDispense={startTravelDispensing}
+            onConfirmPacked={confirmTravelPacked}
+            onLeave={leaveForTrip}
+            onReturnHome={returnHome}
+            onReport={reportTravel}
+            onFinishReturn={finishReturnHome}
+            onOpenDose={openDose}
             onBackToToday={goHome}
+            onGetHelp={openHelp}
           />
         )
 
@@ -270,9 +319,10 @@ function App() {
             onOpenWhatsNext={() => goTo({ name: 'whats-next' })}
             canSkipAhead={canSkipAhead}
             onSkipToNext={skipToNextDose}
-            away={away}
-            onOpenAway={() => goTo({ name: 'away' })}
-            onReturnHome={endAway}
+            trip={trip}
+            outstandingTravelDoses={outstandingTravelDoses}
+            onOpenAway={openAway}
+            onReturnHome={returnHome}
           />
         )
     }

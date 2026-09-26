@@ -14,13 +14,16 @@ const steps = [
 interface DispensingScreenProps {
   dose: Dose
   onComplete: (doseId: string) => void
+  /** Releasing a dose for the travel case rather than for taking now. */
+  forTravel?: boolean
 }
 
 /**
  * Simulated dispensing. There is no hardware behind this — it is a timed
  * frontend state that always finishes on its own.
  */
-export function DispensingScreen({ dose, onComplete }: DispensingScreenProps) {
+export function DispensingScreen({ dose, onComplete, forTravel = false }: DispensingScreenProps) {
+  const title = forTravel ? 'Preparing your travel dose' : 'Preparing your medication'
   const reduceMotion = usePrefersReducedMotion()
   const totalMs = reduceMotion ? 1200 : 3400
   const [step, setStep] = useState(0)
@@ -37,7 +40,7 @@ export function DispensingScreen({ dose, onComplete }: DispensingScreenProps) {
 
   return (
     <div className="dispensing">
-      <h1 className="dispensing__title">Preparing your medication</h1>
+      <h1 className="dispensing__title">{title}</h1>
 
       <DeviceGraphic
         appearances={dose.items.map((item) => getMedication(item.medicationId).appearance)}
@@ -50,7 +53,7 @@ export function DispensingScreen({ dose, onComplete }: DispensingScreenProps) {
       <div
         className="progress"
         role="progressbar"
-        aria-label="Preparing your medication"
+        aria-label={title}
         aria-valuetext={steps[step]}
       >
         <span className="progress__bar" style={{ animationDuration: `${totalMs}ms` }} />

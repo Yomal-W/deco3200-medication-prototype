@@ -40,6 +40,7 @@ export function buildDoses(): DoseRecord[] {
       ],
       dispensedAt: '7:31 AM',
       confirmedAt: '7:33 AM',
+      travel: null,
     },
     {
       id: 'morning',
@@ -54,6 +55,7 @@ export function buildDoses(): DoseRecord[] {
       ],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
     {
       id: 'afternoon',
@@ -64,6 +66,7 @@ export function buildDoses(): DoseRecord[] {
       items: [{ medicationId: 'metformin', quantity: '1 tablet', instruction: 'With lunch' }],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
     {
       id: 'evening',
@@ -85,6 +88,7 @@ export function buildDoses(): DoseRecord[] {
       ],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
   ]
 }
@@ -142,5 +146,5 @@ export const REMINDER_LEAD_MINUTES = 20
 export const awayOptions: AwayOption[] = [
   { id: 'few-hours', label: 'A few hours', detail: 'About 3 hours', minutes: 3 * 60 },
   { id: 'half-day', label: 'Half the day', detail: 'About 6 hours', minutes: 6 * 60 },
-  { id: 'rest-of-day', label: 'The rest of today', detail: 'About 12 hours', minutes: 12 * 60 },
+  { id: 'rest-of-day', label: 'The rest of today', detail: 'Until the end of the day', minutes: null },
 ]

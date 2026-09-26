@@ -9,6 +9,7 @@ import type {
   Screen,
   SessionStage,
   TabName,
+  TravelOutcome,
 } from '../types'
 import { findMedication } from '../data/medications'
 import {
@@ -21,11 +22,21 @@ import {
   pickLowStockMedicationId,
 } from '../data/session'
 import { formatTime } from '../utils/time'
-
-/** Simulated minutes between pressing Dispense and the tray being ready. */
-const DISPENSE_MINUTES = 2
-/** Simulated minutes between collecting and confirming. */
-const CONFIRM_MINUTES = 2
+import { activeTrip, isTaken, trayDose } from '../utils/travel'
+import {
+  arriveHome,
+  canDispenseAtHome,
+  canDispenseForTravel,
+  cancelTrip,
+  chooseTripLength,
+  confirmPacked,
+  confirmTakenAtHome,
+  dispenseDose,
+  finishReturn,
+  leaveHome,
+  reportTravelDose,
+  startPreparing,
+} from './transitions'
 
 interface PrototypeState {
   stage: SessionStage
@@ -41,8 +52,8 @@ interface PrototypeState {
   restockRequestedAt: string | null
   change: PrescriptionChange | null
   changeAcknowledgedAt: string | null
-  /** Set while the user is away from the medication station. */
-  away: AwayPlan | null
+  /** Every trip this session. At most one is unfinished at a time. */
+  trips: AwayPlan[]
   clock: number
   screen: Screen
   /** Whether the next URL sync should replace the history entry rather than add one. */
@@ -65,7 +76,7 @@ function newSession(options: SessionOptions = {}): PrototypeState {
     restockRequestedAt: null,
     change: options.includeChange ? buildPrescriptionChange() : null,
     changeAcknowledgedAt: null,
-    away: null,
+    trips: [],
     clock: SESSION_START_MINUTES,
     screen: { name: 'today' },
     navReplace: true,
@@ -104,7 +115,7 @@ function withLowStock(state: PrototypeState): PrototypeState {
  * needs updating when time moves forward.
  */
 function deriveStatus(dose: DoseRecord, clock: number): DoseStatus {
-  if (dose.confirmedAt) return 'completed'
+  if (isTaken(dose)) return 'completed'
   return clock >= dose.scheduledMinutes ? 'due' : 'upcoming'
 }
 
@@ -113,7 +124,9 @@ function unresolvedDose(state: PrototypeState): DoseRecord | null {
   return (
     [...state.doses]
       .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
-      .find((dose) => !dose.confirmedAt && state.clock >= dose.scheduledMinutes) ?? null
+      .find(
+        (dose) => !dose.travel && !dose.confirmedAt && state.clock >= dose.scheduledMinutes,
+      ) ?? null
   )
 }
 
@@ -122,7 +135,9 @@ function upcomingDose(state: PrototypeState): DoseRecord | null {
   return (
     [...state.doses]
       .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
-      .find((dose) => dose.scheduledMinutes > state.clock && !dose.confirmedAt) ?? null
+      .find(
+        (dose) => !dose.travel && dose.scheduledMinutes > state.clock && !dose.confirmedAt,
+      ) ?? null
   )
 }
 
@@ -160,7 +175,10 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
   if (!dose) return { name: 'today' }
 
   // The dispensing animation is never re-entered from history.
-  if (next.name === 'dispensing') return { name: 'dose', doseId: dose.id }
+  if (next.name === 'dispensing') {
+    return next.forTravel ? { name: 'away' } : { name: 'dose', doseId: dose.id }
+  }
+  if (next.name === 'collect' && dose.travel) return { name: 'dose', doseId: dose.id }
   if (next.name === 'collect' && !dose.dispensedAt) return { name: 'dose', doseId: dose.id }
   if (next.name === 'complete' && !dose.confirmedAt) return { name: 'dose', doseId: dose.id }
   return next
@@ -222,7 +240,9 @@ export function usePrototype() {
   const openDose = useCallback((doseId: string) => {
     setState((current) => {
       const dose = current.doses.find((item) => item.id === doseId)
-      const awaitingConfirmation = dose?.dispensedAt != null && dose.confirmedAt == null
+      // Travel doses are collected for the travel case, never confirmed as taken here.
+      const awaitingConfirmation =
+        dose?.dispensedAt != null && dose.confirmedAt == null && dose.travel == null
       return {
         ...current,
         screen: { name: awaitingConfirmation ? 'collect' : 'dose', doseId },
@@ -232,39 +252,24 @@ export function usePrototype() {
   }, [])
 
   const startDispensing = useCallback((doseId: string) => {
-    setState((current) => ({
-      ...current,
-      screen: { name: 'dispensing', doseId },
-      navReplace: false,
-    }))
+    setState((current) =>
+      canDispenseAtHome(current, doseId)
+        ? { ...current, screen: { name: 'dispensing', doseId }, navReplace: false }
+        : current,
+    )
   }, [])
 
   /**
    * The animation finished: the device has released the medication, and its
-   * own stock has gone down by what it released.
+   * own stock has gone down by what it released. A second call for the same
+   * dose (a remount, a repeated callback) changes nothing.
    */
   const finishDispensing = useCallback((doseId: string) => {
-    setState((current) => {
-      const clockAfter = current.clock + DISPENSE_MINUTES
-      const dose = current.doses.find((item) => item.id === doseId)
-      const inventory = { ...current.inventory }
-      dose?.items.forEach((item) => {
-        const level = inventory[item.medicationId]
-        if (level) {
-          inventory[item.medicationId] = { ...level, remaining: Math.max(0, level.remaining - 1) }
-        }
-      })
-      return {
-        ...current,
-        clock: clockAfter,
-        inventory,
-        doses: current.doses.map((item) =>
-          item.id === doseId ? { ...item, dispensedAt: formatTime(clockAfter) } : item,
-        ),
-        screen: { name: 'collect', doseId },
-        navReplace: true,
-      }
-    })
+    setState((current) => ({
+      ...dispenseDose(current, doseId, false),
+      screen: { name: 'collect', doseId },
+      navReplace: true,
+    }))
   }, [])
 
   /**
@@ -275,13 +280,10 @@ export function usePrototype() {
    */
   const confirmTaken = useCallback((doseId: string) => {
     setState((current) => {
-      const clockAfter = current.clock + CONFIRM_MINUTES
+      const confirmed = confirmTakenAtHome(current, doseId)
+      if (confirmed === current) return current
       const next: PrototypeState = {
-        ...current,
-        clock: clockAfter,
-        doses: current.doses.map((dose) =>
-          dose.id === doseId ? { ...dose, confirmedAt: formatTime(clockAfter) } : dose,
-        ),
+        ...confirmed,
         screen: { name: 'complete', doseId },
         navReplace: true,
       }
@@ -300,7 +302,7 @@ export function usePrototype() {
    */
   const skipToNextDose = useCallback(() => {
     setState((current) => {
-      if (unresolvedDose(current)) return current
+      if (unresolvedDose(current) || trayDose(current.doses)) return current
       const target = upcomingDose(current)
       if (!target) return current
       return {
@@ -322,38 +324,71 @@ export function usePrototype() {
 
   // --- Away from home ------------------------------------------------------
 
-  /**
-   * The user confirms a travel plan. The station works out which doses fall
-   * while they are out; the user prepares those in their travel case.
-   */
-  const startAway = useCallback((optionId: string) => {
+  const chooseAwayOption = useCallback((optionId: string) => {
+    const option = awayOptions.find((item) => item.id === optionId)
+    if (!option) return
+    setState((current) => chooseTripLength(current, option))
+  }, [])
+
+  const cancelAway = useCallback(() => {
+    setState((current) => cancelTrip(current))
+  }, [])
+
+  const startTravelPreparation = useCallback(() => {
     setState((current) => {
-      const option = awayOptions.find((item) => item.id === optionId)
-      if (!option) return current
-      const leavesAt = current.clock
-      const returnsBy = current.clock + option.minutes
-      const doseIds = [...current.doses]
-        .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
-        .filter(
-          (dose) =>
-            !dose.confirmedAt && dose.scheduledMinutes > leavesAt && dose.scheduledMinutes <= returnsBy,
-        )
-        .map((dose) => dose.id)
-      return {
-        ...current,
-        away: { optionId, leavesAt, returnsBy, doseIds, confirmedAt: formatTime(current.clock) },
-      }
+      const option = awayOptions.find((item) => item.id === activeTrip(current.trips)?.optionId)
+      return option ? startPreparing(current, option) : current
     })
   }, [])
 
-  /** Back home: the medication station routine carries on as normal. */
-  const endAway = useCallback(() => {
+  /** The station releases the next travel dose, using the normal dispensing animation. */
+  const startTravelDispensing = useCallback((doseId: string) => {
+    setState((current) =>
+      canDispenseForTravel(current, doseId)
+        ? { ...current, screen: { name: 'dispensing', doseId, forTravel: true }, navReplace: false }
+        : current,
+    )
+  }, [])
+
+  const finishTravelDispensing = useCallback((doseId: string) => {
     setState((current) => ({
-      ...current,
-      away: null,
-      screen: { name: 'today' },
-      navReplace: false,
+      ...dispenseDose(current, doseId, true),
+      screen: { name: 'away' },
+      navReplace: true,
     }))
+  }, [])
+
+  const confirmTravelPacked = useCallback((doseId: string) => {
+    setState((current) => confirmPacked(current, doseId))
+  }, [])
+
+  const leaveForTrip = useCallback(() => {
+    setState((current) => leaveHome(current))
+  }, [])
+
+  /**
+   * "I'm back home" opens the report step; it never just clears the trip.
+   * With nothing packed there is nothing to report, so it goes back to Today.
+   */
+  const returnHome = useCallback(() => {
+    setState((current) => {
+      const next = arriveHome(current)
+      if (next === current) return current
+      const reporting = activeTrip(next.trips)?.status === 'returning'
+      const screen: Screen = reporting ? { name: 'away' } : { name: 'today' }
+      return { ...next, screen, navReplace: current.screen.name === screen.name }
+    })
+  }, [])
+
+  const reportTravel = useCallback((doseId: string, outcome: TravelOutcome) => {
+    setState((current) => reportTravelDose(current, doseId, outcome))
+  }, [])
+
+  const finishReturnHome = useCallback(() => {
+    setState((current) => {
+      const next = finishReturn(current)
+      return next === current ? current : { ...next, screen: { name: 'today' }, navReplace: false }
+    })
   }, [])
 
   // --- Activity 3: restocking ----------------------------------------------
@@ -430,18 +465,23 @@ export function usePrototype() {
     [state.doses, state.clock],
   )
 
+  // Doses in the travel case are never offered by the station again, so they
+  // are left out of what the station is doing now and next.
   const activeDose = useMemo(
-    () => sortedDoses.find((dose) => dose.status === 'due' || dose.status === 'missed') ?? null,
+    () =>
+      sortedDoses.find(
+        (dose) => !dose.travel && (dose.status === 'due' || dose.status === 'missed'),
+      ) ?? null,
     [sortedDoses],
   )
 
   const nextDose = useMemo(
-    () => sortedDoses.find((dose) => dose.status === 'upcoming') ?? null,
+    () => sortedDoses.find((dose) => !dose.travel && dose.status === 'upcoming') ?? null,
     [sortedDoses],
   )
 
-  /** Whether "skip the wait" is available right now. */
-  const canSkipAhead = activeDose === null && nextDose !== null
+  /** Whether "skip the wait" is available right now. Never with something in the tray. */
+  const canSkipAhead = activeDose === null && nextDose !== null && trayDose(state.doses) === null
 
   const findDose = useCallback(
     (doseId: string): Dose | null => sortedDoses.find((dose) => dose.id === doseId) ?? null,
@@ -468,8 +508,17 @@ export function usePrototype() {
     confirmTaken,
     skipToNextDose,
     acknowledgeChange,
-    startAway,
-    endAway,
+    trip: activeTrip(state.trips),
+    chooseAwayOption,
+    cancelAway,
+    startTravelPreparation,
+    startTravelDispensing,
+    finishTravelDispensing,
+    confirmTravelPacked,
+    leaveForTrip,
+    returnHome,
+    reportTravel,
+    finishReturnHome,
     requestRestock,
     setStage,
     setLowStockMedication,

@@ -1,16 +1,26 @@
-import type { Dose } from '../types'
+import type { Dose, TravelOutcome } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { Icon } from '../components/Icon'
 import { MedicationItem } from '../components/MedicationItem'
+import { TravelReport } from '../components/TravelReport'
 import { user } from '../data/medications'
+import { travelRecordLines } from '../utils/dose'
 import { formatTime } from '../utils/time'
 
 interface DoseScreenProps {
   dose: Dose
   onBack: () => void
   onDispense: (doseId: string) => void
+  /** Another dose waiting in the tray. Only one dose is released at a time. */
+  trayDoseId: string | null
+  /** A packed travel dose the user can report on now (not mid-preparation). */
+  travelReportable: boolean
+  onReport: (doseId: string, outcome: TravelOutcome) => void
+  onOpenDose: (doseId: string) => void
+  onOpenAway: () => void
+  onGetHelp: () => void
 }
 
 /**
@@ -20,8 +30,20 @@ interface DoseScreenProps {
  * Laid out so that on a landscape tablet the participant sees what is due, the
  * medication list and the Dispense button without scrolling.
  */
-export function DoseScreen({ dose, onBack, onDispense }: DoseScreenProps) {
-  const readyToDispense = dose.status === 'due' && !dose.dispensedAt
+export function DoseScreen({
+  dose,
+  onBack,
+  onDispense,
+  trayDoseId,
+  travelReportable,
+  onReport,
+  onOpenDose,
+  onOpenAway,
+  onGetHelp,
+}: DoseScreenProps) {
+  const trayBusy = trayDoseId !== null && trayDoseId !== dose.id
+  const isDue = dose.status === 'due' && !dose.dispensedAt && !dose.travel
+  const readyToDispense = isDue && !trayBusy
   const scheduledAt = formatTime(dose.scheduledMinutes)
   const instruction = dose.items[0]?.instruction
 
@@ -38,7 +60,7 @@ export function DoseScreen({ dose, onBack, onDispense }: DoseScreenProps) {
         <DoseStatusPill dose={dose} />
       </div>
 
-      {dose.status === 'completed' ? (
+      {dose.status === 'completed' && !dose.travel ? (
         <Card tone="success">
           <div className="record-list record-list--wide">
             <p className="record-line">
@@ -79,7 +101,79 @@ export function DoseScreen({ dose, onBack, onDispense }: DoseScreenProps) {
         </span>
       </p>
 
-      {readyToDispense ? (
+      {dose.travel ? (
+        <>
+          <Card tone={dose.status === 'completed' ? 'success' : 'default'}>
+            <div className="record-list record-list--wide">
+              {travelRecordLines(dose).map((line) => (
+                <p key={line.text} className="record-line">
+                  <Icon name={line.icon} size={24} className="record-line__icon" />
+                  <span className="record-line__value">{line.text}</span>
+                </p>
+              ))}
+            </div>
+          </Card>
+
+          <p className="flow__note">
+            <Icon name="info" size={20} className="flow__note-icon" />
+            <span>
+              {dose.travel.outcome === 'taken'
+                ? 'You told us you took this from your travel case. No exact time of taking is recorded.'
+                : `This dose left ${user.deviceName} for your travel case, so it will not be dispensed again.`}
+            </span>
+          </p>
+
+          {travelReportable && dose.travel.outcome !== 'taken' ? (
+            <Card>
+              <h2 className="section-title">What happened to this dose?</h2>
+              <TravelReport
+                label="What happened to this dose?"
+                outcome={dose.travel.outcome}
+                onReport={(outcome) => onReport(dose.id, outcome)}
+              />
+            </Card>
+          ) : null}
+
+          {dose.travel.outcome === 'unsure' ? (
+            <div className="flow__note away-help">
+              <Icon name="help" size={20} className="flow__note-icon" />
+              <span>
+                Not sure? Check your travel case. If you still can&rsquo;t tell, your pharmacist
+                can help.
+              </span>
+              <Button variant="secondary" icon="phone" onClick={onGetHelp}>
+                Get help
+              </Button>
+            </div>
+          ) : null}
+
+          <div className="screen-actions">
+            {dose.travel.packedAt ? null : (
+              <Button size="xl" icon="suitcase" onClick={onOpenAway}>
+                Continue travel plan
+              </Button>
+            )}
+            <Button size="xl" variant="secondary" icon="home" onClick={onBack}>
+              Back to today
+            </Button>
+          </div>
+        </>
+      ) : isDue && trayBusy ? (
+        <>
+          <div className="flow__note away-help">
+            <Icon name="alert" size={20} className="flow__note-icon" />
+            <span>Another dose is still in the tray. Deal with it before dispensing this one.</span>
+          </div>
+          <div className="screen-actions">
+            <Button size="xl" icon="arrowRight" iconPosition="end" onClick={() => onOpenDose(trayDoseId!)}>
+              Go to the tray
+            </Button>
+            <Button size="xl" variant="secondary" icon="home" onClick={onBack}>
+              Back to today
+            </Button>
+          </div>
+        </>
+      ) : readyToDispense ? (
         <>
           <p className="flow__note">
             <Icon name="info" size={20} className="flow__note-icon" />

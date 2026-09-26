@@ -9,8 +9,8 @@ import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
 import { StatusPill } from '../components/StatusPill'
 import { user } from '../data/medications'
-import { REMINDER_LEAD_MINUTES } from '../data/session'
 import { doseCountLabel, doseMedicationNames, doseSummary } from '../utils/dose'
+import { returnLabel } from '../utils/travel'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
 interface TodayScreenProps {
@@ -28,8 +28,10 @@ interface TodayScreenProps {
   /** True once the dose that was due has been dealt with. */
   canSkipAhead: boolean
   onSkipToNext: () => void
-  /** Set while the user is away from the medication station. */
-  away: AwayPlan | null
+  /** The unfinished trip, if any. */
+  trip: AwayPlan | null
+  /** Doses from an earlier trip still in the travel case or not yet known. */
+  outstandingTravelDoses: Dose[]
   onOpenAway: () => void
   onReturnHome: () => void
 }
@@ -48,7 +50,8 @@ export function TodayScreen({
   onOpenWhatsNext,
   canSkipAhead,
   onSkipToNext,
-  away,
+  trip,
+  outstandingTravelDoses,
   onOpenAway,
   onReturnHome,
 }: TodayScreenProps) {
@@ -75,33 +78,83 @@ export function TodayScreen({
         />
       ) : null}
 
-      {away ? (
+      {trip ? (
         <Card tone="accent" raised>
           <div className="next-up">
             <span className="next-up__icon" aria-hidden="true">
-              <Icon name="suitcase" size={26} />
+              <Icon name={trip.status === 'returning' ? 'home' : 'suitcase'} size={26} />
             </span>
             <div className="next-up__body">
-              <p className="next-up__label">Away from home</p>
-              <p className="next-up__value">
-                Back by about {formatTime(away.returnsBy)} ·{' '}
-                {doseCountLabel(away.doseIds.length).toLowerCase()} in your travel case
-              </p>
-              <p className="next-up__detail">
-                {away.doseIds.length > 0
-                  ? `Your phone reminds you ${REMINDER_LEAD_MINUTES} minutes before each one.`
-                  : 'No medication is due while you are away.'}
-              </p>
+              {trip.status === 'away' ? (
+                <>
+                  <p className="next-up__label">Away from home</p>
+                  <p className="next-up__value">
+                    Back by {returnLabel(trip)} ·{' '}
+                    {doseCountLabel(trip.doseIds.length).toLowerCase()} packed
+                  </p>
+                </>
+              ) : trip.status === 'returning' ? (
+                <>
+                  <p className="next-up__label">Welcome back</p>
+                  <p className="next-up__value">Tell {user.deviceName} about your travel case</p>
+                </>
+              ) : (
+                <>
+                  <p className="next-up__label">Travel plan in progress</p>
+                  <p className="next-up__value">
+                    {trip.status === 'reviewing'
+                      ? 'Check the doses you’ll need'
+                      : 'Finish preparing your travel case'}
+                  </p>
+                </>
+              )}
             </div>
           </div>
-          <div className="screen-actions away-banner__actions">
-            <Button size="lg" icon="home" onClick={onReturnHome}>
-              I&rsquo;m back home
-            </Button>
-            <Button size="lg" variant="secondary" icon="suitcase" onClick={onOpenAway}>
-              View travel plan
-            </Button>
+          <div className="screen-actions away-card__action">
+            {trip.status === 'away' ? (
+              <>
+                <Button size="lg" variant="secondary" icon="home" onClick={onReturnHome}>
+                  I&rsquo;m back home
+                </Button>
+                <Button size="lg" variant="secondary" icon="suitcase" onClick={onOpenAway}>
+                  View travel plan
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="lg"
+                variant="secondary"
+                icon="arrowRight"
+                iconPosition="end"
+                onClick={onOpenAway}
+              >
+                {trip.status === 'returning' ? 'Finish coming home' : 'Continue travel plan'}
+              </Button>
+            )}
           </div>
+        </Card>
+      ) : null}
+
+      {outstandingTravelDoses.length > 0 ? (
+        <Card tone="attention">
+          <h2 className="section-title">From your travel case</h2>
+          <ul className="away-outstanding">
+            {outstandingTravelDoses.map((dose) => (
+              <li key={dose.id}>
+                <button
+                  type="button"
+                  className="away-outstanding__row"
+                  onClick={() => onOpenDose(dose.id)}
+                >
+                  <span className="away-outstanding__text">
+                    {formatTime(dose.scheduledMinutes)} · {dose.title}
+                  </span>
+                  <DoseStatusPill dose={dose} />
+                  <Icon name="arrowRight" size={22} />
+                </button>
+              </li>
+            ))}
+          </ul>
         </Card>
       ) : null}
 
@@ -159,17 +212,23 @@ export function TodayScreen({
             <Card tone="success" raised className="due-card due-card--fill">
               <div className="due-card__top">
                 <StatusPill tone="success" icon="checkCircle">
-                  Up to date
+                  {outstandingTravelDoses.length > 0 ? 'Station up to date' : 'Up to date'}
                 </StatusPill>
                 <Icon name="checkCircle" size={30} />
               </div>
-              <h1 className="due-card__title">Nothing to take right now</h1>
+              <h1 className="due-card__title">
+                {outstandingTravelDoses.length > 0
+                  ? 'Nothing to dispense right now'
+                  : 'Nothing to take right now'}
+              </h1>
               <p className="due-card__summary">
                 {nextDose
                   ? `Your next medication is ${nextDose.periodLabel.toLowerCase()}, at ${formatTime(
                       nextDose.scheduledMinutes,
                     )}.`
-                  : 'You have finished your medication for today.'}
+                  : outstandingTravelDoses.length > 0
+                    ? `${user.deviceName} has nothing left to dispense today. Check the doses from your travel case.`
+                    : 'You have finished your medication for today.'}
               </p>
 
               {canSkipAhead && nextDose ? (
@@ -244,7 +303,7 @@ export function TodayScreen({
             />
           </Card>
 
-          {away ? null : (
+          {trip ? null : (
             <Card tone="sunken">
               <div className="next-up">
                 <span className="next-up__icon" aria-hidden="true">

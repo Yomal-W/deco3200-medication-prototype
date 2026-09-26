@@ -100,6 +100,26 @@ export interface Dose {
   dispensedAt: string | null
   /** Simulated time the *user* said they had taken it, e.g. "8:06 AM". */
   confirmedAt: string | null
+  /**
+   * Set only when the station dispensed this dose for the travel case rather
+   * than for taking at home. `dispensedAt` still holds when it was released.
+   */
+  travel: TravelDoseRecord | null
+}
+
+/** What the user reported about a dose that went out in the travel case. */
+export type TravelOutcome = 'taken' | 'in-case' | 'unsure'
+
+/**
+ * A dose that left the station in the travel case. Packing and taking are the
+ * user's own reports; neither is ever inferred.
+ */
+export interface TravelDoseRecord {
+  /** When the user confirmed they had packed it into the travel case. */
+  packedAt: string | null
+  outcome: TravelOutcome | null
+  /** When the user made that report. Never a time of taking. */
+  reportedAt: string | null
 }
 
 /**
@@ -165,22 +185,36 @@ export interface AwayOption {
   label: string
   /** e.g. "About 3 hours" */
   detail: string
-  /** Length of time away, in simulated minutes. */
-  minutes: number
+  /** Length of time away in simulated minutes, or null for the rest of today. */
+  minutes: number | null
 }
 
 /**
- * A confirmed period away from the medication station. The doses are fixed
- * when the plan is confirmed, so the travel case list never shifts afterwards.
+ * Where a trip is up to. Each stage is a separate, explicit user action:
+ *
+ *  reviewing  — a length of time is chosen; the doses needed are recalculated live
+ *  preparing  — doses are fixed; each is dispensed and packed one at a time
+ *  away       — the user said they are leaving
+ *  returning  — the user said they are home; packed doses are being reported
+ *  returned   — finished; kept for the record
  */
+export type TripStatus = 'reviewing' | 'preparing' | 'away' | 'returning' | 'returned'
+
+/** A period away from the medication station. */
 export interface AwayPlan {
+  id: string
   optionId: string
-  /** Simulated minutes when the user left and when they expect to be back. */
-  leavesAt: number
+  status: TripStatus
+  /**
+   * The travel window in simulated minutes. Only meaningful from `preparing`
+   * onwards; while reviewing it is recalculated from the clock.
+   */
+  startsAt: number
   returnsBy: number
-  /** Doses to prepare in the travel case, in time order. */
+  /** Doses to prepare, in time order. Fixed when preparation starts. */
   doseIds: string[]
-  confirmedAt: string
+  leftAt: string | null
+  returnedAt: string | null
 }
 
 /** Screens the participant can be on. Deliberately a small, flat set. */
@@ -193,7 +227,7 @@ export type Screen =
   | { name: 'medication'; medicationId: string }
   | { name: 'help' }
   | { name: 'dose'; doseId: string }
-  | { name: 'dispensing'; doseId: string }
+  | { name: 'dispensing'; doseId: string; forTravel?: boolean }
   | { name: 'collect'; doseId: string }
   | { name: 'complete'; doseId: string }
   | { name: 'whats-next' }
