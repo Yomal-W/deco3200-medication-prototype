@@ -26,6 +26,7 @@ import {
   travelWindow,
   unresolvedHomeDose,
 } from '../src/utils/travel.ts'
+import { routineProgress } from '../src/utils/dose.ts'
 
 const at = (hours: number, minutes = 0) => hours * 60 + minutes
 const option = (id: string) => awayOptions.find((item) => item.id === id)!
@@ -264,4 +265,18 @@ test('M. a reminder whose lead time has passed is reported as passed', () => {
     'taken',
   )
   assert.equal(reminderPreview(trip(allTaken), allTaken.doses, allTaken.clock, 20), null)
+})
+
+test('progress counts only doses the user said they took', () => {
+  const start = session()
+  assert.deepEqual(routineProgress(start.doses), { done: 1, total: 4 })
+  const dispensed = dispenseDose(start, 'morning', false)
+  assert.deepEqual(routineProgress(dispensed.doses), { done: 1, total: 4 }, 'dispensed is not done')
+  const taken = confirmTakenAtHome(dispensed, 'morning')
+  assert.deepEqual(routineProgress(taken.doses), { done: 2, total: 4 })
+
+  const packed = leaveHome(prepareAll(taken, 'half-day'))
+  assert.deepEqual(routineProgress(packed.doses), { done: 2, total: 4 }, 'packed is not done')
+  const reported = reportTravelDose(arriveHome(packed), 'afternoon', 'taken')
+  assert.deepEqual(routineProgress(reported.doses), { done: 3, total: 4 })
 })

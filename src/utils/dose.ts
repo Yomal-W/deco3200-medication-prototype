@@ -1,7 +1,8 @@
-import type { Dose } from '../types'
+import type { Dose, DoseRecord } from '../types'
 import type { IconName } from '../components/Icon'
 import { getMedication } from '../data/medications'
 import { countLabel, joinNames } from './time'
+import { isTaken } from './travel'
 
 /** "3 medications · Metformin, Ramipril and Aspirin" */
 export function doseSummary(dose: Dose): string {
@@ -39,4 +40,12 @@ export function travelRecordLines(dose: Dose): { icon: IconName; text: string }[
     lines.push({ icon: 'help', text: `Not sure if taken · told us ${dose.travel.reportedAt}` })
   }
   return lines
+}
+
+/**
+ * How far through today's routine the user is. Only doses the user has said
+ * they took count as done — never one that is dispensed, deferred or packed.
+ */
+export function routineProgress(doses: DoseRecord[]): { done: number; total: number } {
+  return { done: doses.filter(isTaken).length, total: doses.length }
 }

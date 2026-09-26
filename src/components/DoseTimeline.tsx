@@ -43,7 +43,9 @@ export function DoseTimeline({ doses, nextDoseId, activeDoseId, onSelect }: Dose
           <li key={dose.id}>
             <button
               type="button"
-              className={`timeline__row${dose.id === activeDoseId ? ' is-current' : ''}`}
+              className={`timeline__row${dose.id === activeDoseId ? ' is-current' : ''}${
+                dose.status === 'completed' ? ' timeline__row--completed' : ''
+              }`}
               onClick={() => onSelect(dose.id)}
             >
               <span className="timeline__time">{formatTime(dose.scheduledMinutes)}</span>

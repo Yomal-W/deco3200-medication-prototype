@@ -56,7 +56,7 @@ export function SetupLoadingScreen({ onComplete }: SetupLoadingScreenProps) {
         <span className="progress__bar" style={{ animationDuration: `${totalMs}ms` }} />
       </div>
 
-      <p className="text-muted">Please wait a moment.</p>
+      <p className="text-muted">Please wait. There is nothing to press.</p>
     </div>
   )
 }

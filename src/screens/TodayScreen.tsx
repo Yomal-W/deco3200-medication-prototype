@@ -7,9 +7,10 @@ import { DoseTimeline } from '../components/DoseTimeline'
 import { EmptyDeviceCard } from '../components/EmptyDeviceCard'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
+import { RoutineProgress } from '../components/RoutineProgress'
 import { StatusPill } from '../components/StatusPill'
 import { user } from '../data/medications'
-import { doseCountLabel, doseMedicationNames, doseSummary } from '../utils/dose'
+import { doseCountLabel, doseMedicationNames } from '../utils/dose'
 import { returnLabel } from '../utils/travel'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
@@ -207,6 +208,8 @@ export function TodayScreen({
                   <span>Dispensed at {activeDose.dispensedAt}. Waiting for you to confirm.</span>
                 </p>
               ) : null}
+
+              <RoutineProgress doses={doses} currentDoseId={activeDose.id} />
             </Card>
           ) : (
             <Card tone="success" raised className="due-card due-card--fill">
@@ -264,22 +267,6 @@ export function TodayScreen({
             </Card>
           )}
 
-          {activeDose && nextDose ? (
-            <Card tone="sunken" className="today__after">
-              <div className="next-up">
-                <span className="next-up__icon" aria-hidden="true">
-                  <Icon name="clock" size={24} />
-                </span>
-                <div className="next-up__body">
-                  <p className="next-up__label">After this</p>
-                  <p className="next-up__value">
-                    {formatTime(nextDose.scheduledMinutes)} · {nextDose.title}
-                  </p>
-                  <p className="next-up__detail">{doseSummary(nextDose)}</p>
-                </div>
-              </div>
-            </Card>
-          ) : null}
         </div>
 
         <div className="today__aside">

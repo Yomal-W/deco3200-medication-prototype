@@ -394,7 +394,7 @@ export function AwayScreen({
         <div className="flow flow--wide" ref={rootRef}>
           <div className="flow__intro">
             <div>
-              <p className="away-eyebrow">Preparing travel case · {progress}</p>
+              <p className="flow__eyebrow">Preparing travel case · {progress}</p>
               <h1 className="flow__title" tabIndex={-1}>
                 {doseHeading(dose)}
               </h1>
@@ -411,7 +411,10 @@ export function AwayScreen({
             <ol className="steps">
               <li className="step">
                 <span className="step__number" aria-hidden="true">1</span>
-                <span className="step__text">Press Dispense. {user.deviceName} releases this dose into the tray.</span>
+                <span className="step__text">
+                  Press <strong>Dispense for travel case</strong>. {user.deviceName} releases this
+                  dose into the tray.
+                </span>
               </li>
               <li className="step">
                 <span className="step__number" aria-hidden="true">2</span>
@@ -458,7 +461,7 @@ export function AwayScreen({
         <Card tone="accent" className="hero-status hero-status--accent hero-status--row">
           <MedicationTray items={dose.items} />
           <div className="hero-status__content">
-            <p className="away-eyebrow">Preparing travel case · {progress}</p>
+            <p className="flow__eyebrow">Preparing travel case · {progress}</p>
             <h1 className="hero-status__title" tabIndex={-1}>
               Pack your {formatTime(dose.scheduledMinutes)} dose
             </h1>
@@ -481,7 +484,10 @@ export function AwayScreen({
 
         <p className="flow__note">
           <Icon name="info" size={20} className="flow__note-icon" />
-          <span>This dose is for {formatTime(dose.scheduledMinutes)}. Packing it does not mark it as taken.</span>
+          <span>
+            Press <strong>I&rsquo;ve packed this dose</strong> once it is in the case. This dose is
+            for {formatTime(dose.scheduledMinutes)}; packing it does not mark it as taken.
+          </span>
         </p>
 
         <div className="screen-actions">

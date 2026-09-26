@@ -174,7 +174,14 @@ function App() {
         return <SetupLoadingScreen onComplete={finishLoading} />
 
       case 'setup-ready':
-        return <SetupReadyScreen onContinue={() => goToTab('today')} />
+        return (
+          <SetupReadyScreen
+            activeDose={activeDose}
+            nextDose={nextDose}
+            onOpenDose={openDose}
+            onContinue={() => goToTab('today')}
+          />
+        )
 
       case 'medications':
         return (
@@ -218,6 +225,7 @@ function App() {
         return (
           <DoseScreen
             dose={dose}
+            doses={doses}
             onBack={goHome}
             onDispense={startDispensing}
             trayDoseId={inTray?.id ?? null}
@@ -246,7 +254,9 @@ function App() {
       case 'collect': {
         const dose = findDose(screen.doseId)
         if (!dose) return null
-        return <CollectScreen dose={dose} onConfirm={confirmTaken} onLater={goHome} />
+        return (
+          <CollectScreen dose={dose} doses={doses} onConfirm={confirmTaken} onLater={goHome} />
+        )
       }
 
       case 'complete': {
@@ -255,6 +265,8 @@ function App() {
         return (
           <CompleteScreen
             dose={dose}
+            doses={doses}
+            nextDose={nextDose}
             onWhatsNext={() => goTo({ name: 'whats-next' })}
             onBackToToday={goHome}
             onResumeTravel={tripWaiting ? openAway : undefined}

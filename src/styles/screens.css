@@ -77,14 +77,6 @@
   border-radius: var(--radius-xl);
 }
 
-/* The timeline beside it already answers "what is next", so this only earns
-   its place when the layout stacks into a single column. */
-@media (min-width: 62.001rem) {
-  .today__after {
-    display: none;
-  }
-}
-
 @media (max-width: 44rem) {
   .due-card {
     padding: var(--space-5);
@@ -1402,7 +1394,7 @@
   margin-top: var(--space-5);
 }
 
-.away-eyebrow {
+.flow__eyebrow {
   margin-bottom: var(--space-2);
   font-size: var(--fs-meta);
   font-weight: 700;
@@ -1580,4 +1572,115 @@
   margin-top: var(--space-2);
   font-size: var(--fs-meta);
   color: var(--color-text-muted);
+}
+
+/* --- Prioritising the next action ------------------------------------------ */
+
+/* The one thing to do now, naming the button that does it. */
+.action-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-snug);
+  color: var(--color-heading);
+}
+
+.action-line svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--color-accent-text);
+}
+
+.action-line strong {
+  font-weight: 750;
+}
+
+/* What the secondary choice does, so deferring is never a guess. */
+.action-hint {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* Light progress: dots are decoration, the words carry the meaning. */
+.routine-progress {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  color: var(--color-text-muted);
+}
+
+.routine-progress__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.routine-progress__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.routine-progress__dot.is-done {
+  border-color: var(--color-success);
+  background: var(--color-success);
+}
+
+/* The current dose is larger and ringed, not just a different colour. */
+.routine-progress__dot.is-current {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 3px solid var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-border-accent);
+}
+
+.due-card .routine-progress {
+  margin-top: var(--space-4);
+}
+
+/* Details on request only. */
+.dose-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.dose-details__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.dose-details__name {
+  margin-bottom: var(--space-3);
+  font-size: var(--fs-h3);
+}
+
+.dose-details__verified {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* Finished doses stay on the timeline as the record, but step back visually. */
+.timeline__row--completed .timeline__title,
+.timeline__row--completed .timeline__time {
+  color: var(--color-text-muted);
+  font-weight: 600;
 }

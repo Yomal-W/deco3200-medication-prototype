@@ -219,16 +219,24 @@ export function usePrototype() {
   }, [])
 
   const startLoading = useCallback(() => {
-    setState((current) => ({ ...current, screen: { name: 'setup-loading' }, navReplace: false }))
+    setState((current) =>
+      isStocked(current)
+        ? current
+        : { ...current, screen: { name: 'setup-loading' }, navReplace: false },
+    )
   }, [])
 
-  /** The loading animation finished: the device now knows what it holds. */
+  /**
+   * The loading animation finished: the device now knows what it holds. Only
+   * an empty device is stocked, so a repeated callback cannot rebuild the
+   * routine and wipe what has already happened.
+   */
   const finishLoading = useCallback(() => {
-    setState((current) => ({
-      ...stocked(current),
-      screen: { name: 'setup-ready' },
-      navReplace: true,
-    }))
+    setState((current) =>
+      isStocked(current)
+        ? current
+        : { ...stocked(current), screen: { name: 'setup-ready' }, navReplace: true },
+    )
   }, [])
 
   // --- Activity 2: the daily routine ---------------------------------------

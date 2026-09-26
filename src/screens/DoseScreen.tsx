@@ -3,14 +3,18 @@ import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { Icon } from '../components/Icon'
+import { DoseDetails } from '../components/DoseDetails'
 import { MedicationItem } from '../components/MedicationItem'
+import { RoutineProgress } from '../components/RoutineProgress'
 import { TravelReport } from '../components/TravelReport'
 import { user } from '../data/medications'
 import { travelRecordLines } from '../utils/dose'
-import { formatTime } from '../utils/time'
+import { countLabel, formatTime } from '../utils/time'
 
 interface DoseScreenProps {
   dose: Dose
+  /** Today's routine, for the light progress marker. */
+  doses: Dose[]
   onBack: () => void
   onDispense: (doseId: string) => void
   /** Another dose waiting in the tray. Only one dose is released at a time. */
@@ -32,6 +36,7 @@ interface DoseScreenProps {
  */
 export function DoseScreen({
   dose,
+  doses,
   onBack,
   onDispense,
   trayDoseId,
@@ -45,17 +50,13 @@ export function DoseScreen({
   const isDue = dose.status === 'due' && !dose.dispensedAt && !dose.travel
   const readyToDispense = isDue && !trayBusy
   const scheduledAt = formatTime(dose.scheduledMinutes)
-  const instruction = dose.items[0]?.instruction
 
   return (
     <div className="flow flow--wide">
       <div className="flow__intro">
         <div>
           <h1 className="flow__title">{dose.title}</h1>
-          <p className="flow__subtitle">
-            Scheduled for {scheduledAt}
-            {instruction ? ` · ${instruction}` : ''}
-          </p>
+          <p className="flow__subtitle">Scheduled for {scheduledAt}</p>
         </div>
         <DoseStatusPill dose={dose} />
       </div>
@@ -83,23 +84,9 @@ export function DoseScreen({
 
       <ul className="med-list med-list--grid">
         {dose.items.map((item) => (
-          <MedicationItem
-            key={item.medicationId}
-            item={item}
-            showInstruction={readyToDispense}
-          />
+          <MedicationItem key={item.medicationId} item={item} showInstruction />
         ))}
       </ul>
-
-      <p className="verified-line">
-        <Icon name="shieldCheck" size={22} />
-        <span>
-          Pharmacist verified{' '}
-          <span className="verified-line__detail">
-            · {user.pharmacist}, {user.pharmacy} · {user.routineVerifiedOn}
-          </span>
-        </span>
-      </p>
 
       {dose.travel ? (
         <>
@@ -175,10 +162,11 @@ export function DoseScreen({
         </>
       ) : readyToDispense ? (
         <>
-          <p className="flow__note">
-            <Icon name="info" size={20} className="flow__note-icon" />
+          <p className="action-line">
+            <Icon name="device" size={26} />
             <span>
-              When you press the button, the device releases these into the tray below the screen.
+              Press <strong>Dispense medication</strong>. {user.deviceName} releases these{' '}
+              {countLabel(dose.items.length).toLowerCase()} into the tray.
             </span>
           </p>
           <div className="screen-actions">
@@ -189,6 +177,11 @@ export function DoseScreen({
               Not right now
             </Button>
           </div>
+          <p className="action-hint">
+            &ldquo;Not right now&rdquo; keeps them in {user.deviceName}. Nothing is dispensed or
+            recorded.
+          </p>
+          <RoutineProgress doses={doses} currentDoseId={dose.id} />
         </>
       ) : (
         <>
@@ -211,6 +204,8 @@ export function DoseScreen({
           </div>
         </>
       )}
+
+      <DoseDetails dose={dose} />
     </div>
   )
 }
