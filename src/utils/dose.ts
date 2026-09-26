@@ -10,3 +10,9 @@ export function doseSummary(dose: Dose): string {
 export function doseMedicationNames(dose: Dose): string[] {
   return dose.items.map((item) => getMedication(item.medicationId).name)
 }
+
+/** "No doses" / "1 dose" / "2 doses" */
+export function doseCountLabel(count: number): string {
+  if (count === 0) return 'No doses'
+  return `${count} ${count === 1 ? 'dose' : 'doses'}`
+}

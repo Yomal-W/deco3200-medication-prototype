@@ -1,4 +1,4 @@
-import type { DoseRecord, Inventory, PrescriptionChange } from '../types'
+import type { AwayOption, DoseRecord, Inventory, PrescriptionChange } from '../types'
 import { getMedication, medications, user } from './medications'
 
 /**
@@ -131,3 +131,16 @@ export function buildPrescriptionChange(): PrescriptionChange {
     verifiedAt: user.routineVerifiedOn,
   }
 }
+
+/**
+ * How far ahead of a dose the phone reminds the user while they are away.
+ * An initial prototype parameter for testing, not a validated recommendation.
+ */
+export const REMINDER_LEAD_MINUTES = 20
+
+/** Rough lengths of time away. Deliberately few, and in plain words. */
+export const awayOptions: AwayOption[] = [
+  { id: 'few-hours', label: 'A few hours', detail: 'About 3 hours', minutes: 3 * 60 },
+  { id: 'half-day', label: 'Half the day', detail: 'About 6 hours', minutes: 6 * 60 },
+  { id: 'rest-of-day', label: 'The rest of today', detail: 'About 12 hours', minutes: 12 * 60 },
+]

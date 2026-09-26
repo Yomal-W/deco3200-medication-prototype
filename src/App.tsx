@@ -22,6 +22,7 @@ import { SetupScreen } from './screens/SetupScreen'
 import { SetupLoadingScreen } from './screens/SetupLoadingScreen'
 import { SetupReadyScreen } from './screens/SetupReadyScreen'
 import { HelpScreen } from './screens/HelpScreen'
+import { AwayScreen } from './screens/AwayScreen'
 
 const tabScreens: TabName[] = ['today', 'medications', 'help']
 
@@ -35,6 +36,7 @@ function App() {
     restockRequestedAt,
     change,
     changeAcknowledgedAt,
+    away,
     clock,
     screen,
     navReplace,
@@ -54,6 +56,8 @@ function App() {
     confirmTaken,
     skipToNextDose,
     acknowledgeChange,
+    startAway,
+    endAway,
     requestRestock,
     setStage,
     setLowStockMedication,
@@ -238,6 +242,19 @@ function App() {
           />
         ) : null
 
+      case 'away':
+        return (
+          <AwayScreen
+            doses={doses}
+            activeDose={activeDose}
+            clock={clock}
+            plan={away}
+            onConfirm={startAway}
+            onReturnHome={endAway}
+            onBackToToday={goHome}
+          />
+        )
+
       case 'today':
         return (
           <TodayScreen
@@ -253,6 +270,9 @@ function App() {
             onOpenWhatsNext={() => goTo({ name: 'whats-next' })}
             canSkipAhead={canSkipAhead}
             onSkipToNext={skipToNextDose}
+            away={away}
+            onOpenAway={() => goTo({ name: 'away' })}
+            onReturnHome={endAway}
           />
         )
     }

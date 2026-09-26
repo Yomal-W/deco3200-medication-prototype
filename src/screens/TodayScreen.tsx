@@ -1,4 +1,4 @@
-import type { Dose, PrescriptionChange } from '../types'
+import type { AwayPlan, Dose, PrescriptionChange } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { ChangeNotice } from '../components/ChangeNotice'
@@ -9,7 +9,8 @@ import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
 import { StatusPill } from '../components/StatusPill'
 import { user } from '../data/medications'
-import { doseMedicationNames, doseSummary } from '../utils/dose'
+import { REMINDER_LEAD_MINUTES } from '../data/session'
+import { doseCountLabel, doseMedicationNames, doseSummary } from '../utils/dose'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
 interface TodayScreenProps {
@@ -27,6 +28,10 @@ interface TodayScreenProps {
   /** True once the dose that was due has been dealt with. */
   canSkipAhead: boolean
   onSkipToNext: () => void
+  /** Set while the user is away from the medication station. */
+  away: AwayPlan | null
+  onOpenAway: () => void
+  onReturnHome: () => void
 }
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
@@ -43,6 +48,9 @@ export function TodayScreen({
   onOpenWhatsNext,
   canSkipAhead,
   onSkipToNext,
+  away,
+  onOpenAway,
+  onReturnHome,
 }: TodayScreenProps) {
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
 
@@ -65,6 +73,36 @@ export function TodayScreen({
           acknowledgedAt={changeAcknowledgedAt}
           onOpen={onOpenChange}
         />
+      ) : null}
+
+      {away ? (
+        <Card tone="accent" raised>
+          <div className="next-up">
+            <span className="next-up__icon" aria-hidden="true">
+              <Icon name="suitcase" size={26} />
+            </span>
+            <div className="next-up__body">
+              <p className="next-up__label">Away from home</p>
+              <p className="next-up__value">
+                Back by about {formatTime(away.returnsBy)} ·{' '}
+                {doseCountLabel(away.doseIds.length).toLowerCase()} in your travel case
+              </p>
+              <p className="next-up__detail">
+                {away.doseIds.length > 0
+                  ? `Your phone reminds you ${REMINDER_LEAD_MINUTES} minutes before each one.`
+                  : 'No medication is due while you are away.'}
+              </p>
+            </div>
+          </div>
+          <div className="screen-actions away-banner__actions">
+            <Button size="lg" icon="home" onClick={onReturnHome}>
+              I&rsquo;m back home
+            </Button>
+            <Button size="lg" variant="secondary" icon="suitcase" onClick={onOpenAway}>
+              View travel plan
+            </Button>
+          </div>
+        </Card>
       ) : null}
 
       <div className="today__columns">
@@ -205,6 +243,30 @@ export function TodayScreen({
               onSelect={onOpenDose}
             />
           </Card>
+
+          {away ? null : (
+            <Card tone="sunken">
+              <div className="next-up">
+                <span className="next-up__icon" aria-hidden="true">
+                  <Icon name="suitcase" size={24} />
+                </span>
+                <div className="next-up__body">
+                  <p className="next-up__label">Going out?</p>
+                  <p className="next-up__value">See what to take with you</p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                block
+                variant="secondary"
+                className="away-entry__action"
+                icon="suitcase"
+                onClick={onOpenAway}
+              >
+                I&rsquo;m away from home
+              </Button>
+            </Card>
+          )}
         </div>
       </div>
     </div>

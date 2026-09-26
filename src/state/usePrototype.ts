@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type {
+  AwayPlan,
   Dose,
   DoseRecord,
   DoseStatus,
@@ -12,6 +13,7 @@ import type {
 import { findMedication } from '../data/medications'
 import {
   LOW_STOCK_REMAINING,
+  awayOptions,
   SESSION_START_MINUTES,
   buildDoses,
   buildInventory,
@@ -39,6 +41,8 @@ interface PrototypeState {
   restockRequestedAt: string | null
   change: PrescriptionChange | null
   changeAcknowledgedAt: string | null
+  /** Set while the user is away from the medication station. */
+  away: AwayPlan | null
   clock: number
   screen: Screen
   /** Whether the next URL sync should replace the history entry rather than add one. */
@@ -61,6 +65,7 @@ function newSession(options: SessionOptions = {}): PrototypeState {
     restockRequestedAt: null,
     change: options.includeChange ? buildPrescriptionChange() : null,
     changeAcknowledgedAt: null,
+    away: null,
     clock: SESSION_START_MINUTES,
     screen: { name: 'today' },
     navReplace: true,
@@ -144,7 +149,9 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
   if (!isStocked(state)) return { name: 'today' }
 
   if (next.name === 'change') return state.change ? next : { name: 'today' }
-  if (next.name === 'medications' || next.name === 'whats-next') return next
+  if (next.name === 'medications' || next.name === 'whats-next' || next.name === 'away') {
+    return next
+  }
   if (next.name === 'medication') {
     return findMedication(next.medicationId) ? next : { name: 'medications' }
   }
@@ -313,6 +320,42 @@ export function usePrototype() {
     }))
   }, [])
 
+  // --- Away from home ------------------------------------------------------
+
+  /**
+   * The user confirms a travel plan. The station works out which doses fall
+   * while they are out; the user prepares those in their travel case.
+   */
+  const startAway = useCallback((optionId: string) => {
+    setState((current) => {
+      const option = awayOptions.find((item) => item.id === optionId)
+      if (!option) return current
+      const leavesAt = current.clock
+      const returnsBy = current.clock + option.minutes
+      const doseIds = [...current.doses]
+        .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
+        .filter(
+          (dose) =>
+            !dose.confirmedAt && dose.scheduledMinutes > leavesAt && dose.scheduledMinutes <= returnsBy,
+        )
+        .map((dose) => dose.id)
+      return {
+        ...current,
+        away: { optionId, leavesAt, returnsBy, doseIds, confirmedAt: formatTime(current.clock) },
+      }
+    })
+  }, [])
+
+  /** Back home: the medication station routine carries on as normal. */
+  const endAway = useCallback(() => {
+    setState((current) => ({
+      ...current,
+      away: null,
+      screen: { name: 'today' },
+      navReplace: false,
+    }))
+  }, [])
+
   // --- Activity 3: restocking ----------------------------------------------
 
   /** Tell the connected pharmacy the device needs more. Frontend state only. */
@@ -425,6 +468,8 @@ export function usePrototype() {
     confirmTaken,
     skipToNextDose,
     acknowledgeChange,
+    startAway,
+    endAway,
     requestRestock,
     setStage,
     setLowStockMedication,

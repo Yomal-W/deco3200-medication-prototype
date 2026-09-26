@@ -158,6 +158,31 @@ export type StockStatus = 'ok' | 'low' | 'empty'
 /** Live stock for every loaded medication, keyed by medication id. */
 export type Inventory = Record<string, StockLevel>
 
+/** One of the "roughly how long?" choices when leaving home. */
+export interface AwayOption {
+  id: string
+  /** e.g. "A few hours" */
+  label: string
+  /** e.g. "About 3 hours" */
+  detail: string
+  /** Length of time away, in simulated minutes. */
+  minutes: number
+}
+
+/**
+ * A confirmed period away from the medication station. The doses are fixed
+ * when the plan is confirmed, so the travel case list never shifts afterwards.
+ */
+export interface AwayPlan {
+  optionId: string
+  /** Simulated minutes when the user left and when they expect to be back. */
+  leavesAt: number
+  returnsBy: number
+  /** Doses to prepare in the travel case, in time order. */
+  doseIds: string[]
+  confirmedAt: string
+}
+
 /** Screens the participant can be on. Deliberately a small, flat set. */
 export type Screen =
   | { name: 'today' }
@@ -173,6 +198,7 @@ export type Screen =
   | { name: 'complete'; doseId: string }
   | { name: 'whats-next' }
   | { name: 'change' }
+  | { name: 'away' }
 
 /** The three persistent navigation destinations. */
 export type TabName = 'today' | 'medications' | 'help'
