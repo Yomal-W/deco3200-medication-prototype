@@ -1,6 +1,8 @@
 /* ---------------------------------------------------------------------------
    Design tokens for the MediFlow home medication device.
-   Calm, high-contrast, warm-white surfaces with a royal blue accent.
+   Calm, high-contrast white surfaces on a soft neutral page, with a royal
+   blue accent. The finish is iOS-inspired: hairline borders, one radius
+   scale, restrained shadows and short, gentle transitions.
    --------------------------------------------------------------------------- */
 
 :root {
@@ -40,30 +42,48 @@
   --warm-200: #e8e3da;
   --warm-300: #d5cfc3;
 
+  /* Neutral greys for the page and surface levels. Only just cool, so they
+     sit comfortably with the accent without reading as blue. */
+  --grey-050: #f5f6f8;
+  --grey-100: #eceef2;
+  --grey-150: #e4e7ec;
+  --grey-200: #dadee5;
+  --grey-300: #c2c8d1;
+
+  /* Near-neutral text. */
+  --neutral-900: #151b26;
+  --neutral-800: #222a37;
+  --neutral-600: #4a5364;
+
   --ink-900: #12233f;
   --ink-800: #1e3151;
   --ink-700: #33425a;
   --ink-500: #55627a;
 
   /* --- Semantic ----------------------------------------------------------- */
-  --color-bg: var(--warm-050);
+  /* Three surface levels: a very light page, white cards, and one neutral
+     fill for secondary or inset content. Blue tint is kept for the current
+     task and selected states only. */
+  --color-bg: var(--grey-050);
   --color-surface: var(--warm-000);
-  --color-surface-sunken: var(--warm-100);
+  --color-surface-sunken: var(--grey-100);
+  --color-surface-muted: var(--grey-150);
   --color-surface-accent: var(--blue-050);
-  --color-border: var(--warm-200);
-  --color-border-strong: var(--warm-300);
+  --color-border: var(--grey-200);
+  --color-border-strong: var(--grey-300);
   --color-border-accent: var(--blue-200);
 
-  --color-heading: var(--blue-900);
-  --color-text: var(--ink-900);
-  --color-text-muted: var(--ink-500);
+  --color-heading: var(--neutral-900);
+  --color-text: var(--neutral-800);
+  --color-text-muted: var(--neutral-600);
   --color-text-on-accent: #ffffff;
 
   --color-accent: var(--blue-600);
   --color-accent-hover: var(--blue-700);
   --color-accent-active: var(--blue-800);
   --color-accent-soft: var(--blue-050);
-  --color-accent-text: var(--blue-800);
+  /* The same blue as actions, for links, labels and selected text. */
+  --color-accent-text: var(--blue-600);
 
   --color-success: var(--green-700);
   --color-success-soft: var(--green-050);
@@ -79,8 +99,10 @@
   --color-danger-border: var(--red-100);
 
   /* --- Typography ---------------------------------------------------------- */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  /* The native Apple system font first, then each platform's own. No
+     downloaded fonts. */
+  --font-sans: -apple-system, BlinkMacSystemFont, system-ui, ui-sans-serif, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --fs-display: clamp(2.125rem, 1.45rem + 2.2vw, 3.25rem); /* 34 – 52 */
   --fs-h1: clamp(1.75rem, 1.35rem + 1.3vw, 2.5rem); /* 28 – 40 */
@@ -90,9 +112,13 @@
   --fs-body: clamp(1.0625rem, 0.99rem + 0.3vw, 1.25rem); /* 17 – 20 */
   --fs-meta: clamp(1rem, 0.96rem + 0.2vw, 1.125rem); /* 16 – 18 */
 
-  --lh-tight: 1.2;
+  --lh-tight: 1.18;
   --lh-snug: 1.35;
-  --lh-body: 1.55;
+  --lh-body: 1.5;
+
+  /* Labels are sentence case and semibold rather than spaced capitals,
+     which read more easily at length. */
+  --fw-label: 650;
 
   /* --- Space --------------------------------------------------------------- */
   --space-1: 0.25rem;
@@ -107,28 +133,33 @@
   --space-10: 4rem;
 
   /* --- Shape --------------------------------------------------------------- */
-  --radius-sm: 0.625rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2rem;
+  --radius-sm: 0.625rem; /* 10px — small insets */
+  --radius-md: 0.875rem; /* 14px — controls, rows */
+  --radius-lg: 1.25rem; /* 20px — cards */
+  --radius-xl: 1.5rem; /* 24px — the one hero card on a screen */
   --radius-pill: 999px;
+
+  --border-hairline: 1px;
+  --border-control: 1.5px;
 
   --tap-target: 3.5rem; /* 56px */
 
   /* --- Elevation (used sparingly) ------------------------------------------ */
-  --shadow-card: 0 1px 2px rgba(18, 35, 63, 0.05);
-  --shadow-raised: 0 6px 20px rgba(18, 35, 63, 0.08);
-  --shadow-overlay: 0 18px 48px rgba(18, 35, 63, 0.22);
+  --shadow-card: 0 1px 2px rgba(16, 28, 52, 0.04), 0 1px 3px rgba(16, 28, 52, 0.05);
+  --shadow-raised: 0 2px 4px rgba(16, 28, 52, 0.04), 0 8px 24px rgba(16, 28, 52, 0.08);
+  --shadow-overlay: 0 18px 48px rgba(16, 28, 52, 0.22);
 
   /* --- Motion -------------------------------------------------------------- */
-  --ease: cubic-bezier(0.3, 0.7, 0.4, 1);
-  --duration-fast: 120ms;
-  --duration-base: 220ms;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --duration-fast: 140ms;
+  --duration-base: 200ms;
   --duration-slow: 420ms;
+  /* A pressed control settles slightly. Turned off for reduced motion. */
+  --press-scale: 0.98;
 
   /* --- Layout -------------------------------------------------------------- */
   --shell-max: 78rem;
-  --focus-ring: 0 0 0 3px var(--color-bg), 0 0 0 6px var(--blue-500);
+  --focus-ring: 0 0 0 3px var(--color-surface), 0 0 0 6px var(--color-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -136,5 +167,6 @@
     --duration-fast: 1ms;
     --duration-base: 1ms;
     --duration-slow: 1ms;
+    --press-scale: 1;
   }
 }

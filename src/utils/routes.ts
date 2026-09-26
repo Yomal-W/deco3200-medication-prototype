@@ -13,8 +13,12 @@ export function screenToHash(screen: Screen): string {
       return '#/medications'
     case 'medication':
       return `#/medications/${screen.medicationId}`
-    case 'help':
-      return '#/help'
+    case 'records':
+      return '#/records'
+    case 'scripts':
+      return '#/records/scripts'
+    case 'script':
+      return `#/records/scripts/${screen.reference}`
     case 'whats-next':
       return '#/whats-next'
     case 'change':
@@ -58,7 +62,12 @@ export function hashToScreen(hash: string): Screen {
   if (first === 'medications') {
     return second ? { name: 'medication', medicationId: second } : { name: 'medications' }
   }
-  if (first === 'help') return { name: 'help' }
+  if (first === 'records') {
+    if (second === 'scripts') return third ? { name: 'script', reference: third } : { name: 'scripts' }
+    return { name: 'records' }
+  }
+  // Help was retired as a destination. Old links land on Home, not on records.
+  if (first === 'help') return { name: 'today' }
   if (first === 'whats-next') return { name: 'whats-next' }
   if (first === 'change') return { name: 'change' }
   if (first === 'away') return { name: 'away' }

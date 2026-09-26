@@ -104,6 +104,12 @@ const paths: Record<string, ReactElement> = {
   phone: (
     <path d="M6.2 3.6h3.1l1.5 3.9-2 1.4a11.5 11.5 0 0 0 5.3 5.3l1.4-2 3.9 1.5v3.1a2 2 0 0 1-2.2 2A16.8 16.8 0 0 1 4.2 5.8a2 2 0 0 1 2-2.2Z" />
   ),
+  document: (
+    <>
+      <path d="M14 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z" />
+      <path d="M14 3.5V8h4.5M8.8 12.5h6.4M8.8 16h6.4" />
+    </>
+  ),
   suitcase: (
     <>
       <rect x="3.5" y="7.5" width="17" height="12.5" rx="2.5" />

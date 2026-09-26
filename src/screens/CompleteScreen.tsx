@@ -61,12 +61,12 @@ export function CompleteScreen({
           </Button>
         ) : (
           <Button size="xl" icon="home" onClick={onBackToToday}>
-            Back to today
+            Back to Home
           </Button>
         )}
         {onResumeTravel ? (
           <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
-            Back to today
+            Back to Home
           </Button>
         ) : (
           <Button size="xl" variant="secondary" icon="list" onClick={onWhatsNext}>

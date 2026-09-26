@@ -21,6 +21,7 @@ import {
   buildPrescriptionChange,
   pickLowStockMedicationId,
 } from '../data/session'
+import { buildPrescriptions } from '../data/prescriptions'
 import { formatTime } from '../utils/time'
 import { activeTrip, isTaken, trayDose } from '../utils/travel'
 import {
@@ -141,7 +142,7 @@ function upcomingDose(state: PrototypeState): DoseRecord | null {
   )
 }
 
-/** Nothing beyond Today and Help exists until the device has been stocked. */
+/** Nothing beyond Home and the Records landing exists until the device has been stocked. */
 function isStocked(state: PrototypeState): boolean {
   return state.stage !== 'empty'
 }
@@ -152,7 +153,7 @@ function isStocked(state: PrototypeState): boolean {
  * Back/Forward safe after a reset and stops setup being bypassed by URL.
  */
 function screenForHistory(next: Screen, state: PrototypeState): Screen {
-  if (next.name === 'today' || next.name === 'help') return next
+  if (next.name === 'today' || next.name === 'records') return next
 
   if (next.name === 'setup' || next.name === 'setup-loading' || next.name === 'setup-ready') {
     // Setup only exists while the device is still empty, and the loading
@@ -164,6 +165,12 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
   if (!isStocked(state)) return { name: 'today' }
 
   if (next.name === 'change') return state.change ? next : { name: 'today' }
+  if (next.name === 'scripts') return next
+  if (next.name === 'script') {
+    // An upcoming script only exists while its change is part of the session.
+    const exists = buildPrescriptions(state.change).some((item) => item.reference === next.reference)
+    return exists ? next : { name: 'scripts' }
+  }
   if (next.name === 'medications' || next.name === 'whats-next' || next.name === 'away') {
     return next
   }
@@ -439,13 +446,20 @@ export function usePrototype() {
   }, [])
 
   const setIncludeChange = useCallback((include: boolean) => {
-    setState((current) => ({
-      ...current,
-      change: include ? buildPrescriptionChange() : null,
-      changeAcknowledgedAt: null,
-      screen: current.screen.name === 'change' && !include ? { name: 'today' } : current.screen,
-      navReplace: true,
-    }))
+    setState((current) => {
+      const next = { ...current, change: include ? buildPrescriptionChange() : null }
+      return {
+        ...next,
+        changeAcknowledgedAt: null,
+        // Leave a screen that only existed because of the change. Nothing
+        // else is touched, so an animation in progress is never interrupted.
+        screen:
+          current.screen.name === 'change' || current.screen.name === 'script'
+            ? screenForHistory(current.screen, next)
+            : current.screen,
+        navReplace: true,
+      }
+    })
   }, [])
 
   /** Facilitator recovery: move the simulated clock anywhere in the day. */

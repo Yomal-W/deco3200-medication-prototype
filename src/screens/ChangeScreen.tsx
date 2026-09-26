@@ -113,7 +113,7 @@ export function ChangeScreen({
               </Button>
             )}
             <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
-              Back to today
+              Back to Home
             </Button>
           </div>
 

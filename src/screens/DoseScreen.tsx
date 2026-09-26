@@ -24,7 +24,6 @@ interface DoseScreenProps {
   onReport: (doseId: string, outcome: TravelOutcome) => void
   onOpenDose: (doseId: string) => void
   onOpenAway: () => void
-  onGetHelp: () => void
 }
 
 /**
@@ -44,7 +43,6 @@ export function DoseScreen({
   onReport,
   onOpenDose,
   onOpenAway,
-  onGetHelp,
 }: DoseScreenProps) {
   const trayBusy = trayDoseId !== null && trayDoseId !== dose.id
   const isDue = dose.status === 'due' && !dose.dispensedAt && !dose.travel
@@ -125,12 +123,10 @@ export function DoseScreen({
             <div className="flow__note away-help">
               <Icon name="help" size={20} className="flow__note-icon" />
               <span>
-                Not sure? Check your travel case. If you still can&rsquo;t tell, your pharmacist
-                can help.
+                Not sure? Check your travel case. If you still can&rsquo;t tell, call{' '}
+                {user.pharmacist} at {user.pharmacy} on {user.pharmacyPhone}.
+                <span className="away-help__proto">Prototype only — this number is not real.</span>
               </span>
-              <Button variant="secondary" icon="phone" onClick={onGetHelp}>
-                Get help
-              </Button>
             </div>
           ) : null}
 
@@ -141,7 +137,7 @@ export function DoseScreen({
               </Button>
             )}
             <Button size="xl" variant="secondary" icon="home" onClick={onBack}>
-              Back to today
+              Back to Home
             </Button>
           </div>
         </>
@@ -156,7 +152,7 @@ export function DoseScreen({
               Go to the tray
             </Button>
             <Button size="xl" variant="secondary" icon="home" onClick={onBack}>
-              Back to today
+              Back to Home
             </Button>
           </div>
         </>
@@ -199,7 +195,7 @@ export function DoseScreen({
           </p>
           <div className="screen-actions">
             <Button size="xl" variant="secondary" icon="home" onClick={onBack}>
-              Back to today
+              Back to Home
             </Button>
           </div>
         </>

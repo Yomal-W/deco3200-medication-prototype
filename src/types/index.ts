@@ -140,6 +140,10 @@ export interface PrescriptionChange {
   /** Supporting line under each summary, e.g. "1 tablet with breakfast". */
   previousDetail: string
   newDetail: string
+  /** Strength on the new script, e.g. "10 mg". The routine keeps the old one until it starts. */
+  newStrength: string
+  /** When the new script was written. Not when it was verified or when it starts. */
+  prescribedOn: string
   /** When the new routine begins, e.g. "Tomorrow morning". */
   startsLabel: string
   startsDetail: string
@@ -217,6 +221,31 @@ export interface AwayPlan {
   returnedAt: string | null
 }
 
+/**
+ * A fictional prescription behind one medication in the routine. Read-only,
+ * derived from the medication and change data so the two cannot disagree.
+ */
+export interface Prescription {
+  /** Always begins with DEMO, so it cannot pass for a real script. */
+  reference: string
+  medicationId: string
+  medicationName: string
+  strength: string
+  form: string
+  /** As written on the script. Never the routine's times of day. */
+  directions: string
+  quantitySupplied: string
+  repeats: number
+  prescriber: Prescriber
+  prescribedOn: string
+  /** current — what the routine uses now; upcoming — verified, not yet in effect. */
+  status: 'current' | 'upcoming'
+  /** For an upcoming script, when it takes effect. */
+  startsOn: string | null
+  /** For a current script that is being replaced, when it stops being used. */
+  replacedOn: string | null
+}
+
 /** Screens the participant can be on. Deliberately a small, flat set. */
 export type Screen =
   | { name: 'today' }
@@ -225,7 +254,9 @@ export type Screen =
   | { name: 'setup-ready' }
   | { name: 'medications' }
   | { name: 'medication'; medicationId: string }
-  | { name: 'help' }
+  | { name: 'records' }
+  | { name: 'scripts' }
+  | { name: 'script'; reference: string }
   | { name: 'dose'; doseId: string }
   | { name: 'dispensing'; doseId: string; forTravel?: boolean }
   | { name: 'collect'; doseId: string }
@@ -235,4 +266,4 @@ export type Screen =
   | { name: 'away' }
 
 /** The three persistent navigation destinations. */
-export type TabName = 'today' | 'medications' | 'help'
+export type TabName = 'today' | 'medications' | 'records'

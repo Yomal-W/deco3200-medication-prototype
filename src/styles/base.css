@@ -59,8 +59,10 @@ h3 {
   text-wrap: balance;
 }
 
+/* Large titles tighten slightly, as system large titles do. */
 h1 {
   font-size: var(--fs-h1);
+  letter-spacing: -0.02em;
 }
 
 h2 {

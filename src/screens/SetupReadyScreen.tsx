@@ -64,7 +64,7 @@ export function SetupReadyScreen({
           </Button>
         ) : (
           <Button size="xl" icon="home" onClick={onContinue}>
-            Go to today
+            Go to Home
           </Button>
         )}
       </div>

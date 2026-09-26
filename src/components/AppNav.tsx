@@ -3,9 +3,9 @@ import { Icon } from './Icon'
 import type { IconName } from './Icon'
 
 const tabs: { id: TabName; label: string; icon: IconName }[] = [
-  { id: 'today', label: 'Today', icon: 'home' },
+  { id: 'today', label: 'Home', icon: 'home' },
   { id: 'medications', label: 'Medications', icon: 'list' },
-  { id: 'help', label: 'Help', icon: 'help' },
+  { id: 'records', label: 'Records', icon: 'document' },
 ]
 
 interface AppNavProps {

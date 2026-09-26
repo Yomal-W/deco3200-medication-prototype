@@ -67,7 +67,7 @@ export function WhatsNextScreen({
           )}
 
           <Button size="xl" block variant="secondary" icon="home" onClick={onBackToToday}>
-            Back to today
+            Back to Home
           </Button>
 
         </div>

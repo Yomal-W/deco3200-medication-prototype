@@ -5,10 +5,11 @@ import { AppNav } from './components/AppNav'
 import { FacilitatorPanel } from './components/FacilitatorPanel'
 import { Icon } from './components/Icon'
 import { findMedication, user } from './data/medications'
+import { buildPrescriptions } from './data/prescriptions'
 import { usePrefersReducedMotion } from './state/usePrefersReducedMotion'
 import { usePrototype } from './state/usePrototype'
 import { hashToScreen, screenToHash } from './utils/routes'
-import { formatTime, greetingFor } from './utils/time'
+import { formatTime } from './utils/time'
 import { trayDose } from './utils/travel'
 import { TodayScreen } from './screens/TodayScreen'
 import { DoseScreen } from './screens/DoseScreen'
@@ -22,10 +23,12 @@ import { MedicationDetailScreen } from './screens/MedicationDetailScreen'
 import { SetupScreen } from './screens/SetupScreen'
 import { SetupLoadingScreen } from './screens/SetupLoadingScreen'
 import { SetupReadyScreen } from './screens/SetupReadyScreen'
-import { HelpScreen } from './screens/HelpScreen'
+import { RecordsScreen } from './screens/RecordsScreen'
+import { ScriptsScreen } from './screens/ScriptsScreen'
+import { ScriptScreen } from './screens/ScriptScreen'
 import { AwayScreen } from './screens/AwayScreen'
 
-const tabScreens: TabName[] = ['today', 'medications', 'help']
+const tabScreens: TabName[] = ['today', 'medications', 'records']
 
 function App() {
   const {
@@ -147,8 +150,9 @@ function App() {
 
   const goHome = useCallback(() => goTo({ name: 'today' }), [goTo])
   const openAway = useCallback(() => goTo({ name: 'away' }), [goTo])
-  const openHelp = useCallback(() => goToTab('help'), [goToTab])
   const inTray = trayDose(doses)
+  // Read-only, and rebuilt from the same change data the rest of the app uses.
+  const prescriptions = buildPrescriptions(change)
   // A trip waiting on a dose at the station, so it can be picked up again afterwards.
   const tripWaiting = trip?.status === 'reviewing' || trip?.status === 'preparing'
   // Doses from a finished trip that are still out of the station or uncertain.
@@ -211,13 +215,32 @@ function App() {
         )
       }
 
-      case 'help':
+      case 'records':
         return (
-          <HelpScreen
-            onGoToToday={() => goToTab('today')}
-            onGoToMedications={() => goToTab('medications')}
+          <RecordsScreen
+            stocked={stocked}
+            prescriptions={prescriptions}
+            change={change}
+            changeAcknowledgedAt={changeAcknowledgedAt}
+            onViewScripts={() => goTo({ name: 'scripts' })}
+            onViewScript={(reference) => goTo({ name: 'script', reference })}
+            onLoadMedication={openSetup}
           />
         )
+
+      case 'scripts':
+        return (
+          <ScriptsScreen
+            prescriptions={prescriptions}
+            onViewScript={(reference) => goTo({ name: 'script', reference })}
+          />
+        )
+
+      case 'script': {
+        const script = prescriptions.find((item) => item.reference === screen.reference)
+        if (!script) return null
+        return <ScriptScreen script={script} doses={doses} change={change} />
+      }
 
       case 'dose': {
         const dose = findDose(screen.doseId)
@@ -236,7 +259,6 @@ function App() {
             onReport={reportTravel}
             onOpenDose={openDose}
             onOpenAway={openAway}
-            onGetHelp={openHelp}
           />
         )
       }
@@ -312,7 +334,6 @@ function App() {
             onFinishReturn={finishReturnHome}
             onOpenDose={openDose}
             onBackToToday={goHome}
-            onGetHelp={openHelp}
           />
         )
 
@@ -343,7 +364,6 @@ function App() {
   return (
     <div className="device">
       <AppHeader
-        title={`${greetingFor(clock)}, ${user.firstName}`}
         meta={`${user.today} · ${formatTime(clock)}`}
         onOpenFacilitator={openFacilitator}
         back={
@@ -351,9 +371,13 @@ function App() {
             ? undefined
             : screen.name === 'medication'
               ? { label: 'Medications', onClick: () => goToTab('medications') }
-              : screen.name === 'setup' || screen.name === 'setup-ready'
-                ? { label: 'Today', onClick: () => goToTab('today') }
-                : { label: 'Today', onClick: goHome }
+              : screen.name === 'scripts'
+                ? { label: 'Records', onClick: () => goToTab('records') }
+                : screen.name === 'script'
+                  ? { label: 'Scripts', onClick: () => goTo({ name: 'scripts' }) }
+                  : screen.name === 'setup' || screen.name === 'setup-ready'
+                    ? { label: 'Home', onClick: () => goToTab('today') }
+                    : { label: 'Home', onClick: goHome }
         }
       />
 

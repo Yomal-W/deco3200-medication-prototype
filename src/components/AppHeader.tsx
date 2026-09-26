@@ -2,9 +2,7 @@ import { Icon } from './Icon'
 import { useSecretTap } from '../state/useSecretTap'
 
 interface AppHeaderProps {
-  /** e.g. "Good morning, Margaret" */
-  title: string
-  /** e.g. "Tuesday 8 September · 8:02 AM" */
+  /** The simulated date and time, e.g. "Tuesday 8 September · 8:02 AM" */
   meta: string
   onOpenFacilitator: () => void
   /** Shown on focused screens. The centred block stays put. */
@@ -12,14 +10,14 @@ interface AppHeaderProps {
 }
 
 /**
- * A quiet status strip rather than an app chrome bar: the greeting and the
- * clock sit in the middle, and contextual navigation sits beside them without
- * pushing them off centre.
+ * A quiet status strip rather than an app chrome bar: only the simulated date
+ * and time, centred, with contextual navigation beside it. It stays visually
+ * secondary to the medication task below.
  *
  * The date line is also the tablet entry point to facilitator mode (five
  * taps). It looks like plain text, which is the point.
  */
-export function AppHeader({ title, meta, onOpenFacilitator, back }: AppHeaderProps) {
+export function AppHeader({ meta, onOpenFacilitator, back }: AppHeaderProps) {
   const handleSecretTap = useSecretTap(onOpenFacilitator)
 
   return (
@@ -35,7 +33,6 @@ export function AppHeader({ title, meta, onOpenFacilitator, back }: AppHeaderPro
         </div>
 
         <div className="app-header__centre">
-          <p className="app-header__greeting">{title}</p>
           <button
             type="button"
             className="app-header__meta"

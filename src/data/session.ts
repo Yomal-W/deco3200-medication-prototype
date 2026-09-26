@@ -50,7 +50,7 @@ export function buildDoses(): DoseRecord[] {
       scheduledMinutes: 8 * 60,
       items: [
         { medicationId: 'metformin', quantity: '1 tablet', instruction: 'With breakfast' },
-        { medicationId: 'ramipril', quantity: '1 tablet', instruction: 'With breakfast' },
+        { medicationId: 'ramipril', quantity: '1 capsule', instruction: 'With breakfast' },
         { medicationId: 'aspirin', quantity: '1 tablet', instruction: 'With breakfast' },
       ],
       dispensedAt: null,
@@ -123,9 +123,11 @@ export function buildPrescriptionChange(): PrescriptionChange {
     medicationId: 'ramipril',
     medicationName: 'Ramipril',
     previousSummary: '5 mg each morning',
-    previousDetail: '1 tablet with breakfast',
+    previousDetail: '1 capsule with breakfast',
     newSummary: '10 mg each morning',
-    newDetail: '1 tablet with breakfast',
+    newDetail: '1 capsule with breakfast',
+    newStrength: '10 mg',
+    prescribedOn: user.scriptsReceivedOn,
     startsLabel: 'Tomorrow morning',
     startsDetail: `${user.tomorrow} · 8:00 AM`,
     plainNote:

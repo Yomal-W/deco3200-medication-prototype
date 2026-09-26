@@ -15,9 +15,7 @@
 
 .screen-head__eyebrow {
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
   margin-bottom: var(--space-2);
 }
@@ -197,9 +195,7 @@
 
 .next-up__label {
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
 }
 
@@ -254,8 +250,9 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-md);
+  /* An information note: a quiet fill, no outline, so it never looks like a
+     control. */
   background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border);
   font-size: var(--fs-meta);
   color: var(--color-text);
 }
@@ -532,13 +529,15 @@
 
 .change__side {
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
 }
 
+/* The receiving side is tinted, not outlined in the action colour, so it
+   reads as information rather than as something to press. */
+/* The receiving side is tinted rather than outlined, so it reads as
+   information, not as something to press. */
 .change__side--new {
-  border-color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
@@ -547,9 +546,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
   margin-bottom: var(--space-3);
 }
@@ -587,10 +584,10 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: var(--border-hairline) solid var(--color-border);
 }
 
 .fact__icon {
@@ -601,9 +598,7 @@
 
 .fact__label {
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
 }
 
@@ -632,26 +627,6 @@
   .med-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* --- Help ----------------------------------------------------------------- */
-
-.help-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: var(--space-5);
-}
-
-.help-card__title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.help-card__text {
-  color: var(--color-text);
-  margin-bottom: var(--space-5);
 }
 
 .device-graphic__glow {
@@ -714,6 +689,20 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: var(--space-6);
   align-items: start;
+}
+
+/* Side-by-side cards that should share one height: both columns stretch to
+   the taller one and the last card in the side column takes up the rest.
+   Content inside stays top-aligned; nothing is given a fixed height. */
+.split--equal {
+  align-items: stretch;
+  /* The fuller card takes the wider column, so the shorter one is not left
+     as a wide, mostly empty panel. */
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.split--equal > .split__column > :last-child {
+  flex: 1;
 }
 
 @media (max-width: 62rem) {
@@ -1145,7 +1134,7 @@
   gap: var(--space-1);
   padding: var(--space-3);
   border-radius: var(--radius-lg);
-  background: var(--warm-100);
+  background: var(--grey-100);
   border: 1px solid var(--color-border);
   text-align: center;
 }
@@ -1157,9 +1146,7 @@
 .detail-stock__label {
   margin-top: var(--space-2);
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
 }
 
@@ -1234,9 +1221,7 @@
 
 .detail-row__label {
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
   line-height: var(--lh-snug);
 }
@@ -1271,9 +1256,7 @@
 .detail-physical__caption {
   margin-top: var(--space-2);
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-text-muted);
 }
 
@@ -1312,7 +1295,7 @@
   width: 100%;
   min-height: 5.5rem;
   padding: var(--space-5) var(--space-6);
-  border: 2px solid var(--color-border-strong);
+  border: var(--border-control) solid var(--color-border-strong);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-heading);
@@ -1397,9 +1380,7 @@
 .flow__eyebrow {
   margin-bottom: var(--space-2);
   font-size: var(--fs-meta);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: var(--fw-label);
   color: var(--color-accent-text);
 }
 
@@ -1409,7 +1390,7 @@
   outline: none;
 }
 
-/* A note that carries its own action, e.g. "Get help". */
+/* A note that carries its own action, e.g. "Go to that dose". */
 .away-help {
   flex-wrap: wrap;
   align-items: center;
@@ -1683,4 +1664,212 @@
 .timeline__row--completed .timeline__time {
   color: var(--color-text-muted);
   font-weight: 600;
+}
+
+.away-help__proto {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+/* --- Records --------------------------------------------------------------- */
+
+/* View Script leads: one large, full-width action. */
+.records-primary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  min-height: 6rem;
+  padding: var(--space-5) var(--space-6);
+  /* Prominent through size, weight and elevation rather than a coloured
+     block: a white raised card with the accent kept to its icon and arrow. */
+  border: var(--border-hairline) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-raised);
+}
+
+.records-primary:active {
+  background: var(--color-surface-accent);
+  border-color: var(--color-border-accent);
+}
+
+.records-primary__icon {
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+.records-primary > svg:last-child {
+  color: var(--color-accent-text);
+}
+
+.records-primary__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.records-primary__title {
+  display: block;
+  font-size: var(--fs-h2);
+  font-weight: 750;
+}
+
+.records-primary__detail {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+/* Changes and status sit side by side, visibly quieter. */
+.records-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.records-secondary .card {
+  box-shadow: none;
+}
+
+.records-change {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.records-change .detail-rows {
+  width: 100%;
+}
+
+.records-change__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.records-change__what {
+  font-size: var(--fs-lead);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+/* Prototype labelling, always in words. */
+.script-banner,
+.script-doc__banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border: 2px dashed var(--color-attention-mark);
+  border-radius: var(--radius-md);
+  background: var(--color-attention-soft);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-attention);
+}
+
+.script-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.script-list__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 5rem;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  text-align: left;
+  cursor: pointer;
+}
+
+.script-list__row:active {
+  background: var(--color-surface-accent);
+  border-color: var(--color-accent);
+}
+
+.script-list__icon {
+  flex: none;
+  color: var(--color-accent-text);
+}
+
+.script-list__body {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.script-list__name {
+  display: block;
+  font-size: var(--fs-lead);
+  font-weight: 700;
+}
+
+.script-list__detail {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* A plain document: a paper-like surface, deliberately without anything that
+   could pass for a real script (no barcode, signature or official marks). */
+.script-doc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: var(--border-hairline) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* --- Shared interaction feedback ------------------------------------------- */
+
+/* Every tappable surface responds the same short, quiet way. Static
+   information never does, which keeps the two easy to tell apart. */
+.records-primary,
+.script-list__row,
+.away-option,
+.away-outstanding__row,
+.med-card {
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.records-primary:active,
+.script-list__row:active,
+.away-option:active:not(:disabled),
+.away-outstanding__row:active,
+.med-card:active {
+  transform: scale(var(--press-scale));
 }

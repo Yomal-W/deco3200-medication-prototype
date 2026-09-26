@@ -39,7 +39,6 @@ interface AwayScreenProps {
   onFinishReturn: () => void
   onOpenDose: (doseId: string) => void
   onBackToToday: () => void
-  onGetHelp: () => void
 }
 
 /** "1:00 PM · Afternoon medication" */
@@ -78,7 +77,6 @@ export function AwayScreen({
   onFinishReturn,
   onOpenDose,
   onBackToToday,
-  onGetHelp,
 }: AwayScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -268,7 +266,7 @@ export function AwayScreen({
         </div>
 
         <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
-          Back to today
+          Back to Home
         </Button>
       </div>
     )
@@ -649,12 +647,10 @@ export function AwayScreen({
         <div className="flow__note away-help">
           <Icon name="help" size={20} className="flow__note-icon" />
           <span>
-            Not sure? Check your travel case. If you still can&rsquo;t tell, your pharmacist can
-            help.
+            Not sure? Check your travel case. If you still can&rsquo;t tell, call {user.pharmacist}{' '}
+            at {user.pharmacy} on {user.pharmacyPhone}.
+            <span className="away-help__proto">Prototype only — this number is not real.</span>
           </span>
-          <Button variant="secondary" icon="phone" onClick={onGetHelp}>
-            Get help
-          </Button>
         </div>
       ) : null}
 
