@@ -300,6 +300,7 @@
   font-size: var(--fs-lead);
   color: var(--color-text);
   max-width: 34rem;
+  text-wrap: pretty;
 }
 
 /* --- Record lines ("dispensed at" / "you confirmed at") ------------------- */
@@ -617,9 +618,11 @@
 
 /* --- Medications list ----------------------------------------------------- */
 
+/* Two roomy columns on a landscape tablet, one in portrait: wide enough that
+   the compartment, the count and any status share one line on every card. */
 .med-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(25rem, 100%), 1fr));
   gap: var(--space-4);
 }
 
@@ -825,20 +828,16 @@
 
 .med-card {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  flex-direction: column;
   width: 100%;
   height: 100%;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color var(--duration-fast) var(--ease),
-    background-color var(--duration-fast) var(--ease);
 }
 
 .med-card:active {
@@ -846,21 +845,29 @@
   border-color: var(--color-accent);
 }
 
-.med-card__body {
+/* Identity first: name, strength, timing, always in the same place. It
+   takes the spare height, so every card's stock row lines up at the bottom. */
+.med-card__main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.med-card__identity {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0.125rem;
   flex: 1;
   min-width: 0;
 }
 
-.med-card__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+/* The tablet picture stays secondary to the name. */
+.med-card .med-visual--card {
+  width: 4.5rem;
+  height: 3.375rem;
 }
+
 
 .med-card__name {
   font-size: var(--fs-h3);
@@ -870,15 +877,16 @@
 }
 
 .med-card__dose {
-  font-size: var(--fs-body);
+  font-size: var(--fs-lead);
   font-weight: 650;
   color: var(--color-text);
 }
 
 .med-card__meta {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-2);
+  margin-top: var(--space-1);
   font-size: var(--fs-meta);
   color: var(--color-text-muted);
 }
@@ -945,45 +953,9 @@
   color: var(--color-text);
 }
 
-.loading-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
 
-.loading-row__item {
-  display: grid;
-  place-items: center;
-  width: 4.5rem;
-  height: 3.75rem;
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  opacity: 0.25;
-  animation: load-in 2400ms var(--ease) infinite;
-}
 
-@keyframes load-in {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  30%,
-  70% {
-    opacity: 1;
-    transform: translateY(-4px);
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .loading-row__item {
-    animation: none;
-    opacity: 1;
-  }
-}
 
 .loaded-grid {
   display: grid;
@@ -1043,7 +1015,7 @@
   min-width: min(22rem, 100%);
 }
 
-.empty-state__cartridges {
+.empty-state__compartments {
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1088,28 +1060,66 @@
   min-height: 100%;
 }
 
-.today--empty .empty-state {
-  max-width: 44rem;
-}
-
 /* --- Stock on a medication card ------------------------------------------- */
 
+/* One stock row, below a hairline: compartment, words, then any status. */
 .med-card__stock {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.med-card__stock-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.med-card__stock-label {
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-label);
+  color: var(--color-text-muted);
+}
+
+.med-card__stock-count {
+  font-size: var(--fs-lead);
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: var(--lh-snug);
+}
+
+.med-card__stock-note {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-1);
   font-size: var(--fs-meta);
   font-weight: 650;
-  color: var(--color-text-muted);
+  color: var(--color-success);
 }
 
-.med-card__stock--low {
-  color: var(--color-attention);
+.med-card__stock .status-pill {
+  flex: none;
 }
 
+
+/* Low stock: a calm red, carried by the surface, the count and the badge. */
 .med-card--low {
-  border-color: var(--color-attention-border);
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+}
+
+.med-card--low .med-card__stock {
+  border-top-color: var(--color-low-border);
+}
+
+.med-card--low .med-card__stock-count {
+  color: var(--color-low-text);
 }
 
 /* --- Medication detail ---------------------------------------------------- */
@@ -1117,54 +1127,93 @@
 .detail-side {
   display: flex;
   flex-direction: column;
+  gap: var(--space-6);
+}
+
+.detail-side--low {
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+}
+
+/* Stock and the restock action are the main group on this side. */
+.stock-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.stock-panel__label {
+  font-size: var(--fs-h3);
+}
+
+.stock-panel__main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+}
+
+.stock-panel__figures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stock-panel__count {
+  font-size: var(--fs-h1);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-tight);
+  color: var(--color-heading);
+}
+
+.stock-panel__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--color-text-muted);
+}
+
+.stock-panel__capacity {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.detail-side--low .stock-panel__count,
+.detail-side--low .stock-panel__status {
+  color: var(--color-low-text);
+}
+
+/* What it looks like: kept, but smaller and secondary. */
+.appearance-row {
+  display: flex;
+  align-items: center;
   gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.detail-side--low .appearance-row {
+  border-top-color: var(--color-low-border);
+}
+
+.appearance-row__title {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-label);
+  color: var(--color-heading);
+  margin-bottom: var(--space-1);
 }
 
 /* What it looks like, beside how much of it is left. */
-.detail-physical {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: var(--space-4);
-}
 
-.detail-physical__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  background: var(--grey-100);
-  border: 1px solid var(--color-border);
-  text-align: center;
-}
 
-.detail-physical__item--stock {
-  background: var(--color-surface);
-}
 
-.detail-stock__label {
-  margin-top: var(--space-2);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-label);
-  color: var(--color-text-muted);
-}
 
-.detail-stock__value {
-  font-size: var(--fs-h2);
-  font-weight: 700;
-  color: var(--color-heading);
-  line-height: var(--lh-tight);
-}
 
-.detail-stock__value--low {
-  color: var(--color-attention);
-}
 
-.detail-stock__status {
-  font-size: var(--fs-body);
-  color: var(--color-text-muted);
-}
 
 .restock-confirmation {
   display: flex;
@@ -1253,12 +1302,6 @@
   }
 }
 
-.detail-physical__caption {
-  margin-top: var(--space-2);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-label);
-  color: var(--color-text-muted);
-}
 
 /* --- Skip the wait (user-testing convenience, in plain language) ---------- */
 
@@ -1872,4 +1915,259 @@
 .away-outstanding__row:active,
 .med-card:active {
   transform: scale(var(--press-scale));
+}
+
+/* --- Empty Home: feature area (visual exploration, scoped to this state) -- */
+
+/* One confident blue feature on the neutral page: instruction and action on
+   the left, what the task involves on the right. Colours are local to this
+   block so nothing else in the app changes yet. Text sits on the darker side
+   of the gradient; white stays above 5:1 even at its brightest point. */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  min-height: min(34rem, 100%);
+  padding: clamp(2rem, 1rem + 3vw, 3.5rem);
+  border-radius: var(--radius-xl);
+  background: var(--gradient-feature);
+  color: var(--feature-text);
+  /* Restrained depth: a faint top highlight and one soft, low shadow. */
+  box-shadow: var(--shadow-feature);
+}
+
+.home-hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.home-hero__title {
+  color: #ffffff;
+  font-size: clamp(2.25rem, 1.4rem + 2.6vw, 3.5rem);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.home-hero__lead {
+  max-width: 30rem;
+  text-wrap: pretty;
+  margin-top: var(--space-4);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-snug);
+  color: #eef3ff;
+}
+
+/* White on blue: unmistakably the one thing to press. */
+.home-hero__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 4.75rem;
+  margin-top: var(--space-7);
+  padding: var(--space-4) var(--space-8);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--feature-action-text);
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px rgba(10, 25, 80, 0.2),
+    0 10px 22px -12px rgba(10, 25, 80, 0.5);
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.home-hero__action:active {
+  background: var(--feature-action-pressed);
+  transform: scale(var(--press-scale));
+}
+
+/* The shared focus ring would vanish against blue, so it inverts here. */
+.home-hero__action:focus-visible {
+  box-shadow: var(--focus-ring-feature);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-hero__action:hover:not(:active) {
+    background: var(--feature-action-hover);
+  }
+}
+
+.home-hero__note {
+  margin-top: var(--space-5);
+  font-size: var(--fs-body);
+  color: #e8eefc;
+}
+
+.home-hero__figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  min-width: 0;
+}
+
+.pack-illustration {
+  display: block;
+  width: 100%;
+  max-width: 30rem;
+  height: auto;
+}
+
+.home-hero__caption {
+  max-width: 24rem;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+  text-align: center;
+  color: #eef3ff;
+}
+
+/* Portrait and narrower: stack in reading order, action before the picture. */
+@media (max-width: 62rem) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    min-height: 0;
+  }
+
+  .pack-illustration {
+    max-width: 24rem;
+  }
+}
+
+/* --- Task screens: the blue action dock ------------------------------------ */
+
+/* On task screens the instruction and its buttons share one blue area, so the
+   next action is the single dominant thing on screen. Medication details stay
+   on white above it, fully readable. */
+.action-dock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.action-dock .action-line {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--feature-text);
+}
+
+.action-dock .action-line svg {
+  color: var(--feature-text);
+}
+
+.action-dock .action-hint {
+  margin-top: calc(var(--space-2) * -1);
+}
+
+@media (max-width: 44rem) {
+  .action-dock {
+    padding: var(--space-5);
+  }
+}
+
+/* --- Busy screens: dispensing and loading --------------------------------- */
+
+.dispensing.feature {
+  /* Fills most of the screen while the device works, without a fixed height. */
+  min-height: clamp(24rem, 72dvh, 42rem);
+  padding: var(--space-8) var(--space-6);
+}
+
+/* The device drawn like the Home illustration: soft white forms on blue. */
+.feature .device-graphic__body {
+  fill: #f4f7ff;
+  stroke: none;
+}
+
+.feature .device-graphic__panel {
+  fill: #ffffff;
+  stroke: #d7e2fb;
+}
+
+.feature .device-graphic__slot {
+  fill: #9fb2e6;
+}
+
+.feature .device-graphic__tray {
+  fill: #e9eefb;
+  stroke: none;
+}
+
+.feature .device-graphic__glow {
+  fill: var(--feature-mid);
+}
+
+/* --- On-blue status area (active travel plan) ------------------------------ */
+
+.hero-status.feature .hero-status__badge {
+  color: var(--feature-action-text);
+  border-color: #ffffff;
+}
+
+/* --- Loading the pack ------------------------------------------------------- */
+
+/* Heading, the compartments filling, then status with progress, then the
+   waiting note: one sequence, with the drawing as the focal point. */
+.dispensing--loading {
+  gap: clamp(1.25rem, 0.8rem + 1.6vh, 2.25rem);
+}
+
+.loading__title {
+  font-size: clamp(2.25rem, 1.8rem + 1vw, 2.5rem); /* 36 – 40 */
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.loading-compartments {
+  display: block;
+  width: min(40rem, 100%);
+  height: auto;
+}
+
+.loading__progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: min(28rem, 100%);
+}
+
+.loading__status {
+  font-size: clamp(1.375rem, 1.25rem + 0.3vw, 1.5rem); /* 22 – 24 */
+  font-weight: 400;
+  line-height: var(--lh-snug);
+  color: var(--feature-text);
+  min-height: 1.4em;
+}
+
+.loading__hint {
+  font-size: clamp(1.125rem, 1.05rem + 0.2vw, 1.25rem); /* 18 – 20 */
+  font-weight: 400;
+  line-height: var(--lh-body);
+  color: var(--feature-text-soft);
+}
+
+/* The one accent on this screen: the progress fill, in soft aqua. */
+.progress--accent {
+  width: 100%;
+}
+
+.feature .progress--accent .progress__bar {
+  background: var(--accent-aqua);
 }

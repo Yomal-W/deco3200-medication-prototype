@@ -25,7 +25,7 @@ export function SetupReadyScreen({
 
   return (
     <div className="flow flow--wide">
-      <Card tone="success" className="hero-status hero-status--success hero-status--row">
+      <Card className="hero-status hero-status--success hero-status--row">
         <span className="hero-status__badge">
           <Icon name="check" size={44} strokeWidth={2.6} />
         </span>
@@ -72,7 +72,7 @@ export function SetupReadyScreen({
       <ul className="loaded-grid" aria-label="Loaded from the pack">
         {medications.map((medication) => (
           <li key={medication.id} className="loaded-item">
-            <MedicationVisual appearance={medication.appearance} size={68} />
+            <MedicationVisual appearance={medication.appearance} size={88} />
             <span className="loaded-item__name">{medication.name}</span>
             <span className="loaded-item__dose">{medication.strength}</span>
           </li>

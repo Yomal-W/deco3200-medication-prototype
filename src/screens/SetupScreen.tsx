@@ -26,7 +26,7 @@ export function SetupScreen({ onStartLoading, onBack }: SetupScreenProps) {
         </div>
       </div>
 
-      <Card tone="accent">
+      <Card>
         <ol className="steps">
           <li className="step">
             <span className="step__number" aria-hidden="true">
@@ -51,21 +51,23 @@ export function SetupScreen({ onStartLoading, onBack }: SetupScreenProps) {
         </ol>
       </Card>
 
-      <p className="action-line">
-        <Icon name="check" size={26} />
-        <span>
-          Press <strong>Pack is loaded</strong> when the door is closed. {user.deviceName} then
-          shows what it read from the pack.
-        </span>
-      </p>
+      <div className="feature action-dock">
+        <p className="action-line">
+          <Icon name="check" size={26} />
+          <span>
+            Press <strong>Pack is loaded</strong> when the door is closed. {user.deviceName} then
+            shows what it read from the pack.
+          </span>
+        </p>
 
-      <div className="screen-actions">
-        <Button size="xl" icon="check" onClick={onStartLoading}>
-          Pack is loaded
-        </Button>
-        <Button size="xl" variant="secondary" icon="arrowLeft" onClick={onBack}>
-          Not yet
-        </Button>
+        <div className="screen-actions">
+          <Button size="xl" icon="check" onClick={onStartLoading}>
+            Pack is loaded
+          </Button>
+          <Button size="xl" variant="secondary" icon="arrowLeft" onClick={onBack}>
+            Not yet
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -23,3 +23,15 @@ export function stockRatio(level: StockLevel | undefined): number {
   if (!level || level.capacity <= 0) return 0
   return Math.max(0, Math.min(1, level.remaining / level.capacity))
 }
+
+/**
+ * How full to draw a compartment, 0–1, or null when the level cannot be
+ * known. A missing level, or a capacity that is missing, zero or not a
+ * number, returns null rather than a guessed or misleading fill.
+ */
+export function stockFill(level: StockLevel | undefined): number | null {
+  if (!level) return null
+  const { remaining, capacity } = level
+  if (!Number.isFinite(capacity) || capacity <= 0 || !Number.isFinite(remaining)) return null
+  return Math.max(0, Math.min(1, remaining / capacity))
+}

@@ -405,7 +405,17 @@ export function AwayScreen({
             ))}
           </ul>
 
-          <Card tone="sunken">
+          {trayBusy ? (
+            <div className="flow__note away-help">
+              <Icon name="alert" size={20} className="flow__note-icon" />
+              <span>Another dose is still in the tray. Deal with it before dispensing this one.</span>
+              <Button variant="secondary" icon="arrowRight" onClick={() => onOpenDose(inTray.id)}>
+                Go to that dose
+              </Button>
+            </div>
+          ) : null}
+
+          <div className="feature action-dock">
             <ol className="steps">
               <li className="step">
                 <span className="step__number" aria-hidden="true">1</span>
@@ -419,30 +429,20 @@ export function AwayScreen({
                 <span className="step__text">Move it to the {compartment} of your travel case.</span>
               </li>
             </ol>
-          </Card>
 
-          {trayBusy ? (
-            <div className="flow__note away-help">
-              <Icon name="alert" size={20} className="flow__note-icon" />
-              <span>Another dose is still in the tray. Deal with it before dispensing this one.</span>
-              <Button variant="secondary" icon="arrowRight" onClick={() => onOpenDose(inTray.id)}>
-                Go to that dose
+            <div className="screen-actions">
+              <Button
+                size="xl"
+                icon="device"
+                disabled={trayBusy}
+                onClick={() => onDispense(dose.id)}
+              >
+                Dispense for travel case
+              </Button>
+              <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
+                Finish later
               </Button>
             </div>
-          ) : null}
-
-          <div className="screen-actions">
-            <Button
-              size="xl"
-              icon="device"
-              disabled={trayBusy}
-              onClick={() => onDispense(dose.id)}
-            >
-              Dispense for travel case
-            </Button>
-            <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
-              Finish later
-            </Button>
           </div>
 
           {nothingDispensed ? (
@@ -456,7 +456,7 @@ export function AwayScreen({
 
     return (
       <div className="flow flow--wide" ref={rootRef}>
-        <Card tone="accent" className="hero-status hero-status--accent hero-status--row">
+        <Card className="hero-status hero-status--accent hero-status--row">
           <MedicationTray items={dose.items} />
           <div className="hero-status__content">
             <p className="flow__eyebrow">Preparing travel case · {progress}</p>
@@ -480,21 +480,23 @@ export function AwayScreen({
           ))}
         </ul>
 
-        <p className="flow__note">
-          <Icon name="info" size={20} className="flow__note-icon" />
-          <span>
-            Press <strong>I&rsquo;ve packed this dose</strong> once it is in the case. This dose is
-            for {formatTime(dose.scheduledMinutes)}; packing it does not mark it as taken.
-          </span>
-        </p>
+        <div className="feature action-dock">
+          <p className="action-line">
+            <Icon name="suitcase" size={26} />
+            <span>
+              Press <strong>I&rsquo;ve packed this dose</strong> once it is in the case. This dose is
+              for {formatTime(dose.scheduledMinutes)}; packing it does not mark it as taken.
+            </span>
+          </p>
 
-        <div className="screen-actions">
-          <Button size="xl" icon="suitcase" onClick={() => onConfirmPacked(dose.id)}>
-            I&rsquo;ve packed this dose
-          </Button>
-          <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
-            Finish later
-          </Button>
+          <div className="screen-actions">
+            <Button size="xl" icon="suitcase" onClick={() => onConfirmPacked(dose.id)}>
+              I&rsquo;ve packed this dose
+            </Button>
+            <Button size="xl" variant="secondary" icon="home" onClick={onBackToToday}>
+              Finish later
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -505,7 +507,7 @@ export function AwayScreen({
   if (trip.status === 'preparing') {
     return (
       <div className="flow" ref={rootRef}>
-        <Card tone="success" className="hero-status hero-status--success">
+        <Card className="hero-status hero-status--success">
           <span className="hero-status__badge">
             <Icon name="suitcase" size={42} strokeWidth={2.4} />
           </span>
@@ -558,7 +560,7 @@ export function AwayScreen({
   if (trip.status === 'away') {
     return (
       <div className="flow" ref={rootRef}>
-        <Card tone="accent" className="hero-status hero-status--accent">
+        <Card className="hero-status hero-status--accent feature">
           <span className="hero-status__badge">
             <Icon name="suitcase" size={42} strokeWidth={2.4} />
           </span>

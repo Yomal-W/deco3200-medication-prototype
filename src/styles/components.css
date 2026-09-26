@@ -339,10 +339,11 @@
   box-shadow: none;
 }
 
+/* Confirmations sit on a neutral surface; the success colour is kept for the
+   icon and a soft edge, never a large green panel. */
 .card--success {
-  background: var(--color-success-soft);
+  background: var(--color-surface);
   border-color: var(--color-success-border);
-  box-shadow: none;
 }
 
 .card--attention {
@@ -407,6 +408,13 @@
   background: var(--color-attention-soft);
   border-color: var(--color-attention-border);
   color: var(--color-attention);
+}
+
+/* Low stock: dark red words and icon on white, framed by the soft red. */
+.status-pill--low {
+  background: var(--color-surface);
+  border-color: var(--color-low-border);
+  color: var(--color-low-text);
 }
 
 .status-pill--danger {
@@ -776,25 +784,36 @@
 .med-visual {
   display: grid;
   place-items: center;
+  /* Never squeezed by long names beside it. */
   flex: none;
+  min-width: 0;
+  padding: 0.25rem;
   border-radius: var(--radius-md);
-  background: var(--grey-100);
+  /* A soft surface lit from above, matching the stock compartments. */
+  background: linear-gradient(180deg, #ffffff 0%, var(--grey-100) 100%);
   border: 1px solid var(--color-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+/* Boxes keep the drawing's 4:3 shape, so every tablet is centred the same way. */
 .med-visual--card {
-  width: 5.75rem;
-  height: 4.5rem;
+  width: 5rem;
+  height: 3.75rem;
 }
 
 .med-visual--hero {
   width: 10.5rem;
-  height: 8.25rem;
+  height: 7.875rem;
   border-radius: var(--radius-lg);
 }
 
 .med-visual__svg {
   display: block;
+}
+
+.med-visual__svg--fill {
+  width: 100%;
+  height: 100%;
 }
 
 /* Overlapping thumbnails: a glanceable "these three" on the Today card. */
@@ -808,8 +827,9 @@
 .med-thumbs__item {
   display: grid;
   place-items: center;
-  width: 4.25rem;
-  height: 3.5rem;
+  width: 4.5rem;
+  height: 3.375rem;
+  padding: 0.125rem;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border-accent);
@@ -833,44 +853,135 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 2px solid var(--color-border-strong);
-  box-shadow: inset 0 3px 8px rgba(18, 35, 63, 0.07);
+  /* The tray: a soft inset surface in the same family as the compartments. */
+  background: linear-gradient(180deg, var(--grey-100) 0%, #ffffff 100%);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 2px 6px rgba(16, 28, 52, 0.08);
 }
 
-/* --- Medication stock cartridge ------------------------------------------- */
+/* --- Medication stock compartment ---------------------------------------- */
 
-.cartridge {
+.compartment {
   display: block;
   flex: none;
 }
 
-.cartridge__cap {
-  fill: var(--color-border-strong);
+/* --- Feature surface --------------------------------------------------------- */
+
+/* The one dominant blue area on a task screen. It re-points the semantic
+   colours, so everything nested inside — headings, text, icons, buttons,
+   pills, notes — switches to its on-blue form without per-screen rules. */
+.feature {
+  --color-heading: var(--feature-text);
+  --color-text: var(--feature-text);
+  --color-text-muted: var(--feature-text-soft);
+  --color-accent-text: var(--feature-text);
+  --color-border: var(--feature-line);
+  --color-border-accent: var(--feature-line);
+  --color-surface-sunken: var(--feature-inset);
+  --color-accent-soft: var(--feature-inset);
+  background: var(--gradient-feature);
+  color: var(--feature-text);
+  border: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-feature);
 }
 
-.cartridge__collar {
-  fill: var(--grey-200);
+/* The action on blue: white, with deep-blue text — unmistakably the thing to press. */
+.feature .btn--primary {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--feature-action-text);
+  box-shadow:
+    0 1px 2px rgba(10, 25, 80, 0.2),
+    0 10px 22px -12px rgba(10, 25, 80, 0.5);
 }
 
-.cartridge__interior {
-  fill: var(--grey-100);
+.feature .btn--primary:active {
+  background: var(--feature-action-pressed);
+  border-color: var(--feature-action-pressed);
 }
 
-.cartridge__tube {
-  stroke: var(--color-border-strong);
-  stroke-width: 3;
+.feature .btn--secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.72);
+  color: var(--feature-text);
 }
 
-.cartridge__gloss {
-  fill: #ffffff;
-  opacity: 0.55;
+.feature .btn--secondary:active,
+.feature .btn--quiet:active {
+  background: var(--feature-inset);
 }
 
-.cartridge--low .cartridge__tube {
-  stroke: var(--color-attention-mark);
+.feature .btn--quiet {
+  color: var(--feature-text);
 }
 
-.cartridge--low .cartridge__cap {
-  fill: var(--color-attention-mark);
+/* The shared blue focus ring would vanish on blue, so it inverts here. */
+.feature button:focus-visible {
+  box-shadow: var(--focus-ring-feature);
+}
+
+/* Pills that use the accent become white chips; semantic tones keep their colour. */
+.feature .status-pill--due,
+.feature .status-pill--next,
+.feature .status-pill--later {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--feature-action-text);
+}
+
+.feature .status-pill {
+  border-color: #ffffff;
+}
+
+/* Inset notes and records: a quiet translucent layer rather than a white box. */
+.feature .record-line,
+.feature .due-card__note,
+.feature .fact {
+  background: var(--feature-inset);
+  border-color: var(--feature-line);
+}
+
+.feature .step__number {
+  background: #ffffff;
+  color: var(--feature-action-text);
+}
+
+.feature .routine-progress__dot {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+
+.feature .routine-progress__dot.is-done {
+  border-color: #ffffff;
+  background: #ffffff;
+}
+
+.feature .routine-progress__dot.is-current {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px var(--feature-mid), 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.feature .progress {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: transparent;
+}
+
+.feature .progress__bar {
+  background: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .feature .btn--primary:hover:not(:active) {
+    background: var(--feature-action-hover);
+    border-color: var(--feature-action-hover);
+  }
+
+  .feature .btn--secondary:hover:not(:active),
+  .feature .btn--quiet:hover:not(:active) {
+    background: var(--feature-inset);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: var(--feature-text);
+  }
 }

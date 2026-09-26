@@ -93,6 +93,21 @@ svg {
   box-shadow: var(--focus-ring);
 }
 
+/* Interactive surfaces often set their own shadow for elevation. Matching on
+   the element as well keeps the focus ring ahead of those, so keyboard focus
+   is never hidden by a card style. */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Headings that receive focus only so a step change is announced. */
+[tabindex='-1']:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Visible to screen readers only. */
 .sr-only {
   position: absolute;

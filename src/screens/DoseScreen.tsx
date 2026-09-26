@@ -158,25 +158,27 @@ export function DoseScreen({
         </>
       ) : readyToDispense ? (
         <>
-          <p className="action-line">
-            <Icon name="device" size={26} />
-            <span>
-              Press <strong>Dispense medication</strong>. {user.deviceName} releases these{' '}
-              {countLabel(dose.items.length).toLowerCase()} into the tray.
-            </span>
-          </p>
-          <div className="screen-actions">
-            <Button size="xl" icon="device" onClick={() => onDispense(dose.id)}>
-              Dispense medication
-            </Button>
-            <Button size="xl" variant="secondary" icon="arrowLeft" onClick={onBack}>
-              Not right now
-            </Button>
+          <div className="feature action-dock">
+            <p className="action-line">
+              <Icon name="device" size={26} />
+              <span>
+                Press <strong>Dispense medication</strong>. {user.deviceName} releases these{' '}
+                {countLabel(dose.items.length).toLowerCase()} into the tray.
+              </span>
+            </p>
+            <div className="screen-actions">
+              <Button size="xl" icon="device" onClick={() => onDispense(dose.id)}>
+                Dispense medication
+              </Button>
+              <Button size="xl" variant="secondary" icon="arrowLeft" onClick={onBack}>
+                Not right now
+              </Button>
+            </div>
+            <p className="action-hint">
+              &ldquo;Not right now&rdquo; keeps them in {user.deviceName}. Nothing is dispensed or
+              recorded.
+            </p>
           </div>
-          <p className="action-hint">
-            &ldquo;Not right now&rdquo; keeps them in {user.deviceName}. Nothing is dispensed or
-            recorded.
-          </p>
           <RoutineProgress doses={doses} currentDoseId={dose.id} />
         </>
       ) : (

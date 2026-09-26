@@ -1,6 +1,6 @@
 import { Button } from './Button'
 import { Card } from './Card'
-import { StockCartridge } from './StockCartridge'
+import { StockCompartment } from './StockCompartment'
 import { user } from '../data/medications'
 
 interface EmptyDeviceCardProps {
@@ -17,11 +17,11 @@ interface EmptyDeviceCardProps {
  */
 export function EmptyDeviceCard({ onLoad, lead }: EmptyDeviceCardProps) {
   return (
-    <Card tone="accent" raised className="empty-state">
-      <span className="empty-state__cartridges" aria-hidden="true">
-        <StockCartridge level={undefined} height={120} />
-        <StockCartridge level={undefined} height={120} />
-        <StockCartridge level={undefined} height={120} />
+    <Card raised className="empty-state">
+      <span className="empty-state__compartments" aria-hidden="true">
+        <StockCompartment level={undefined} height={120} />
+        <StockCompartment level={undefined} height={120} />
+        <StockCompartment level={undefined} height={120} />
       </span>
 
       <h1 className="empty-state__title">No medication loaded yet</h1>

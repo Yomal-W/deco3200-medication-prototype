@@ -10,15 +10,21 @@ import { TabletShape } from './TabletShape'
  * first, so the drawing never depends on colour alone.
  */
 /**
- * Tablets are wide and flat, so the drawing area is wider than it is tall.
- * The viewBox is cropped to the band the tablets actually occupy, which keeps
- * them large without changing their relative sizes.
+ * One drawing space for every tablet: 120 × 90, centred at (60, 42). The
+ * widest tablet (88 units) still has 16 units of padding either side, and
+ * the contact shadow stays inside the bottom edge, so no shape, outline or
+ * shadow is ever cropped. Relative sizes between medicines are preserved.
  */
-const ASPECT = 0.76
+const VIEW_W = 120
+const VIEW_H = 90
+const ASPECT = VIEW_H / VIEW_W
 
 interface MedicationVisualProps {
   appearance: MedicationAppearance
-  /** Rendered width in px. Height follows the drawing's aspect ratio. */
+  /**
+   * Rendered width in px; height follows the drawing's aspect ratio. Omit to
+   * fill the parent box instead, scaled to fit with the aspect ratio kept.
+   */
   size?: number
   /**
    * Accessible name. Omit where the adjacent text already names the
@@ -30,48 +36,44 @@ interface MedicationVisualProps {
 
 export function MedicationVisual({
   appearance,
-  size = 72,
+  size,
   label,
   className = '',
 }: MedicationVisualProps) {
+  const fluid = size === undefined
   return (
     <svg
-      className={`med-visual__svg ${className}`.trim()}
-      width={size}
-      height={Math.round(size * ASPECT)}
-      viewBox="0 12 100 76"
+      className={`med-visual__svg${fluid ? ' med-visual__svg--fill' : ''} ${className}`.trim()}
+      width={fluid ? '100%' : size}
+      height={fluid ? '100%' : Math.round(size * ASPECT)}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      preserveAspectRatio="xMidYMid meet"
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
     >
-      <TabletShape appearance={appearance} cx={50} cy={48} shadow />
+      <TabletShape appearance={appearance} cx={60} cy={42} shadow />
     </svg>
   )
 }
 
 interface MedicationVisualBoxProps {
   appearance: MedicationAppearance
-  size?: number
   label?: string
   /** Larger surface, for hero use on a detail screen. */
   tone?: 'card' | 'hero'
 }
 
-/** The illustration on a consistent neutral surface, so every card matches. */
-export function MedicationVisualBox({
-  appearance,
-  size,
-  label,
-  tone = 'card',
-}: MedicationVisualBoxProps) {
+/**
+ * The illustration on a consistent neutral surface, so every card matches.
+ * The box sets the size and the drawing fills it, so the two can never
+ * disagree and a long capsule can never spill outside its thumbnail.
+ */
+export function MedicationVisualBox({ appearance, label, tone = 'card' }: MedicationVisualBoxProps) {
   return (
     <span className={`med-visual med-visual--${tone}`}>
-      <MedicationVisual
-        appearance={appearance}
-        size={size ?? (tone === 'hero' ? 168 : 80)}
-        label={label}
-      />
+      <MedicationVisual appearance={appearance} label={label} />
     </span>
   )
 }

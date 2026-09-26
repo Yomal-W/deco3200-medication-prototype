@@ -31,7 +31,7 @@ export function CompleteScreen({
 }: CompleteScreenProps) {
   return (
     <div className="flow">
-      <Card tone="success" className="hero-status hero-status--success">
+      <Card className="hero-status hero-status--success">
         <span className="hero-status__badge">
           <Icon name="check" size={46} strokeWidth={2.6} />
         </span>

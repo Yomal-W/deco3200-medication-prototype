@@ -31,7 +31,7 @@ export function ChangeScreen({
       <div className="flow__intro">
         <div className="change__identity">
           {medication ? (
-            <MedicationVisual appearance={medication.appearance} size={68} />
+            <MedicationVisual appearance={medication.appearance} size={84} />
           ) : null}
           <h1 className="flow__title">
             {changeKindLabel[change.kind]}: {change.medicationName}

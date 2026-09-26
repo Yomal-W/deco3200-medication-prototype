@@ -4,7 +4,7 @@ import { Card } from '../components/Card'
 import { ChangeNotice } from '../components/ChangeNotice'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
-import { EmptyDeviceCard } from '../components/EmptyDeviceCard'
+import { HomeEmptyHero } from '../components/HomeEmptyHero'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
 import { RoutineProgress } from '../components/RoutineProgress'
@@ -61,10 +61,7 @@ export function TodayScreen({
   if (!stocked) {
     return (
       <div className="today today--empty">
-        <EmptyDeviceCard
-          onLoad={onLoadMedication}
-          lead={`${user.deviceName} has no medication in it yet. Once you load your pack, your routine for the day will appear here.`}
-        />
+        <HomeEmptyHero onLoad={onLoadMedication} />
       </div>
     )
   }
@@ -80,7 +77,7 @@ export function TodayScreen({
       ) : null}
 
       {trip ? (
-        <Card tone="accent" raised>
+        <Card raised>
           <div className="next-up">
             <span className="next-up__icon" aria-hidden="true">
               <Icon name={trip.status === 'returning' ? 'home' : 'suitcase'} size={26} />
@@ -162,7 +159,7 @@ export function TodayScreen({
       <div className="today__columns">
         <div className="today__main">
           {activeDose ? (
-            <Card tone="accent" raised className="due-card due-card--fill">
+            <Card className="due-card due-card--fill feature">
               <div className="due-card__top">
                 <DoseStatusPill dose={activeDose} />
               </div>
@@ -182,7 +179,7 @@ export function TodayScreen({
                 {joinNames(doseMedicationNames(activeDose))}
               </p>
 
-              <MedicationThumbs items={activeDose.items} size={64} />
+              <MedicationThumbs items={activeDose.items} />
 
               {activeDose.items[0]?.instruction ? (
                 <p className="due-card__instruction">
@@ -212,7 +209,7 @@ export function TodayScreen({
               <RoutineProgress doses={doses} currentDoseId={activeDose.id} />
             </Card>
           ) : (
-            <Card tone="success" raised className="due-card due-card--fill">
+            <Card raised className="due-card due-card--fill">
               <div className="due-card__top">
                 <StatusPill tone="success" icon="checkCircle">
                   {outstandingTravelDoses.length > 0 ? 'Station up to date' : 'Up to date'}

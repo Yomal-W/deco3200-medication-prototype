@@ -3,7 +3,7 @@ import { EmptyDeviceCard } from '../components/EmptyDeviceCard'
 import { Icon } from '../components/Icon'
 import { MedicationVisualBox } from '../components/MedicationVisual'
 import { StatusPill } from '../components/StatusPill'
-import { StockCartridge } from '../components/StockCartridge'
+import { StockCompartment } from '../components/StockCompartment'
 import { medications, user } from '../data/medications'
 import { stockLabel, stockStatus } from '../utils/stock'
 import { countLabel } from '../utils/time'
@@ -68,42 +68,41 @@ export function MedicationsScreen({
                 className={`med-card${status === 'low' ? ' med-card--low' : ''}`}
                 onClick={() => onOpenMedication(medication.id)}
               >
-                <MedicationVisualBox appearance={medication.appearance} />
-                <span className="med-card__body">
-                  <span className="med-card__head">
+                <span className="med-card__main">
+                  <MedicationVisualBox appearance={medication.appearance} />
+                  <span className="med-card__identity">
                     <span className="med-card__name">{medication.name}</span>
+                    <span className="med-card__dose">{medication.strength}</span>
+                    <span className="med-card__meta">
+                      <Icon name="clock" size={19} />
+                      {medication.scheduleSummary}
+                    </span>
+                  </span>
+                  <Icon name="arrowRight" size={22} className="med-card__chevron" />
+                </span>
+
+                <span className="med-card__stock">
+                  <StockCompartment appearance={medication.appearance} level={level} height={72} />
+                  <span className="med-card__stock-text">
+                    <span className="med-card__stock-label">Left in {user.deviceName}</span>
+                    <span className="med-card__stock-count">{stockLabel(level)}</span>
                     {requested ? (
-                      <StatusPill tone="success" icon="checkCircle">
+                      <span className="med-card__stock-note">
+                        <Icon name="checkCircle" size={18} />
                         Restock requested
-                      </StatusPill>
-                    ) : status === 'low' ? (
-                      <StatusPill tone="attention" icon="alert">
-                        Low stock
-                      </StatusPill>
-                    ) : changing ? (
-                      <StatusPill tone="attention" icon="swap">
-                        Changing
-                      </StatusPill>
+                      </span>
                     ) : null}
                   </span>
-                  <span className="med-card__dose">{medication.strength}</span>
-                  <span className="med-card__meta">
-                    <Icon name="clock" size={19} />
-                    {medication.scheduleSummary}
-                  </span>
-                  <span
-                    className={`med-card__stock${status === 'low' ? ' med-card__stock--low' : ''}`}
-                  >
-                    <StockCartridge
-                      appearance={medication.appearance}
-                      level={level}
-                      height={30}
-                      low={status === 'low'}
-                    />
-                    {stockLabel(level)}
-                  </span>
+                  {status === 'low' ? (
+                    <StatusPill tone="low" icon="alert">
+                      Low stock
+                    </StatusPill>
+                  ) : changing ? (
+                    <StatusPill tone="attention" icon="swap">
+                      Changing
+                    </StatusPill>
+                  ) : null}
                 </span>
-                <Icon name="arrowRight" size={22} className="med-card__chevron" />
               </button>
             </li>
           )

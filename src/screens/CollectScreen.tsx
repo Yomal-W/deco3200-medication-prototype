@@ -24,7 +24,7 @@ interface CollectScreenProps {
 export function CollectScreen({ dose, doses, onConfirm, onLater }: CollectScreenProps) {
   return (
     <div className="flow flow--wide">
-      <Card tone="accent" className="hero-status hero-status--accent hero-status--row">
+      <Card className="hero-status hero-status--accent hero-status--row">
         <MedicationTray items={dose.items} />
         <div className="hero-status__content">
           <h1 className="hero-status__title">Take your medication from the tray</h1>
@@ -46,25 +46,27 @@ export function CollectScreen({ dose, doses, onConfirm, onLater }: CollectScreen
         ))}
       </ul>
 
-      <p className="action-line">
-        <Icon name="person" size={26} />
-        <span>
-          Press <strong>I&rsquo;ve taken these</strong> once you have taken them.{' '}
-          {user.deviceName} records what you tell it.
-        </span>
-      </p>
+      <div className="feature action-dock">
+        <p className="action-line">
+          <Icon name="person" size={26} />
+          <span>
+            Press <strong>I&rsquo;ve taken these</strong> once you have taken them.{' '}
+            {user.deviceName} records what you tell it.
+          </span>
+        </p>
 
-      <div className="screen-actions">
-        <Button size="xl" icon="check" onClick={() => onConfirm(dose.id)}>
-          I&rsquo;ve taken these
-        </Button>
-        <Button size="xl" variant="secondary" icon="clock" onClick={onLater}>
-          Not yet
-        </Button>
+        <div className="screen-actions">
+          <Button size="xl" icon="check" onClick={() => onConfirm(dose.id)}>
+            I&rsquo;ve taken these
+          </Button>
+          <Button size="xl" variant="secondary" icon="clock" onClick={onLater}>
+            Not yet
+          </Button>
+        </div>
+        <p className="action-hint">
+          &ldquo;Not yet&rdquo; leaves them waiting in the tray. Nothing is recorded as taken.
+        </p>
       </div>
-      <p className="action-hint">
-        &ldquo;Not yet&rdquo; leaves them waiting in the tray. Nothing is recorded as taken.
-      </p>
 
       <RoutineProgress doses={doses} currentDoseId={dose.id} />
       <DoseDetails dose={dose} />

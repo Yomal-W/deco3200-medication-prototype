@@ -39,7 +39,7 @@ export function DispensingScreen({ dose, onComplete, forTravel = false }: Dispen
   }, [doseId, onComplete, totalMs])
 
   return (
-    <div className="dispensing">
+    <div className="dispensing feature">
       <h1 className="dispensing__title">{title}</h1>
 
       <DeviceGraphic
