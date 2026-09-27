@@ -78,14 +78,14 @@
   /* Generous side margins keep every control away from the iPad browser's
      left and right edge-gesture zones. Extra space at the bottom clears the
      "more below" affordance. */
-  padding: var(--space-5) calc(var(--space-7) + env(safe-area-inset-right))
-    var(--space-7) calc(var(--space-7) + env(safe-area-inset-left));
+  padding: var(--space-5) calc(var(--shell-gutter) + env(safe-area-inset-right))
+    var(--space-7) calc(var(--shell-gutter) + env(safe-area-inset-left));
 }
 
 @media (max-width: 48rem) {
   .shell {
-    padding: var(--space-5) calc(var(--space-5) + env(safe-area-inset-right)) var(--space-8)
-      calc(var(--space-5) + env(safe-area-inset-left));
+    padding: var(--space-5) calc(var(--shell-gutter) + env(safe-area-inset-right)) var(--space-8)
+      calc(var(--shell-gutter) + env(safe-area-inset-left));
   }
 }
 
@@ -102,10 +102,12 @@
   align-items: center;
   gap: var(--space-4);
   width: 100%;
+  /* Same width and gutters as the page below, so the back button starts on
+     the content's left edge; the row stays centred, so the date does too. */
   max-width: var(--shell-max);
   margin: 0 auto;
-  padding: var(--space-2) calc(var(--space-6) + env(safe-area-inset-right)) var(--space-2)
-    calc(var(--space-6) + env(safe-area-inset-left));
+  padding: var(--space-2) calc(var(--shell-gutter) + env(safe-area-inset-right)) var(--space-2)
+    calc(var(--shell-gutter) + env(safe-area-inset-left));
   /* Just tall enough for the back button's touch target, so the bar keeps
      one height whether or not a back button is showing. */
   min-height: calc(var(--tap-target) + var(--space-4));
@@ -770,10 +772,17 @@
   }
 }
 
-/* Below tablet width the header tightens so the date keeps its room. */
+/* Below tablet width there is not room for the date to sit dead centre
+   between two equal sides, so the back button keeps its full width and the
+   date centres in the space beside it, wrapping if it must. Never overlapping. */
 @media (max-width: 44rem) {
   .app-header__inner {
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: var(--space-3);
+  }
+
+  .app-header__side--end {
+    display: none;
   }
 }
 
@@ -984,4 +993,17 @@
     border-color: rgba(255, 255, 255, 0.9);
     color: var(--feature-text);
   }
+}
+
+/* Focused flow screens centre a narrower column; the header follows it. */
+.device:has(.flow) .app-header__inner {
+  max-width: calc(var(--flow-max) + 2 * var(--shell-gutter));
+}
+
+.device:has(.flow--wide) .app-header__inner {
+  max-width: calc(var(--flow-wide-max) + 2 * var(--shell-gutter));
+}
+
+.device:has(.flow--full) .app-header__inner {
+  max-width: var(--shell-max);
 }

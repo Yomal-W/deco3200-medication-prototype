@@ -218,12 +218,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  max-width: 54rem;
+  max-width: var(--flow-max);
   margin: 0 auto;
 }
 
 .flow--wide {
-  max-width: 62rem;
+  max-width: var(--flow-wide-max);
 }
 
 .flow__intro {
@@ -1023,35 +1023,6 @@
   margin-bottom: var(--space-2);
 }
 
-/* --- Balanced Today columns ----------------------------------------------- */
-
-@media (min-width: 62.001rem) {
-  .today__columns {
-    align-items: stretch;
-  }
-
-  .today__main,
-  .today__aside {
-    height: 100%;
-  }
-
-  .today__main > .card:first-child,
-  .today__aside > .card {
-    flex: 1;
-  }
-
-  /* The panels still finish on the same line, but the action stays directly
-     under the content it belongs to. Anchoring it to the bottom pushed it off
-     screen once the routine filled up with completed history. */
-  .due-card--fill {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .due-card--fill .due-card__action {
-    margin-bottom: auto;
-  }
-}
 
 .today--empty {
   display: flex;
@@ -1517,86 +1488,22 @@
   }
 }
 
-/* A simple phone, only to show that a reminder arrives there. */
+/* A simulated phone reminder: the phone only reminds, it never dispenses. */
 .phone-example {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
+  margin: 0;
 }
 
-.phone-example__label {
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  color: var(--color-text-muted);
-  text-align: center;
-}
 
-.phone {
-  justify-self: center;
-  width: min(100%, 20rem);
-  padding: var(--space-3);
-  border-radius: 2.75rem;
-  background: var(--ink-900);
-  box-shadow: var(--shadow-raised);
-}
 
-.phone__screen {
-  min-height: 30rem;
-  padding: var(--space-8) var(--space-4) var(--space-6);
-  border-radius: 2.25rem;
-  background: linear-gradient(180deg, var(--blue-800), var(--blue-600));
-  color: var(--color-text-on-accent);
-  text-align: center;
-}
 
-.phone__time {
-  font-size: 3.5rem;
-  font-weight: var(--fw-regular);
-  line-height: 1;
-}
 
-.phone__date {
-  margin-top: var(--space-2);
-  font-size: var(--fs-meta);
-}
 
-.phone__notification {
-  margin-top: var(--space-7);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  text-align: left;
-}
 
-.phone__app {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  color: var(--color-accent-text);
-}
 
-.phone__title {
-  margin-top: var(--space-2);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semibold);
-  color: var(--color-heading);
-}
 
-.phone__med {
-  margin-top: var(--space-1);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semibold);
-}
 
-.phone__detail {
-  margin-top: var(--space-2);
-  font-size: var(--fs-meta);
-  color: var(--color-text-muted);
-}
 
 /* --- Prioritising the next action ------------------------------------------ */
 
@@ -2236,4 +2143,267 @@
 
 .feature .progress--accent .progress__bar {
   background: var(--accent-aqua);
+}
+
+/* --- Phone reminder preview (lock screen) ---------------------------------- */
+
+/* One generic modern phone: a slim metal rim, thin black bezel, camera
+   cutout and home indicator. Everything dynamic inside is live text. */
+.iphone {
+  position: relative;
+  /* About a quarter smaller than before, proportions unchanged: every part of
+     the drawing is sized from this one width. */
+  width: min(17rem, 100%);
+  padding: 5px;
+  border-radius: 3.35rem;
+  /* Brushed metal: soft highlights running along the rim. */
+  background: linear-gradient(145deg, #f1efeb 0%, #bdb8b0 18%, #f6f4f0 40%, #a19c95 68%, #e2dfd9 100%);
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 24, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    inset 0 0 2px 2px rgba(0, 0, 0, 0.12),
+    0 32px 56px -24px rgba(10, 20, 55, 0.55);
+}
+
+/* Side buttons, sitting just proud of the rim. */
+.iphone__button {
+  position: absolute;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8f8a83, #e9e6e1 55%, #b3aea7);
+}
+
+.iphone__button--action {
+  left: -3px;
+  top: 16%;
+  height: 4.5%;
+}
+
+.iphone__button--volume-up {
+  left: -3px;
+  top: 23.5%;
+  height: 8%;
+}
+
+.iphone__button--volume-down {
+  left: -3px;
+  top: 33%;
+  height: 8%;
+}
+
+.iphone__button--side {
+  right: -3px;
+  top: 25%;
+  height: 13%;
+}
+
+.iphone__bezel {
+  padding: 6px;
+  border-radius: 3.05rem;
+  background: #0b0b0d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.iphone__screen {
+  position: relative;
+  aspect-ratio: 390 / 844;
+  overflow: hidden;
+  border-radius: 2.6rem;
+  isolation: isolate;
+  container-type: inline-size;
+  color: #ffffff;
+  /* The phone's own interface font, not MediFlow's. */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  text-align: left;
+}
+
+.iphone__wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.iphone__status {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7%;
+}
+
+.iphone__island {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  width: 31%;
+  height: 50%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #000000;
+}
+
+.iphone__indicators {
+  position: absolute;
+  top: 34%;
+  right: 8%;
+  width: 17%;
+}
+
+/* Date above a large clock, as on a phone's lock screen. */
+.iphone__lock {
+  position: absolute;
+  top: 10.5%;
+  inset-inline: 0;
+  text-align: center;
+}
+
+.iphone__date {
+  font-size: max(1rem, 5.2cqw);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.iphone__clock {
+  font-size: 25cqw;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgba(233, 239, 250, 0.82);
+}
+
+/* One notification in the lower-middle: a softly translucent material with
+   a fine border and highlight. Text is sized for reading, not miniaturised. */
+.iphone__notification {
+  position: absolute;
+  inset-inline: 3%;
+  /* Just below the clock, in the lower-middle, and free to grow downwards
+     so a longer reminder never runs into the clock. */
+  top: 33%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 1.25rem;
+  background: rgba(34, 48, 74, 0.42);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Without blur, an opaque surface keeps the text readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .iphone__notification {
+    background: rgba(28, 42, 66, 0.94);
+  }
+}
+
+.iphone__app-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(145deg, var(--feature-to), var(--feature-from));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.iphone__note-body {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.iphone__note-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.iphone__note-app {
+  font-weight: 600;
+}
+
+.iphone__note-when {
+  flex: none;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.iphone__note-title {
+  font-weight: 600;
+}
+
+.iphone__note-meds {
+  margin-top: 0.125rem;
+}
+
+.iphone__note-detail {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.iphone__home {
+  position: absolute;
+  bottom: 1.4%;
+  left: 50%;
+  width: 36%;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* The line that makes the preview's status unmistakable. */
+.reminder-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+}
+
+.reminder-label svg {
+  color: var(--color-accent-text);
+}
+
+/* Phone on the left in its own narrow column; the facts and the way back on
+   the right. Both start on the same line; cards keep their natural heights. */
+.reminder-layout {
+  display: grid;
+  /* The phone's column has an explicit width: an auto column would size from
+     the phone while the phone sizes from the column, and both collapse. */
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+/* The facts sit a little closer together here, so the way back stays in view
+   beside the phone; text sizes are unchanged. */
+.reminder-layout .split__column {
+  gap: var(--space-3);
+}
+
+.reminder-layout .fact {
+  padding-block: var(--space-3);
+}
+
+.reminder-label {
+  margin-bottom: calc(var(--space-2) * -1);
+}
+
+/* The way back spans the facts column exactly, edge to edge with the cards. */
+.reminder-layout .screen-actions .btn {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+@media (max-width: 62rem) {
+  .reminder-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

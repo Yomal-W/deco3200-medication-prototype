@@ -159,7 +159,7 @@ export function TodayScreen({
       <div className="today__columns">
         <div className="today__main">
           {activeDose ? (
-            <Card className="due-card due-card--fill feature">
+            <Card className="due-card feature">
               <div className="due-card__top">
                 <DoseStatusPill dose={activeDose} />
               </div>
@@ -209,7 +209,7 @@ export function TodayScreen({
               <RoutineProgress doses={doses} currentDoseId={activeDose.id} />
             </Card>
           ) : (
-            <Card raised className="due-card due-card--fill">
+            <Card raised className="due-card">
               <div className="due-card__top">
                 <StatusPill tone="success" icon="checkCircle">
                   {outstandingTravelDoses.length > 0 ? 'Station up to date' : 'Up to date'}
@@ -264,29 +264,6 @@ export function TodayScreen({
             </Card>
           )}
 
-        </div>
-
-        <div className="today__aside">
-          <Card>
-            <div className="panel__head">
-              <div>
-                <h2 className="panel__title">Today&rsquo;s routine</h2>
-                <p className="panel__subtitle">
-                  Tap any time to see what was dispensed and confirmed.
-                </p>
-              </div>
-              <Button variant="quiet" icon="arrowRight" iconPosition="end" onClick={onOpenWhatsNext}>
-                What&rsquo;s next
-              </Button>
-            </div>
-            <DoseTimeline
-              doses={doses}
-              nextDoseId={nextDose?.id ?? null}
-              activeDoseId={activeDose?.id ?? null}
-              onSelect={onOpenDose}
-            />
-          </Card>
-
           {trip ? null : (
             <Card tone="sunken">
               <div className="next-up">
@@ -310,6 +287,29 @@ export function TodayScreen({
               </Button>
             </Card>
           )}
+        </div>
+
+        <div className="today__aside">
+          <Card>
+            <div className="panel__head">
+              <div>
+                <h2 className="panel__title">Today&rsquo;s routine</h2>
+                <p className="panel__subtitle">
+                  Tap any time to see what was dispensed and confirmed.
+                </p>
+              </div>
+              <Button variant="quiet" icon="arrowRight" iconPosition="end" onClick={onOpenWhatsNext}>
+                What&rsquo;s next
+              </Button>
+            </div>
+            <DoseTimeline
+              doses={doses}
+              nextDoseId={nextDose?.id ?? null}
+              activeDoseId={activeDose?.id ?? null}
+              onSelect={onOpenDose}
+            />
+          </Card>
+
         </div>
       </div>
     </div>

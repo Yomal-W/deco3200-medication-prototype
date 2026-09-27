@@ -199,7 +199,19 @@
 
   /* --- Layout -------------------------------------------------------------- */
   --shell-max: 78rem;
+  /* One side gutter for the page and the header, so they share a left edge. */
+  --shell-gutter: var(--space-7);
+  /* Content widths for focused flow screens. The header matches whichever
+     one a screen uses, so its back button lines up with the heading. */
+  --flow-max: 54rem;
+  --flow-wide-max: 62rem;
   --focus-ring: 0 0 0 3px var(--color-surface), 0 0 0 6px var(--color-accent);
+}
+
+@media (max-width: 48rem) {
+  :root {
+    --shell-gutter: var(--space-5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -6,7 +6,7 @@ import { DoseStatusPill } from '../components/DoseStatusPill'
 import { Icon } from '../components/Icon'
 import { MedicationItem } from '../components/MedicationItem'
 import { MedicationTray } from '../components/MedicationTray'
-import { StatusPill } from '../components/StatusPill'
+import { PhoneReminderPreview } from '../components/PhoneReminderPreview'
 import { TravelReport } from '../components/TravelReport'
 import { getMedication, user } from '../data/medications'
 import { REMINDER_LEAD_MINUTES, awayOptions } from '../data/session'
@@ -124,42 +124,22 @@ export function AwayScreen({
               before each dose time.
             </p>
           </div>
-          <StatusPill tone="later" icon="info">
-            Example only
-          </StatusPill>
         </div>
 
+        <p className="reminder-label">
+          <Icon name="info" size={20} />
+          Simulated reminder — not sent to a real phone.
+        </p>
+
         {preview ? (
-          <div className="split">
-            <div className="phone-example">
-              <p className="phone-example__label">Simulated reminder · not sent to a real phone</p>
-              <div className="phone" aria-label="Example phone reminder">
-                <div className="phone__screen">
-                  <p className="phone__time">
-                    {formatTime(preview.remindAt).replace(/ (AM|PM)$/, '')}
-                  </p>
-                  <p className="phone__date">{user.today}</p>
-                  <div className="phone__notification">
-                    <p className="phone__app">
-                      <Icon name="device" size={18} />
-                      {user.deviceName}
-                    </p>
-                    <p className="phone__title">
-                      Medication due in {REMINDER_LEAD_MINUTES} minutes
-                    </p>
-                    {medicationLines(preview.dose).map((line) => (
-                      <p key={line} className="phone__med">
-                        {line}
-                      </p>
-                    ))}
-                    <p className="phone__detail">
-                      Due at {formatTime(preview.dose.scheduledMinutes)} · take from your travel
-                      case
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="reminder-layout">
+            <figure className="phone-example">
+              <PhoneReminderPreview
+                dose={preview.dose}
+                remindAt={preview.remindAt}
+                leadMinutes={REMINDER_LEAD_MINUTES}
+              />
+            </figure>
 
             <div className="split__column">
               <div className="fact">
@@ -191,31 +171,37 @@ export function AwayScreen({
                   <p className="fact__detail">The phone only reminds. It does not dispense.</p>
                 </div>
               </div>
+              <div className="screen-actions">
+                <Button size="xl" icon="arrowLeft" onClick={() => setPreviewFor(null)}>
+                  Back to travel plan
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
-          <Card tone="success">
-            <div className="next-up">
-              <span className="next-up__icon" aria-hidden="true">
-                <Icon name="checkCircle" size={26} />
-              </span>
-              <div className="next-up__body">
-                <p className="next-up__label">No reminders left</p>
-                <p className="next-up__value">
-                  {tripDoses.length === 0
-                    ? 'No doses fall while you’re away.'
-                    : 'Every dose from your travel case has been reported as taken.'}
-                </p>
+          <>
+            <Card tone="success">
+              <div className="next-up">
+                <span className="next-up__icon" aria-hidden="true">
+                  <Icon name="checkCircle" size={26} />
+                </span>
+                <div className="next-up__body">
+                  <p className="next-up__label">No reminders left</p>
+                  <p className="next-up__value">
+                    {tripDoses.length === 0
+                      ? 'No doses fall while you’re away.'
+                      : 'Every dose from your travel case has been reported as taken.'}
+                  </p>
+                </div>
               </div>
+            </Card>
+            <div className="screen-actions">
+              <Button size="xl" icon="arrowLeft" onClick={() => setPreviewFor(null)}>
+                Back to travel plan
+              </Button>
             </div>
-          </Card>
+          </>
         )}
-
-        <div className="screen-actions">
-          <Button size="xl" icon="arrowLeft" onClick={() => setPreviewFor(null)}>
-            Back to travel plan
-          </Button>
-        </div>
       </div>
     )
   }
