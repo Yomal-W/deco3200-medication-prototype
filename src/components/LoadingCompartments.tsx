@@ -1,37 +1,37 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, type CSSProperties } from 'react'
 import { medications } from '../data/medications'
 import { TabletShape } from './TabletShape'
+import {
+  BATCH_OF,
+  FIRST_X,
+  PITCH,
+  TABLET_SCALE,
+  WINDOW_BOTTOM,
+  WINDOW_HEIGHT,
+  WINDOW_TOP,
+  WINDOW_WIDTH,
+  restingPlaces,
+} from '../utils/loadingPile'
 
 /*
- * The station's compartments filling from the pharmacy pack, in the same soft
- * dimensional style as the Home illustration and the stock compartments.
+ * The station's compartments receiving medication from the pharmacy pack:
+ * a few tablets drop into each compartment and settle as a small pile.
  *
- * Every compartment fills together, driven by the loading screen's own steps,
- * so the drawing always agrees with the status line, the progress bar and the
- * moment the screen moves on. Nothing here suggests that any one medication
- * has been detected or checked. Decorative: the status line carries the words.
+ * Schematic only. Four tablets per compartment is a representation of the
+ * process, not a count, and nothing suggests any one tablet or medication has
+ * been detected or checked. Every compartment shows its own medication.
+ *
+ * The drops follow the loading screen's own steps: a batch of tablets only
+ * animates while its step is current, earlier batches are simply shown
+ * settled, and later ones are not drawn yet. There is no timer here, so the
+ * drawing can never drift from the status line, the progress bar or the
+ * moment the screen moves on. Decorative: the status line carries the words.
  */
-
-/** How full the compartments are at each loading step. */
-const LEVELS = [1 / 3, 2 / 3, 1]
-
-/* Drawing space for the row of compartment windows. */
-const WINDOW_TOP = 70
-const WINDOW_HEIGHT = 132
-const WINDOW_WIDTH = 66
-const FIRST_X = 64
-const PITCH = 86
-/** One scale for every tablet, so medicines keep their relative sizes. */
-const TABLET_SCALE = 0.5
-/** Headroom above a full compartment, so its tablet never meets the rim. */
-const HEADROOM = 30
-/** How far the contents travel from empty (hidden below) to full. */
-const TRAVEL = WINDOW_HEIGHT - HEADROOM + 16
 
 interface LoadingCompartmentsProps {
   /** The loading screen's current step, 0–2. */
   step: number
-  /** How long each step lasts, so each rise ends exactly as the next begins. */
+  /** How long each step lasts; every drop in a batch ends well within it. */
   stepMs: number
   reduceMotion: boolean
 }
@@ -40,18 +40,10 @@ export function LoadingCompartments({ step, stepMs, reduceMotion }: LoadingCompa
   const id = useId().replace(/:/g, '')
   const g = (name: string) => `${name}-${id}`
 
-  // Start empty and rise into step 0 just after mounting, so the first fill
-  // is seen. A timeout rather than an animation frame, so it still starts if
-  // the page is briefly in the background.
-  const [started, setStarted] = useState(false)
-  useEffect(() => {
-    const timer = window.setTimeout(() => setStarted(true), 30)
-    return () => window.clearTimeout(timer)
-  }, [])
-
-  const level = started ? LEVELS[Math.min(step, LEVELS.length - 1)] : 0
-  const offset = (1 - level) * TRAVEL
-  const transition = reduceMotion ? 'none' : `transform ${stepMs}ms linear`
+  // Each drop takes under half a step, and the stagger fits in the rest, so a
+  // batch has always settled before the next step begins.
+  const dropMs = Math.min(700, stepMs * 0.42)
+  const staggerMs = Math.min(80, (stepMs * 0.25) / medications.length)
 
   return (
     <svg
@@ -65,20 +57,19 @@ export function LoadingCompartments({ step, stepMs, reduceMotion }: LoadingCompa
           <stop offset="0%" stopColor="#0b1a52" stopOpacity="0.4" />
           <stop offset="100%" stopColor="#0b1a52" stopOpacity="0" />
         </radialGradient>
+        <radialGradient id={g('floor')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#1a2a55" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="#1a2a55" stopOpacity="0" />
+        </radialGradient>
         <linearGradient id={g('housing')} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
           <stop offset="100%" stopColor="#e3eaf9" />
         </linearGradient>
+        {/* The inside of a compartment: light at the opening, deeper at the floor. */}
         <linearGradient id={g('window')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#d9e1f0" />
-          <stop offset="100%" stopColor="#eef1f8" />
+          <stop offset="0%" stopColor="#eef1f8" />
+          <stop offset="100%" stopColor="#d6deee" />
         </linearGradient>
-        {medications.map((medication, index) => (
-          <linearGradient key={medication.id} id={g(`contents-${index}`)} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={medication.appearance.tint} />
-            <stop offset="100%" stopColor={medication.appearance.edge} />
-          </linearGradient>
-        ))}
         {medications.map((medication, index) => (
           <clipPath key={medication.id} id={g(`clip-${index}`)}>
             <rect
@@ -99,38 +90,61 @@ export function LoadingCompartments({ step, stepMs, reduceMotion }: LoadingCompa
       <rect x="62" y="40" width="504" height="8" rx="4" fill="#ffffff" opacity="0.9" />
 
       {medications.map((medication, index) => {
-        const x = FIRST_X + index * PITCH
+        const left = FIRST_X + index * PITCH
+        const places = restingPlaces(medication.appearance, left)
+
         return (
           <g key={medication.id}>
             <rect
-              x={x}
+              x={left}
               y={WINDOW_TOP}
               width={WINDOW_WIDTH}
               height={WINDOW_HEIGHT}
               rx="16"
               fill={`url(#${g('window')})`}
             />
+            <ellipse
+              cx={left + WINDOW_WIDTH / 2}
+              cy={WINDOW_BOTTOM - 5}
+              rx={WINDOW_WIDTH * 0.42}
+              ry="6"
+              fill={`url(#${g('floor')})`}
+            />
+
+            {/* Tablets are clipped by the window itself, so they enter through
+                the opening and can never pass through its sides or floor. */}
             <g clipPath={`url(#${g(`clip-${index}`)})`}>
-              {/* Contents rise as a whole; the tablet rests centred on top. */}
-              <g style={{ transform: `translateY(${offset}px)`, transition }}>
-                <rect
-                  x={x}
-                  y={WINDOW_TOP + HEADROOM}
-                  width={WINDOW_WIDTH}
-                  height={WINDOW_HEIGHT + 16}
-                  fill={`url(#${g(`contents-${index}`)})`}
-                />
-                <rect x={x} y={WINDOW_TOP + HEADROOM} width={WINDOW_WIDTH} height="2" fill="#ffffff" opacity="0.55" />
-                <TabletShape
-                  appearance={medication.appearance}
-                  cx={x + WINDOW_WIDTH / 2}
-                  cy={WINDOW_TOP + HEADROOM - 5}
-                  scale={TABLET_SCALE}
-                />
-              </g>
+              {places.map((place, tablet) => {
+                if (place.batch > step) return null
+                const dropping = !reduceMotion && place.batch === step
+                const order = BATCH_OF.slice(0, tablet).filter((b) => b === place.batch).length
+                const style = {
+                  '--tilt': `${place.tilt}deg`,
+                  '--fall': `${WINDOW_TOP - 14 - place.y}px`,
+                  animationDuration: `${dropMs}ms`,
+                  animationDelay: `${index * staggerMs + order * dropMs * 0.5}ms`,
+                } as CSSProperties
+                return (
+                  <g key={tablet} transform={`translate(${place.x} ${place.y})`}>
+                    <g
+                      className={`loading-pill${dropping ? ' loading-pill--dropping' : ''}`}
+                      style={style}
+                    >
+                      <TabletShape
+                        appearance={medication.appearance}
+                        cx={0}
+                        cy={0}
+                        scale={TABLET_SCALE}
+                      />
+                    </g>
+                  </g>
+                )
+              })}
             </g>
+
+            {/* The rim and glass sit in front of the contents. */}
             <rect
-              x={x}
+              x={left}
               y={WINDOW_TOP}
               width={WINDOW_WIDTH}
               height={WINDOW_HEIGHT}
@@ -139,7 +153,15 @@ export function LoadingCompartments({ step, stepMs, reduceMotion }: LoadingCompa
               stroke="#c3cde3"
               strokeWidth="2"
             />
-            <rect x={x + 7} y={WINDOW_TOP + 10} width="5" height={WINDOW_HEIGHT - 28} rx="2.5" fill="#ffffff" opacity="0.5" />
+            <rect
+              x={left + 7}
+              y={WINDOW_TOP + 10}
+              width="4"
+              height={WINDOW_HEIGHT - 40}
+              rx="2"
+              fill="#ffffff"
+              opacity="0.4"
+            />
           </g>
         )
       })}

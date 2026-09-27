@@ -29,34 +29,37 @@ export function SetupLoadingScreen({ onComplete }: SetupLoadingScreenProps) {
 
   return (
     <div className="dispensing dispensing--loading feature">
-      <h1 className="loading__title">Loading your medication</h1>
-
-      <LoadingCompartments step={step} stepMs={totalMs * 0.33} reduceMotion={reduceMotion} />
-
-      <div className="loading__progress">
-        <p className="loading__status" role="status" aria-live="polite">
-          {steps[step]}
-        </p>
-        <div
-          className="progress progress--accent"
-          role="progressbar"
-          aria-label="Loading your medication"
-          aria-valuetext={steps[step]}
-        >
-          {/* A smooth fill that ends exactly at completion; with reduced motion it
-              steps with the status instead, never jumping ahead of it. */}
-          <span
-            className="progress__bar"
-            style={
-              reduceMotion
-                ? { animation: 'none', width: `${((step + 1) / steps.length) * 100}%` }
-                : { animationDuration: `${totalMs}ms` }
-            }
-          />
-        </div>
+      <div className="loading__intro">
+        <h1 className="loading__title">Loading your medication</h1>
+        <LoadingCompartments step={step} stepMs={totalMs * 0.33} reduceMotion={reduceMotion} />
       </div>
 
-      <p className="loading__hint">Please wait. There is nothing to press.</p>
+      <div className="loading__progress">
+        <div className="loading__meter">
+          <p className="loading__status" role="status" aria-live="polite">
+            {steps[step]}
+          </p>
+          <div
+            className="progress progress--accent"
+            role="progressbar"
+            aria-label="Loading your medication"
+            aria-valuetext={steps[step]}
+          >
+            {/* A smooth fill that ends exactly at completion; with reduced motion it
+                steps with the status instead, never jumping ahead of it. */}
+            <span
+              className="progress__bar"
+              style={
+                reduceMotion
+                  ? { animation: 'none', width: `${((step + 1) / steps.length) * 100}%` }
+                  : { animationDuration: `${totalMs}ms` }
+              }
+            />
+          </div>
+        </div>
+
+        <p className="loading__hint">Please wait. There is nothing to press.</p>
+      </div>
     </div>
   )
 }

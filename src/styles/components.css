@@ -59,7 +59,7 @@
   background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: var(--fs-meta);
-  font-weight: 650;
+  font-weight: var(--fw-medium);
   box-shadow: var(--shadow-raised);
   cursor: pointer;
 }
@@ -139,7 +139,7 @@
   border-radius: var(--radius-md);
   background: none;
   font-size: var(--fs-body);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   line-height: var(--lh-snug);
   color: var(--color-text);
   /* One line where it fits; wraps gracefully rather than shrinking. */
@@ -159,7 +159,7 @@
   border: var(--border-control) solid transparent;
   border-radius: var(--radius-md);
   font-size: var(--fs-body);
-  font-weight: 650;
+  font-weight: var(--fw-semibold);
   line-height: var(--lh-snug);
   text-align: center;
   cursor: pointer;
@@ -188,7 +188,7 @@
 
 .btn--xl {
   min-height: 4.75rem;
-  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  font-size: var(--fs-lead);
   padding: var(--space-5) var(--space-8);
 }
 
@@ -244,7 +244,7 @@
   background: var(--color-surface);
   color: var(--color-heading);
   font-size: var(--fs-body);
-  font-weight: 650;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition:
     background-color var(--duration-fast) var(--ease),
@@ -291,7 +291,7 @@
   background: none;
   color: var(--color-text-muted);
   font-size: var(--fs-meta);
-  font-weight: 650;
+  font-weight: var(--fw-medium);
   cursor: pointer;
   transition:
     background-color var(--duration-fast) var(--ease),
@@ -306,7 +306,7 @@
 .app-nav__item.is-active {
   background: var(--color-accent-soft);
   color: var(--color-accent-text);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
 }
 
 /* The selected tab also carries a bar, so it never relies on colour alone. */
@@ -375,7 +375,7 @@
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   font-size: var(--fs-meta);
-  font-weight: 700;
+  font-weight: var(--fw-medium);
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -465,7 +465,7 @@
 
 .med-item__name {
   font-size: var(--fs-h2);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   color: var(--color-heading);
   line-height: var(--lh-tight);
 }
@@ -473,7 +473,7 @@
 .med-item__dose {
   margin-top: var(--space-1);
   font-size: var(--fs-lead);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--color-text);
 }
 
@@ -538,7 +538,7 @@
 
 .timeline__time {
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   color: var(--color-heading);
   line-height: 1.45;
   white-space: nowrap;
@@ -576,7 +576,7 @@
 
 .timeline__title {
   font-size: var(--fs-body);
-  font-weight: 650;
+  font-weight: var(--fw-semibold);
   color: var(--color-heading);
   line-height: var(--lh-snug);
 }
@@ -673,7 +673,7 @@
 
 .notice__title {
   font-size: var(--fs-h3);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   color: var(--color-heading);
   line-height: var(--lh-snug);
 }
@@ -690,7 +690,7 @@
   gap: var(--space-2);
   margin-top: var(--space-3);
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   color: var(--color-accent-text);
 }
 

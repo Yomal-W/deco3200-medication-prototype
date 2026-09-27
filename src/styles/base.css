@@ -54,7 +54,7 @@ h2,
 h3 {
   color: var(--color-heading);
   line-height: var(--lh-tight);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
@@ -63,6 +63,12 @@ h3 {
 h1 {
   font-size: var(--fs-h1);
   letter-spacing: -0.02em;
+}
+
+/* Emphasis inside sentences: semibold, never a heavy bold. */
+strong,
+b {
+  font-weight: var(--fw-semibold);
 }
 
 h2 {

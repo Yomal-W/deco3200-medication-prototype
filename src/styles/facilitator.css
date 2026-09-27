@@ -57,7 +57,7 @@
 
 .facilitator__section-label {
   font-size: var(--fs-meta);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #9fb2cc;
@@ -93,14 +93,14 @@
 
 .facilitator__option-name {
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
 }
 
 .facilitator__option-note {
   margin-top: var(--space-1);
   font-size: var(--fs-meta);
   color: #c4d2e6;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
 }
 
 .facilitator__reset {
@@ -116,7 +116,7 @@
   background: #ffffff;
   color: var(--blue-900);
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
@@ -175,7 +175,7 @@
   background: transparent;
   color: #ffffff;
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
@@ -213,7 +213,7 @@
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
   font-size: var(--fs-meta);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
