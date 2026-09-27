@@ -54,13 +54,21 @@ h2,
 h3 {
   color: var(--color-heading);
   line-height: var(--lh-tight);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
+/* Large titles tighten slightly, as system large titles do. */
 h1 {
   font-size: var(--fs-h1);
+  letter-spacing: -0.02em;
+}
+
+/* Emphasis inside sentences: semibold, never a heavy bold. */
+strong,
+b {
+  font-weight: var(--fw-semibold);
 }
 
 h2 {
@@ -89,6 +97,21 @@ svg {
 :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+/* Interactive surfaces often set their own shadow for elevation. Matching on
+   the element as well keeps the focus ring ahead of those, so keyboard focus
+   is never hidden by a card style. */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Headings that receive focus only so a step change is announced. */
+[tabindex='-1']:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Visible to screen readers only. */

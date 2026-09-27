@@ -9,13 +9,6 @@ export function formatTime(minutesAfterMidnight: number): string {
   return `${hours12}:${String(minutes % 60).padStart(2, '0')} ${suffix}`
 }
 
-export function greetingFor(minutesAfterMidnight: number): string {
-  const hours = Math.floor((((minutesAfterMidnight % 1440) + 1440) % 1440) / 60)
-  if (hours < 12) return 'Good morning'
-  if (hours < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
 /** "Metformin, Ramipril and Aspirin" */
 export function joinNames(names: string[]): string {
   if (names.length === 0) return ''

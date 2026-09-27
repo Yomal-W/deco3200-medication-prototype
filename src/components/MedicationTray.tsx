@@ -11,7 +11,7 @@ interface MedicationTrayProps {
  * The device's collection tray with this dose's medications resting in it.
  * Purely a representation — the device records what it released, nothing more.
  */
-export function MedicationTray({ items, size = 58 }: MedicationTrayProps) {
+export function MedicationTray({ items, size = 68 }: MedicationTrayProps) {
   return (
     <div className="med-tray">
       {items.map((item) => (
@@ -27,22 +27,19 @@ export function MedicationTray({ items, size = 58 }: MedicationTrayProps) {
 
 interface MedicationThumbsProps {
   items: DoseItem[]
-  size?: number
 }
 
 /**
- * A tight, overlapping row of the medications in a dose. Decorative: the
- * medication names always appear as text alongside it.
+ * A tight row of the medications in a dose. Decorative: the medication names
+ * always appear as text alongside it. Each tile sets the size and the drawing
+ * fills it, so a long tablet can never spill out of its tile.
  */
-export function MedicationThumbs({ items, size = 52 }: MedicationThumbsProps) {
+export function MedicationThumbs({ items }: MedicationThumbsProps) {
   return (
     <span className="med-thumbs" aria-hidden="true">
       {items.slice(0, 3).map((item) => (
         <span key={item.medicationId} className="med-thumbs__item">
-          <MedicationVisual
-            appearance={getMedication(item.medicationId).appearance}
-            size={size}
-          />
+          <MedicationVisual appearance={getMedication(item.medicationId).appearance} />
         </span>
       ))}
     </span>

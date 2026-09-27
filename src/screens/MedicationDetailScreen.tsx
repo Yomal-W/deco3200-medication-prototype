@@ -2,9 +2,9 @@ import type { Medication, PrescriptionChange, StockLevel } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
-import { MedicationVisual } from '../components/MedicationVisual'
+import { MedicationVisualBox } from '../components/MedicationVisual'
 import { StatusPill } from '../components/StatusPill'
-import { StockCartridge } from '../components/StockCartridge'
+import { StockCompartment } from '../components/StockCompartment'
 import { user } from '../data/medications'
 import { illustrationLabel } from '../utils/medication'
 import { stockLabel, stockStatus, stockStatusLabel } from '../utils/stock'
@@ -51,13 +51,9 @@ export function MedicationDetailScreen({
             {medication.strength} · 1 {medication.form}
           </p>
         </div>
-        {low && !requested ? (
-          <StatusPill tone="attention" icon="alert">
+        {low ? (
+          <StatusPill tone="low" icon="alert">
             Low stock
-          </StatusPill>
-        ) : low && requested ? (
-          <StatusPill tone="success" icon="checkCircle">
-            Restock requested
           </StatusPill>
         ) : changing ? (
           <StatusPill tone="attention" icon="swap">
@@ -67,56 +63,59 @@ export function MedicationDetailScreen({
       </div>
 
       <div className="split">
-        <Card className="detail-side">
-          <div className="detail-physical">
-            <div className="detail-physical__item">
-              <MedicationVisual
-                appearance={medication.appearance}
-                size={116}
-                label={illustrationLabel(medication)}
-              />
-              <p className="detail-physical__caption">What it looks like</p>
+        <Card className={`detail-side${low ? ' detail-side--low' : ''}`}>
+          <section className="stock-panel" aria-labelledby="stock-panel-label">
+            <h2 id="stock-panel-label" className="stock-panel__label">
+              Left in {user.deviceName}
+            </h2>
+            <div className="stock-panel__main">
+              <StockCompartment appearance={medication.appearance} level={level} height={150} />
+              <div className="stock-panel__figures">
+                <p className="stock-panel__count">{stockLabel(level)}</p>
+                <p className="stock-panel__status">
+                  <Icon name={low ? 'alert' : status === 'empty' ? 'info' : 'checkCircle'} size={20} />
+                  {stockStatusLabel(status)}
+                </p>
+                {level && level.capacity > 0 ? (
+                  <p className="stock-panel__capacity">Holds {level.capacity} doses when full</p>
+                ) : null}
+              </div>
             </div>
 
-            <div className="detail-physical__item detail-physical__item--stock">
-              <StockCartridge
-                appearance={medication.appearance}
-                level={level}
-                height={116}
-                low={low}
-              />
-              <p className="detail-stock__label">Left in {user.deviceName}</p>
-              <p className={`detail-stock__value${low ? ' detail-stock__value--low' : ''}`}>
-                {stockLabel(level)}
+            {low && !requested ? (
+              <Button size="lg" block icon="refresh" onClick={onRequestRestock}>
+                Ask pharmacy to restock
+              </Button>
+            ) : null}
+
+            {low && requested ? (
+              <p className="restock-confirmation">
+                <Icon name="checkCircle" size={24} className="restock-confirmation__icon" />
+                <span>
+                  <span className="restock-confirmation__title">
+                    Restock requested at {restockRequestedAt}
+                  </span>
+                  <span className="restock-confirmation__detail">
+                    {user.pharmacy} has been notified. The request stays here until it arrives.
+                  </span>
+                </span>
               </p>
-              <p className="detail-stock__status">{stockStatusLabel(status)}</p>
+            ) : null}
+          </section>
+
+          <div className="appearance-row">
+            <MedicationVisualBox
+              appearance={medication.appearance}
+              label={illustrationLabel(medication)}
+            />
+            <div>
+              <p className="appearance-row__title">What it looks like</p>
+              <p className="appearance-note">
+                <Icon name="info" size={18} />
+                <span>Illustrative appearance — your medication may look different.</span>
+              </p>
             </div>
           </div>
-
-          <p className="appearance-note">
-            <Icon name="info" size={18} />
-            <span>Illustrative appearance — your medication may look different.</span>
-          </p>
-
-          {low && !requested ? (
-            <Button size="lg" block icon="refresh" onClick={onRequestRestock}>
-              Ask pharmacy to restock
-            </Button>
-          ) : null}
-
-          {low && requested ? (
-            <p className="restock-confirmation">
-              <Icon name="checkCircle" size={24} className="restock-confirmation__icon" />
-              <span>
-                <span className="restock-confirmation__title">
-                  Restock requested at {restockRequestedAt}
-                </span>
-                <span className="restock-confirmation__detail">
-                  {user.pharmacy} has been notified. The request stays here until it arrives.
-                </span>
-              </span>
-            </p>
-          ) : null}
         </Card>
 
         <Card>

@@ -1,15 +1,17 @@
-import type { Dose, PrescriptionChange } from '../types'
+import type { AwayPlan, Dose, PrescriptionChange } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { ChangeNotice } from '../components/ChangeNotice'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
-import { EmptyDeviceCard } from '../components/EmptyDeviceCard'
+import { HomeEmptyHero } from '../components/HomeEmptyHero'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
+import { RoutineProgress } from '../components/RoutineProgress'
 import { StatusPill } from '../components/StatusPill'
 import { user } from '../data/medications'
-import { doseMedicationNames, doseSummary } from '../utils/dose'
+import { doseCountLabel, doseMedicationNames } from '../utils/dose'
+import { returnLabel } from '../utils/travel'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
 interface TodayScreenProps {
@@ -27,6 +29,12 @@ interface TodayScreenProps {
   /** True once the dose that was due has been dealt with. */
   canSkipAhead: boolean
   onSkipToNext: () => void
+  /** The unfinished trip, if any. */
+  trip: AwayPlan | null
+  /** Doses from an earlier trip still in the travel case or not yet known. */
+  outstandingTravelDoses: Dose[]
+  onOpenAway: () => void
+  onReturnHome: () => void
 }
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
@@ -43,16 +51,17 @@ export function TodayScreen({
   onOpenWhatsNext,
   canSkipAhead,
   onSkipToNext,
+  trip,
+  outstandingTravelDoses,
+  onOpenAway,
+  onReturnHome,
 }: TodayScreenProps) {
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
 
   if (!stocked) {
     return (
       <div className="today today--empty">
-        <EmptyDeviceCard
-          onLoad={onLoadMedication}
-          lead={`${user.deviceName} has no medication in it yet. Once you load your pack, your routine for the day will appear here.`}
-        />
+        <HomeEmptyHero onLoad={onLoadMedication} />
       </div>
     )
   }
@@ -67,10 +76,90 @@ export function TodayScreen({
         />
       ) : null}
 
+      {trip ? (
+        <Card raised>
+          <div className="next-up">
+            <span className="next-up__icon" aria-hidden="true">
+              <Icon name={trip.status === 'returning' ? 'home' : 'suitcase'} size={26} />
+            </span>
+            <div className="next-up__body">
+              {trip.status === 'away' ? (
+                <>
+                  <p className="next-up__label">Away from home</p>
+                  <p className="next-up__value">
+                    Back by {returnLabel(trip)} ·{' '}
+                    {doseCountLabel(trip.doseIds.length).toLowerCase()} packed
+                  </p>
+                </>
+              ) : trip.status === 'returning' ? (
+                <>
+                  <p className="next-up__label">Welcome back</p>
+                  <p className="next-up__value">Tell {user.deviceName} about your travel case</p>
+                </>
+              ) : (
+                <>
+                  <p className="next-up__label">Travel plan in progress</p>
+                  <p className="next-up__value">
+                    {trip.status === 'reviewing'
+                      ? 'Check the doses you’ll need'
+                      : 'Finish preparing your travel case'}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="screen-actions away-card__action">
+            {trip.status === 'away' ? (
+              <>
+                <Button size="lg" variant="secondary" icon="home" onClick={onReturnHome}>
+                  I&rsquo;m back home
+                </Button>
+                <Button size="lg" variant="secondary" icon="suitcase" onClick={onOpenAway}>
+                  View travel plan
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="lg"
+                variant="secondary"
+                icon="arrowRight"
+                iconPosition="end"
+                onClick={onOpenAway}
+              >
+                {trip.status === 'returning' ? 'Finish coming home' : 'Continue travel plan'}
+              </Button>
+            )}
+          </div>
+        </Card>
+      ) : null}
+
+      {outstandingTravelDoses.length > 0 ? (
+        <Card tone="attention">
+          <h2 className="section-title">From your travel case</h2>
+          <ul className="away-outstanding">
+            {outstandingTravelDoses.map((dose) => (
+              <li key={dose.id}>
+                <button
+                  type="button"
+                  className="away-outstanding__row"
+                  onClick={() => onOpenDose(dose.id)}
+                >
+                  <span className="away-outstanding__text">
+                    {formatTime(dose.scheduledMinutes)} · {dose.title}
+                  </span>
+                  <DoseStatusPill dose={dose} />
+                  <Icon name="arrowRight" size={22} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
       <div className="today__columns">
         <div className="today__main">
           {activeDose ? (
-            <Card tone="accent" raised className="due-card due-card--fill">
+            <Card className="due-card feature">
               <div className="due-card__top">
                 <DoseStatusPill dose={activeDose} />
               </div>
@@ -90,7 +179,7 @@ export function TodayScreen({
                 {joinNames(doseMedicationNames(activeDose))}
               </p>
 
-              <MedicationThumbs items={activeDose.items} size={64} />
+              <MedicationThumbs items={activeDose.items} />
 
               {activeDose.items[0]?.instruction ? (
                 <p className="due-card__instruction">
@@ -116,22 +205,30 @@ export function TodayScreen({
                   <span>Dispensed at {activeDose.dispensedAt}. Waiting for you to confirm.</span>
                 </p>
               ) : null}
+
+              <RoutineProgress doses={doses} currentDoseId={activeDose.id} />
             </Card>
           ) : (
-            <Card tone="success" raised className="due-card due-card--fill">
+            <Card raised className="due-card">
               <div className="due-card__top">
                 <StatusPill tone="success" icon="checkCircle">
-                  Up to date
+                  {outstandingTravelDoses.length > 0 ? 'Station up to date' : 'Up to date'}
                 </StatusPill>
                 <Icon name="checkCircle" size={30} />
               </div>
-              <h1 className="due-card__title">Nothing to take right now</h1>
+              <h1 className="due-card__title">
+                {outstandingTravelDoses.length > 0
+                  ? 'Nothing to dispense right now'
+                  : 'Nothing to take right now'}
+              </h1>
               <p className="due-card__summary">
                 {nextDose
                   ? `Your next medication is ${nextDose.periodLabel.toLowerCase()}, at ${formatTime(
                       nextDose.scheduledMinutes,
                     )}.`
-                  : 'You have finished your medication for today.'}
+                  : outstandingTravelDoses.length > 0
+                    ? `${user.deviceName} has nothing left to dispense today. Check the doses from your travel case.`
+                    : 'You have finished your medication for today.'}
               </p>
 
               {canSkipAhead && nextDose ? (
@@ -167,22 +264,29 @@ export function TodayScreen({
             </Card>
           )}
 
-          {activeDose && nextDose ? (
-            <Card tone="sunken" className="today__after">
+          {trip ? null : (
+            <Card tone="sunken">
               <div className="next-up">
                 <span className="next-up__icon" aria-hidden="true">
-                  <Icon name="clock" size={24} />
+                  <Icon name="suitcase" size={24} />
                 </span>
                 <div className="next-up__body">
-                  <p className="next-up__label">After this</p>
-                  <p className="next-up__value">
-                    {formatTime(nextDose.scheduledMinutes)} · {nextDose.title}
-                  </p>
-                  <p className="next-up__detail">{doseSummary(nextDose)}</p>
+                  <p className="next-up__label">Going out?</p>
+                  <p className="next-up__value">See what to take with you</p>
                 </div>
               </div>
+              <Button
+                size="lg"
+                block
+                variant="secondary"
+                className="away-entry__action"
+                icon="suitcase"
+                onClick={onOpenAway}
+              >
+                I&rsquo;m away from home
+              </Button>
             </Card>
-          ) : null}
+          )}
         </div>
 
         <div className="today__aside">
@@ -205,6 +309,7 @@ export function TodayScreen({
               onSelect={onOpenDose}
             />
           </Card>
+
         </div>
       </div>
     </div>

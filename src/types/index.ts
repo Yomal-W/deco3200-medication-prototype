@@ -100,6 +100,26 @@ export interface Dose {
   dispensedAt: string | null
   /** Simulated time the *user* said they had taken it, e.g. "8:06 AM". */
   confirmedAt: string | null
+  /**
+   * Set only when the station dispensed this dose for the travel case rather
+   * than for taking at home. `dispensedAt` still holds when it was released.
+   */
+  travel: TravelDoseRecord | null
+}
+
+/** What the user reported about a dose that went out in the travel case. */
+export type TravelOutcome = 'taken' | 'in-case' | 'unsure'
+
+/**
+ * A dose that left the station in the travel case. Packing and taking are the
+ * user's own reports; neither is ever inferred.
+ */
+export interface TravelDoseRecord {
+  /** When the user confirmed they had packed it into the travel case. */
+  packedAt: string | null
+  outcome: TravelOutcome | null
+  /** When the user made that report. Never a time of taking. */
+  reportedAt: string | null
 }
 
 /**
@@ -120,6 +140,10 @@ export interface PrescriptionChange {
   /** Supporting line under each summary, e.g. "1 tablet with breakfast". */
   previousDetail: string
   newDetail: string
+  /** Strength on the new script, e.g. "10 mg". The routine keeps the old one until it starts. */
+  newStrength: string
+  /** When the new script was written. Not when it was verified or when it starts. */
+  prescribedOn: string
   /** When the new routine begins, e.g. "Tomorrow morning". */
   startsLabel: string
   startsDetail: string
@@ -158,6 +182,70 @@ export type StockStatus = 'ok' | 'low' | 'empty'
 /** Live stock for every loaded medication, keyed by medication id. */
 export type Inventory = Record<string, StockLevel>
 
+/** One of the "roughly how long?" choices when leaving home. */
+export interface AwayOption {
+  id: string
+  /** e.g. "A few hours" */
+  label: string
+  /** e.g. "About 3 hours" */
+  detail: string
+  /** Length of time away in simulated minutes, or null for the rest of today. */
+  minutes: number | null
+}
+
+/**
+ * Where a trip is up to. Each stage is a separate, explicit user action:
+ *
+ *  reviewing  — a length of time is chosen; the doses needed are recalculated live
+ *  preparing  — doses are fixed; each is dispensed and packed one at a time
+ *  away       — the user said they are leaving
+ *  returning  — the user said they are home; packed doses are being reported
+ *  returned   — finished; kept for the record
+ */
+export type TripStatus = 'reviewing' | 'preparing' | 'away' | 'returning' | 'returned'
+
+/** A period away from the medication station. */
+export interface AwayPlan {
+  id: string
+  optionId: string
+  status: TripStatus
+  /**
+   * The travel window in simulated minutes. Only meaningful from `preparing`
+   * onwards; while reviewing it is recalculated from the clock.
+   */
+  startsAt: number
+  returnsBy: number
+  /** Doses to prepare, in time order. Fixed when preparation starts. */
+  doseIds: string[]
+  leftAt: string | null
+  returnedAt: string | null
+}
+
+/**
+ * A fictional prescription behind one medication in the routine. Read-only,
+ * derived from the medication and change data so the two cannot disagree.
+ */
+export interface Prescription {
+  /** Always begins with DEMO, so it cannot pass for a real script. */
+  reference: string
+  medicationId: string
+  medicationName: string
+  strength: string
+  form: string
+  /** As written on the script. Never the routine's times of day. */
+  directions: string
+  quantitySupplied: string
+  repeats: number
+  prescriber: Prescriber
+  prescribedOn: string
+  /** current — what the routine uses now; upcoming — verified, not yet in effect. */
+  status: 'current' | 'upcoming'
+  /** For an upcoming script, when it takes effect. */
+  startsOn: string | null
+  /** For a current script that is being replaced, when it stops being used. */
+  replacedOn: string | null
+}
+
 /** Screens the participant can be on. Deliberately a small, flat set. */
 export type Screen =
   | { name: 'today' }
@@ -166,13 +254,16 @@ export type Screen =
   | { name: 'setup-ready' }
   | { name: 'medications' }
   | { name: 'medication'; medicationId: string }
-  | { name: 'help' }
+  | { name: 'records' }
+  | { name: 'scripts' }
+  | { name: 'script'; reference: string }
   | { name: 'dose'; doseId: string }
-  | { name: 'dispensing'; doseId: string }
+  | { name: 'dispensing'; doseId: string; forTravel?: boolean }
   | { name: 'collect'; doseId: string }
   | { name: 'complete'; doseId: string }
   | { name: 'whats-next' }
   | { name: 'change' }
+  | { name: 'away' }
 
 /** The three persistent navigation destinations. */
-export type TabName = 'today' | 'medications' | 'help'
+export type TabName = 'today' | 'medications' | 'records'

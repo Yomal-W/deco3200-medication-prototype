@@ -9,6 +9,37 @@ interface DoseStatusPillProps {
 
 /** Single source of truth for how a dose's state is described to the user. */
 export function DoseStatusPill({ dose, isNext = false }: DoseStatusPillProps) {
+  // Dispensed for the travel case: never offered by the station again, so
+  // its state is described by what the user has reported.
+  if (dose.travel) {
+    if (dose.travel.outcome === 'taken') {
+      return (
+        <StatusPill tone="success" icon="checkCircle">
+          Reported taken
+        </StatusPill>
+      )
+    }
+    if (!dose.travel.packedAt) {
+      return (
+        <StatusPill tone="attention" icon="device">
+          In the tray
+        </StatusPill>
+      )
+    }
+    if (dose.travel.outcome === 'unsure') {
+      return (
+        <StatusPill tone="attention" icon="help">
+          Not sure
+        </StatusPill>
+      )
+    }
+    return (
+      <StatusPill tone="next" icon="suitcase">
+        In travel case
+      </StatusPill>
+    )
+  }
+
   if (dose.status === 'completed') {
     return (
       <StatusPill tone="success" icon="checkCircle">

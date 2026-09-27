@@ -1,4 +1,4 @@
-import type { DoseRecord, Inventory, PrescriptionChange } from '../types'
+import type { AwayOption, DoseRecord, Inventory, PrescriptionChange } from '../types'
 import { getMedication, medications, user } from './medications'
 
 /**
@@ -40,6 +40,7 @@ export function buildDoses(): DoseRecord[] {
       ],
       dispensedAt: '7:31 AM',
       confirmedAt: '7:33 AM',
+      travel: null,
     },
     {
       id: 'morning',
@@ -49,11 +50,12 @@ export function buildDoses(): DoseRecord[] {
       scheduledMinutes: 8 * 60,
       items: [
         { medicationId: 'metformin', quantity: '1 tablet', instruction: 'With breakfast' },
-        { medicationId: 'ramipril', quantity: '1 tablet', instruction: 'With breakfast' },
+        { medicationId: 'ramipril', quantity: '1 capsule', instruction: 'With breakfast' },
         { medicationId: 'aspirin', quantity: '1 tablet', instruction: 'With breakfast' },
       ],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
     {
       id: 'afternoon',
@@ -64,6 +66,7 @@ export function buildDoses(): DoseRecord[] {
       items: [{ medicationId: 'metformin', quantity: '1 tablet', instruction: 'With lunch' }],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
     {
       id: 'evening',
@@ -85,6 +88,7 @@ export function buildDoses(): DoseRecord[] {
       ],
       dispensedAt: null,
       confirmedAt: null,
+      travel: null,
     },
   ]
 }
@@ -119,9 +123,11 @@ export function buildPrescriptionChange(): PrescriptionChange {
     medicationId: 'ramipril',
     medicationName: 'Ramipril',
     previousSummary: '5 mg each morning',
-    previousDetail: '1 tablet with breakfast',
+    previousDetail: '1 capsule with breakfast',
     newSummary: '10 mg each morning',
-    newDetail: '1 tablet with breakfast',
+    newDetail: '1 capsule with breakfast',
+    newStrength: '10 mg',
+    prescribedOn: user.scriptsReceivedOn,
     startsLabel: 'Tomorrow morning',
     startsDetail: `${user.tomorrow} · 8:00 AM`,
     plainNote:
@@ -131,3 +137,16 @@ export function buildPrescriptionChange(): PrescriptionChange {
     verifiedAt: user.routineVerifiedOn,
   }
 }
+
+/**
+ * How far ahead of a dose the phone reminds the user while they are away.
+ * An initial prototype parameter for testing, not a validated recommendation.
+ */
+export const REMINDER_LEAD_MINUTES = 20
+
+/** Rough lengths of time away. Deliberately few, and in plain words. */
+export const awayOptions: AwayOption[] = [
+  { id: 'few-hours', label: 'A few hours', detail: 'About 3 hours', minutes: 3 * 60 },
+  { id: 'half-day', label: 'Half the day', detail: 'About 6 hours', minutes: 6 * 60 },
+  { id: 'rest-of-day', label: 'The rest of today', detail: 'Until the end of the day', minutes: null },
+]

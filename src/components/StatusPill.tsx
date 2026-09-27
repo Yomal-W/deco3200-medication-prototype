@@ -1,7 +1,7 @@
 import { Icon } from './Icon'
 import type { IconName } from './Icon'
 
-type StatusTone = 'success' | 'due' | 'next' | 'later' | 'attention' | 'danger'
+type StatusTone = 'success' | 'due' | 'next' | 'later' | 'attention' | 'danger' | 'low'
 
 interface StatusPillProps {
   tone: StatusTone

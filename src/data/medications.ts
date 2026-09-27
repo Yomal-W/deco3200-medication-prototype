@@ -16,6 +16,10 @@ export const user = {
   deviceName: 'MediFlow',
   pharmacy: 'Riverbend Pharmacy',
   pharmacist: 'Ada Whitfield',
+  /** Fictional number, shown with a prototype note wherever it appears. */
+  pharmacyPhone: '(02) 5550 0148',
+  /** When the pharmacy received the scripts behind the routine. */
+  scriptsReceivedOn: 'Friday 4 September',
   /** When the routine on the device was last verified by the pharmacist. */
   routineVerifiedOn: 'Monday 7 September',
   today: 'Tuesday 8 September',

@@ -1,6 +1,6 @@
 import type { Dose } from '../types'
 import { formatTime } from '../utils/time'
-import { doseSummary } from '../utils/dose'
+import { doseSummary, travelRecordLines } from '../utils/dose'
 import { DoseStatusPill } from './DoseStatusPill'
 import { Icon } from './Icon'
 import type { IconName } from './Icon'
@@ -14,6 +14,7 @@ const dayPartIcon: Record<Dose['dayPart'], IconName> = {
 
 function markerFor(dose: Dose): { modifier: string; icon: IconName } {
   if (dose.status === 'completed') return { modifier: 'completed', icon: 'check' }
+  if (dose.travel) return { modifier: 'upcoming', icon: 'suitcase' }
   if (dose.status === 'missed') return { modifier: 'missed', icon: 'alert' }
   if (dose.status === 'due') return { modifier: 'due', icon: dose.dispensedAt ? 'device' : 'clock' }
   return { modifier: 'upcoming', icon: dayPartIcon[dose.dayPart] }
@@ -42,7 +43,9 @@ export function DoseTimeline({ doses, nextDoseId, activeDoseId, onSelect }: Dose
           <li key={dose.id}>
             <button
               type="button"
-              className={`timeline__row${dose.id === activeDoseId ? ' is-current' : ''}`}
+              className={`timeline__row${dose.id === activeDoseId ? ' is-current' : ''}${
+                dose.status === 'completed' ? ' timeline__row--completed' : ''
+              }`}
               onClick={() => onSelect(dose.id)}
             >
               <span className="timeline__time">{formatTime(dose.scheduledMinutes)}</span>
@@ -55,7 +58,16 @@ export function DoseTimeline({ doses, nextDoseId, activeDoseId, onSelect }: Dose
                   <DoseStatusPill dose={dose} isNext={dose.id === nextDoseId} />
                 </span>
                 <span className="timeline__detail">{doseSummary(dose)}</span>
-                {dose.dispensedAt ? (
+                {dose.travel ? (
+                  <span className="timeline__record">
+                    {travelRecordLines(dose).map((line) => (
+                      <span key={line.text} className="timeline__record-line">
+                        <Icon name={line.icon} size={17} />
+                        {line.text}
+                      </span>
+                    ))}
+                  </span>
+                ) : dose.dispensedAt ? (
                   <span className="timeline__record">
                     <span className="timeline__record-line">
                       <Icon name="device" size={17} />
