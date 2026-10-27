@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, Ref } from 'react'
 import { Icon } from './Icon'
 import type { IconName } from './Icon'
 
@@ -8,6 +8,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconName
   iconPosition?: 'start' | 'end'
   block?: boolean
+  /** Passed straight to the button, e.g. to return focus to it after a dialog. */
+  ref?: Ref<HTMLButtonElement>
 }
 
 /** Large, high-contrast action. Minimum touch target is set in CSS. */

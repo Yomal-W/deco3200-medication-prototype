@@ -295,7 +295,7 @@ export function TodayScreen({
               <div>
                 <h2 className="panel__title">Today&rsquo;s routine</h2>
                 <p className="panel__subtitle">
-                  Tap any time to see what was dispensed and confirmed.
+                  Tap a time to see what was dispensed and confirmed.
                 </p>
               </div>
               <Button variant="quiet" icon="arrowRight" iconPosition="end" onClick={onOpenWhatsNext}>

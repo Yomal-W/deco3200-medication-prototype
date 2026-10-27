@@ -41,6 +41,7 @@ const paths: Record<string, ReactElement> = {
   arrowLeft: <path d="M19 12H5.5M11 5.5 4.5 12l6.5 6.5" />,
   arrowRight: <path d="M5 12h13.5M13 5.5 19.5 12 13 18.5" />,
   arrowDown: <path d="M12 4.5V18M5.5 12 12 18.5 18.5 12" />,
+  chevronDown: <path d="M6 9.5 12 15.5 18 9.5" />,
   home: <path d="M4 10.8 12 4l8 6.8V19a1 1 0 0 1-1 1h-4.2v-5.6H9.2V20H5a1 1 0 0 1-1-1z" />,
   list: (
     <>

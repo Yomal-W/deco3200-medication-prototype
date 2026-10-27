@@ -514,14 +514,34 @@
   gap: var(--space-1);
 }
 
+:root {
+  /* Timeline columns: time, status marker. The open panel lines up after them. */
+  --timeline-time: 5rem;
+  --timeline-marker: 2rem;
+}
+
+/* One time of day. The highlight for the current dose wraps the whole item,
+   so an open panel stays inside it. */
+.timeline__item {
+  border: var(--border-control) solid transparent;
+  border-radius: var(--radius-md);
+}
+
+.timeline__item.is-current {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+}
+
+/* The short row: time, status, name and an arrow showing it opens. */
 .timeline__row {
   display: grid;
-  grid-template-columns: 5rem 2rem minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: var(--timeline-time) var(--timeline-marker) minmax(0, 1fr) auto;
+  align-items: center;
   gap: var(--space-3);
   width: 100%;
+  min-height: var(--tap-target);
   padding: var(--space-3) var(--space-2);
-  border: var(--border-control) solid transparent;
+  border: 0;
   border-radius: var(--radius-md);
   background: none;
   text-align: left;
@@ -533,9 +553,45 @@
   background: var(--color-surface-sunken);
 }
 
-.timeline__row.is-current {
+.timeline__chevron {
+  color: var(--color-text-muted);
+  transition: transform var(--duration-base) var(--ease);
+}
+
+.timeline__item.is-open .timeline__chevron {
+  transform: rotate(180deg);
+}
+
+/* The detail, lined up under the name rather than the time. */
+.timeline__panel {
+  padding: 0 var(--space-2) var(--space-3)
+    calc(var(--space-2) + var(--timeline-time) + var(--timeline-marker) + 2 * var(--space-3));
+}
+
+.timeline__panel[hidden] {
+  display: none;
+}
+
+/* The way to the full dose screen: a clear, finger-sized link. */
+.timeline__open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  margin-left: calc(var(--space-3) * -1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-accent-text);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+
+.timeline__open:active {
   background: var(--color-accent-soft);
-  border-color: var(--color-border-accent);
 }
 
 .timeline__time {
@@ -605,9 +661,8 @@
 }
 
 @media (max-width: 44rem) {
-  .timeline__row {
-    grid-template-columns: 4.75rem 2rem minmax(0, 1fr);
-    gap: var(--space-3);
+  :root {
+    --timeline-time: 4.75rem;
   }
 }
 
@@ -761,6 +816,10 @@
 
   .timeline__row:hover:not(:active) {
     background: var(--color-surface-sunken);
+  }
+
+  .timeline__open:hover:not(:active) {
+    background: var(--color-accent-soft);
   }
 
   .notice:hover:not(:active) {
@@ -1006,4 +1065,93 @@
 
 .device:has(.flow--full) .app-header__inner {
   max-width: var(--shell-max);
+}
+
+/* --- Confirm taken dialog ---------------------------------------------------- */
+
+/* Covers the whole screen, navigation included, so the question cannot be
+   missed or worked around. It only closes through its own two buttons (or
+   Escape, which means "Not yet"). */
+.confirm-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--shell-gutter);
+  background: rgba(18, 35, 63, 0.5);
+}
+
+.confirm-dialog__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: min(34rem, 100%);
+  max-height: calc(100dvh - 2 * var(--shell-gutter));
+  overflow-y: auto;
+  padding: var(--space-7);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+}
+
+.confirm-dialog__title {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  text-wrap: balance;
+}
+
+/* The medications, so the answer is checked against what was actually taken. */
+.confirm-dialog__list {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.confirm-dialog__item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.confirm-dialog__item:last-child {
+  border-bottom: 0;
+}
+
+.confirm-dialog__name {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.confirm-dialog__dose {
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+.confirm-dialog__note {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+/* Two large choices, stacked full width: each label stays on one line and
+   the two are well apart, so a finger cannot catch the wrong one. */
+.confirm-dialog__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.confirm-dialog__actions .btn {
+  width: 100%;
+}
+
+@media (max-width: 44rem) {
+  .confirm-dialog__panel {
+    padding: var(--space-5);
+  }
 }
