@@ -33,6 +33,8 @@ export function screenToHash(screen: Screen): string {
       return '#/passport/phone'
     case 'hospital':
       return '#/passport/hospital'
+    case 'sick-day':
+      return '#/sick-day'
     case 'dose':
       return `#/dose/${screen.doseId}`
     case 'dispensing':
@@ -85,5 +87,6 @@ export function hashToScreen(hash: string): Screen {
   if (first === 'whats-next') return { name: 'whats-next' }
   if (first === 'change') return { name: 'change' }
   if (first === 'away') return { name: 'away' }
+  if (first === 'sick-day') return { name: 'sick-day' }
   return { name: 'today' }
 }

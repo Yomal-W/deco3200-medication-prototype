@@ -1,4 +1,4 @@
-import type { Dose, PrescriptionChange } from '../types'
+import type { Dose, PrescriptionChange, SickDayState } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
@@ -7,6 +7,7 @@ import { medications, user } from '../data/medications'
 import { allergies, passportPerson } from '../data/passport'
 import { doseMedicationNames } from '../utils/dose'
 import { lastTakenDose, takenRecordLabel } from '../utils/hospital'
+import { isPausedMedication, isSickDayActive, sickDayPeriodLabel } from '../utils/sickDay'
 import { formatTime, joinNames, keepTogether } from '../utils/time'
 
 /** "For your blood sugar" → "Blood sugar", the way a clinician would scan it. */
@@ -18,6 +19,7 @@ function purposeLabel(plainPurpose: string): string {
 interface PassportStaffScreenProps {
   doses: Dose[]
   change: PrescriptionChange | null
+  sickDay: SickDayState | null
   clock: number
   onDone: () => void
 }
@@ -27,8 +29,15 @@ interface PassportStaffScreenProps {
  * or a hospital pharmacist. No navigation and no choices — just the facts
  * they ask for, large enough to read at arm's length.
  */
-export function PassportStaffScreen({ doses, change, clock, onDone }: PassportStaffScreenProps) {
+export function PassportStaffScreen({
+  doses,
+  change,
+  sickDay,
+  clock,
+  onDone,
+}: PassportStaffScreenProps) {
   const lastTaken = lastTakenDose(doses)
+  const unwell = isSickDayActive(sickDay)
 
   return (
     <div className="flow flow--full passport-staff">
@@ -64,6 +73,11 @@ export function PassportStaffScreen({ doses, change, clock, onDone }: PassportSt
                   <th scope="row">
                     {medication.name}{' '}
                     <span className="passport-table__nowrap">{medication.strength}</span>
+                    {unwell && sickDay && isPausedMedication(medication.id) ? (
+                      <span className="passport-table__paused">
+                        Paused · sick-day plan {sickDayPeriodLabel(sickDay)}
+                      </span>
+                    ) : null}
                     {change?.medicationId === medication.id ? (
                       <span className="passport-table__note">
                         {change.newStrength} from {change.startsDetail}

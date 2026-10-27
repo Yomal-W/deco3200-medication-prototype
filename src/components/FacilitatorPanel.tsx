@@ -34,6 +34,19 @@ const hospitalScenarios: { id: 'leaving' | 'in-hospital'; label: string; note: s
   },
 ]
 
+const sickDayScenarios: { id: 'unwell' | 'better'; label: string; note: string }[] = [
+  {
+    id: 'unwell',
+    label: 'Sick day',
+    note: 'Plan active from 8:02 AM: the Morning dose gives Aspirin only.',
+  },
+  {
+    id: 'better',
+    label: 'Feeling better',
+    note: 'Plan ended at 5:00 PM; the Afternoon dose stays paused in the record.',
+  },
+]
+
 interface FacilitatorPanelProps {
   stage: SessionStage
   /** Routine times in this session, for jumping the simulated clock. */
@@ -46,6 +59,7 @@ interface FacilitatorPanelProps {
   onSetLowStockMedication: (medicationId: string) => void
   onSetIncludeChange: (include: boolean) => void
   onHospitalScenario: (scenario: 'leaving' | 'in-hospital') => void
+  onSickDayScenario: (scenario: 'unwell' | 'better') => void
   onReset: () => void
   onClose: () => void
 }
@@ -68,6 +82,7 @@ export function FacilitatorPanel({
   onSetLowStockMedication,
   onSetIncludeChange,
   onHospitalScenario,
+  onSickDayScenario,
   onReset,
   onClose,
 }: FacilitatorPanelProps) {
@@ -211,6 +226,26 @@ export function FacilitatorPanel({
                 onClick={() => onHospitalScenario(item.id)}
               >
                 <Icon name="hospital" size={22} />
+                <span>
+                  <span className="facilitator__option-name">{item.label}</span>
+                  <span className="facilitator__option-note">{item.note}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Sick-day plan</p>
+          <div className="facilitator__list">
+            {sickDayScenarios.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="facilitator__option"
+                onClick={() => onSickDayScenario(item.id)}
+              >
+                <Icon name="thermometer" size={22} />
                 <span>
                   <span className="facilitator__option-name">{item.label}</span>
                   <span className="facilitator__option-note">{item.note}</span>

@@ -47,7 +47,14 @@
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: var(--space-5);
-  align-items: start;
+  /* Side by side, both columns end on the same line: the last card in each
+     takes up any difference. Content inside stays top-aligned. */
+  align-items: stretch;
+}
+
+.today__main > :last-child,
+.today__aside > :last-child {
+  flex: 1;
 }
 
 @media (max-width: 62rem) {
@@ -2850,4 +2857,247 @@
 .screen-actions--stacked .btn {
   flex: none;
   width: 100%;
+}
+
+/* --- Sick-day plan ------------------------------------------------------------ */
+
+/* Home, while the plan is on: calm amber, with its actions below. */
+.sick-banner {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+  box-shadow: none;
+}
+
+.sick-banner .next-up__icon {
+  color: var(--color-attention-mark);
+}
+
+.sick-banner__actions {
+  margin-top: var(--space-5);
+}
+
+.sick-banner__actions .btn {
+  flex-basis: 18rem;
+}
+
+/* What the plan leaves out of the dose on the due card. */
+.due-card__paused {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--fs-body);
+}
+
+.due-card__paused svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* The emergency route: present on every sick-day step, one tap away. */
+.sick-urgent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-low-border);
+  border-radius: var(--radius-md);
+  background: var(--color-low-surface);
+  color: var(--color-low-text);
+  font: inherit;
+  font-size: var(--fs-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sick-urgent span {
+  flex: 1;
+}
+
+.sick-urgent strong {
+  font-weight: var(--fw-bold);
+}
+
+.sick-urgent svg {
+  flex: none;
+}
+
+.sick-urgent:active {
+  background: var(--color-danger-soft);
+}
+
+.sick-emergency {
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+  box-shadow: none;
+  text-align: center;
+}
+
+.sick-emergency__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-low-text);
+}
+
+.sick-emergency__title {
+  margin-top: var(--space-3);
+  font-size: var(--fs-display);
+  color: var(--color-low-text);
+}
+
+.sick-emergency__text {
+  margin-top: var(--space-4);
+  font-size: var(--fs-lead);
+  color: var(--color-heading);
+}
+
+.sick-emergency__then {
+  margin-top: var(--space-3);
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+}
+
+.sick-emergency__title:focus {
+  outline: none;
+}
+
+/* Paused and continuing medications, side by side on wide screens, ending on
+   the same line. */
+.sick-plan {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+@media (max-width: 62rem) {
+  .sick-plan {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sick-plan__paused {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+  box-shadow: none;
+}
+
+.sick-plan__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sick-plan__paused .sick-plan__title svg {
+  color: var(--color-attention-mark);
+}
+
+.sick-plan__title svg {
+  flex: none;
+  color: var(--color-success);
+}
+
+.sick-plan__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sick-plan__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sick-plan__row:first-child {
+  padding-top: 0;
+}
+
+.sick-plan__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sick-plan__row .med-visual {
+  flex: none;
+}
+
+.sick-plan__name {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.sick-plan__reason {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.sick-plan__paused .sick-plan__reason {
+  color: var(--color-text);
+}
+
+.sick-day .screen-actions .btn {
+  flex-basis: 18rem;
+}
+
+/* Medications the plan left out of a dose, shown apart from what is given. */
+.paused-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.paused-items__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-h3);
+}
+
+.paused-items__title svg {
+  flex: none;
+  color: var(--color-attention-mark);
+}
+
+.passport__sick {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-attention-soft);
+  font-size: var(--fs-body);
+  color: var(--color-heading);
+}
+
+.passport__sick svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--color-attention-mark);
+}
+
+.passport-meds__body .status-pill {
+  margin-top: var(--space-2);
+}
+
+.passport-table__paused {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  color: var(--amber-800);
+}
+
+/* A short phrase that should never break across lines. */
+.keep-together {
+  white-space: nowrap;
 }

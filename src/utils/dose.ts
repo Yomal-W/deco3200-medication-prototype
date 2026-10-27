@@ -4,9 +4,20 @@ import { getMedication } from '../data/medications'
 import { countLabel, joinNames } from './time'
 import { isTaken } from './travel'
 
-/** "3 medications · Metformin, Ramipril and Aspirin" */
+/**
+ * "3 medications · Metformin, Ramipril and Aspirin", plus what the sick-day
+ * plan pauses: "1 medication · Aspirin · Metformin and Ramipril paused".
+ */
 export function doseSummary(dose: Dose): string {
-  return `${countLabel(dose.items.length)} · ${joinNames(doseMedicationNames(dose))}`
+  const paused = pausedNames(dose)
+  if (dose.items.length === 0 && paused) return `${countLabel(dose.pausedItems.length)} · all paused`
+  const given = `${countLabel(dose.items.length)} · ${joinNames(doseMedicationNames(dose))}`
+  return paused ? `${given} · ${paused} paused` : given
+}
+
+/** "Metformin and Ramipril", or an empty string when nothing is paused. */
+export function pausedNames(dose: Dose): string {
+  return joinNames((dose.pausedItems ?? []).map((item) => getMedication(item.medicationId).name))
 }
 
 export function doseMedicationNames(dose: Dose): string[] {

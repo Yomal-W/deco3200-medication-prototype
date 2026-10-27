@@ -56,6 +56,12 @@ const paths: Record<string, ReactElement> = {
       <path d="M10 21v-3.5h4V21" />
     </>
   ),
+  thermometer: (
+    <>
+      <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z" />
+      <path d="M12 9.5v7" />
+    </>
+  ),
   qr: (
     <>
       <rect x="4" y="4" width="6" height="6" rx="1" />

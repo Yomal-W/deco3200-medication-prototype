@@ -10,7 +10,14 @@
  * the station is holding back because the user is (or was) in hospital, where
  * staff may be managing their medication.
  */
-export type DoseStatus = 'completed' | 'due' | 'upcoming' | 'missed' | 'in-hospital'
+export type DoseStatus =
+  | 'completed'
+  | 'due'
+  | 'upcoming'
+  | 'missed'
+  | 'in-hospital'
+  /** Every medication in it is paused by the sick-day plan. Never missed, never owed. */
+  | 'sick-day'
 
 /** Part of the day a dose belongs to. Drives the icon shown on the timeline. */
 export type DayPart = 'early-morning' | 'morning' | 'afternoon' | 'evening'
@@ -109,6 +116,16 @@ export interface Dose {
    * than for taking at home. `dispensedAt` still holds when it was released.
    */
   travel: TravelDoseRecord | null
+  /**
+   * Medications the station left out when it dispensed this dose, because the
+   * sick-day plan paused them. Recorded at the moment of dispensing.
+   */
+  pausedMedicationIds?: string[]
+  /**
+   * Derived, never stored: medications in this dose that the sick-day plan
+   * pauses. `items` then holds only what is still given.
+   */
+  pausedItems: DoseItem[]
 }
 
 /** What the user reported about a dose that went out in the travel case. */
@@ -131,7 +148,7 @@ export interface TravelDoseRecord {
  * the simulated clock and the dose's own history, so moving the clock forward
  * is the only thing needed to make a later routine become due.
  */
-export type DoseRecord = Omit<Dose, 'status'>
+export type DoseRecord = Omit<Dose, 'status' | 'pausedItems'>
 
 /** A pharmacist-verified change to the routine. */
 export interface PrescriptionChange {
@@ -274,6 +291,24 @@ export interface HospitalStay {
   checkedAt: string | null
 }
 
+/** One medication the pharmacist's sick-day plan pauses, and why, in plain words. */
+export interface SickDayPause {
+  medicationId: string
+  reason: string
+}
+
+/**
+ * Whether the sick-day plan is in use. Started and ended only by the user:
+ *
+ *  active — the user said they are unwell; paused medications are left out
+ *  ended  — the user said they are eating and drinking normally again
+ */
+export interface SickDayState {
+  status: 'active' | 'ended'
+  startedAtMinutes: number
+  endedAtMinutes: number | null
+}
+
 /** One allergy, as the pharmacy has it on record. Prototype data only. */
 export interface Allergy {
   substance: string
@@ -303,6 +338,8 @@ export type Screen =
   | { name: 'passport-staff' }
   | { name: 'passport-phone' }
   | { name: 'hospital' }
+  /** `better` opens straight on "Have you been eating and drinking normally?" */
+  | { name: 'sick-day'; step?: 'better' }
 
 /** The persistent navigation destinations. */
 export type TabName = 'passport' | 'today' | 'medications' | 'records'

@@ -31,6 +31,7 @@ import { PassportScreen } from './screens/PassportScreen'
 import { PassportStaffScreen } from './screens/PassportStaffScreen'
 import { PassportPhoneScreen } from './screens/PassportPhoneScreen'
 import { HospitalScreen } from './screens/HospitalScreen'
+import { SickDayScreen } from './screens/SickDayScreen'
 
 const tabScreens: TabName[] = ['passport', 'today', 'medications', 'records']
 
@@ -46,6 +47,7 @@ function App() {
     changeAcknowledgedAt,
     trip,
     hospital,
+    sickDay,
     clock,
     screen,
     navReplace,
@@ -84,6 +86,9 @@ function App() {
     returnFromHospital,
     finishHospital,
     setHospitalScenario,
+    beginSickDay,
+    finishSickDay,
+    setSickDayScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,
@@ -239,6 +244,7 @@ function App() {
             prescriptions={prescriptions}
             change={change}
             changeAcknowledgedAt={changeAcknowledgedAt}
+            sickDay={sickDay}
             onViewScripts={() => goTo({ name: 'scripts' })}
             onViewScript={(reference) => goTo({ name: 'script', reference })}
             onLoadMedication={openSetup}
@@ -362,6 +368,7 @@ function App() {
             nextDose={nextDose}
             change={change}
             hospital={hospital}
+            sickDay={sickDay}
             clock={clock}
             onShowStaff={openStaffView}
             onSendToPhone={() => goTo({ name: 'passport-phone' })}
@@ -373,7 +380,13 @@ function App() {
 
       case 'passport-staff':
         return (
-          <PassportStaffScreen doses={doses} change={change} clock={clock} onDone={openPassport} />
+          <PassportStaffScreen
+            doses={doses}
+            change={change}
+            sickDay={sickDay}
+            clock={clock}
+            onDone={openPassport}
+          />
         )
 
       case 'passport-phone':
@@ -402,6 +415,19 @@ function App() {
           />
         )
 
+      case 'sick-day':
+        return (
+          <SickDayScreen
+            key={screen.step ?? 'plan'}
+            sickDay={sickDay}
+            startOnBetter={screen.step === 'better'}
+            onStart={beginSickDay}
+            onEnd={finishSickDay}
+            onShowStaff={openStaffView}
+            onBackToToday={goHome}
+          />
+        )
+
       case 'today':
         return (
           <TodayScreen
@@ -425,6 +451,8 @@ function App() {
             onOpenHospital={openHospital}
             onReturnFromHospital={returnFromHospital}
             onShowPassport={openPassport}
+            sickDay={sickDay}
+            onOpenSickDay={(step) => goTo({ name: 'sick-day', step })}
           />
         )
     }
@@ -494,6 +522,10 @@ function App() {
           }}
           onSetLowStockMedication={setLowStockMedication}
           onSetIncludeChange={setIncludeChange}
+          onSickDayScenario={(scenario) => {
+            setSickDayScenario(scenario)
+            setFacilitatorOpen(false)
+          }}
           onHospitalScenario={(scenario) => {
             setHospitalScenario(scenario)
             setFacilitatorOpen(false)

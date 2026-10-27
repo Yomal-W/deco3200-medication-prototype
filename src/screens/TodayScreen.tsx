@@ -1,4 +1,4 @@
-import type { AwayPlan, Dose, HospitalStay, PrescriptionChange } from '../types'
+import type { AwayPlan, Dose, HospitalStay, PrescriptionChange, SickDayState } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { ChangeNotice } from '../components/ChangeNotice'
@@ -10,7 +10,10 @@ import { MedicationThumbs } from '../components/MedicationTray'
 import { RoutineProgress } from '../components/RoutineProgress'
 import { StatusPill } from '../components/StatusPill'
 import { user } from '../data/medications'
-import { doseCountLabel, doseMedicationNames } from '../utils/dose'
+import { doseCountLabel, doseMedicationNames, pausedNames } from '../utils/dose'
+import { sickDayPeriodLabel } from '../utils/sickDay'
+import { getMedication } from '../data/medications'
+import { sickDayPlan } from '../data/sickDay'
 import { returnLabel } from '../utils/travel'
 import { countLabel, formatTime, joinNames } from '../utils/time'
 
@@ -40,6 +43,9 @@ interface TodayScreenProps {
   onOpenHospital: () => void
   onReturnFromHospital: () => void
   onShowPassport: () => void
+  /** The sick-day plan, once started. */
+  sickDay: SickDayState | null
+  onOpenSickDay: (step?: 'better') => void
 }
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
@@ -64,7 +70,10 @@ export function TodayScreen({
   onOpenHospital,
   onReturnFromHospital,
   onShowPassport,
+  sickDay,
+  onOpenSickDay,
 }: TodayScreenProps) {
+  const unwell = sickDay?.status === 'active'
   // In hospital, or home but not yet checked: the station is paused, so its
   // usual "what now" card gives way to the hospital card.
   const paused = hospital?.status === 'away' || hospital?.status === 'returning'
@@ -87,6 +96,34 @@ export function TodayScreen({
           acknowledgedAt={changeAcknowledgedAt}
           onOpen={onOpenChange}
         />
+      ) : null}
+
+      {unwell && sickDay ? (
+        <Card className="sick-banner">
+          <div className="next-up">
+            <span className="next-up__icon" aria-hidden="true">
+              <Icon name="thermometer" size={26} />
+            </span>
+            <div className="next-up__body">
+              <p className="next-up__label">Sick-day plan · {sickDayPeriodLabel(sickDay)}</p>
+              <p className="next-up__value">
+                {joinNames(sickDayPlan.pause.map((item) => getMedication(item.medicationId).name))}{' '}
+                are paused
+              </p>
+              <p className="next-up__detail">
+                Everything else is given as usual. From your pharmacist&rsquo;s plan.
+              </p>
+            </div>
+          </div>
+          <div className="screen-actions sick-banner__actions">
+            <Button size="lg" icon="checkCircle" onClick={() => onOpenSickDay('better')}>
+              I&rsquo;m feeling better
+            </Button>
+            <Button size="lg" variant="secondary" icon="thermometer" onClick={() => onOpenSickDay()}>
+              See my plan
+            </Button>
+          </div>
+        </Card>
       ) : null}
 
       {hospital?.status === 'planning' ? (
@@ -268,6 +305,16 @@ export function TodayScreen({
 
               <MedicationThumbs items={activeDose.items} />
 
+              {activeDose.pausedItems.length > 0 ? (
+                <p className="due-card__paused">
+                  <Icon name="thermometer" size={20} />
+                  <span>
+                    {pausedNames(activeDose)} paused by your{' '}
+                    <span className="keep-together">sick&#8209;day plan</span>
+                  </span>
+                </p>
+              ) : null}
+
               {activeDose.items[0]?.instruction ? (
                 <p className="due-card__instruction">
                   <Icon name="info" size={20} />
@@ -348,6 +395,30 @@ export function TodayScreen({
                   See what happens next
                 </Button>
               )}
+            </Card>
+          )}
+
+          {unwell || paused ? null : (
+            <Card tone="sunken">
+              <div className="next-up">
+                <span className="next-up__icon" aria-hidden="true">
+                  <Icon name="thermometer" size={24} />
+                </span>
+                <div className="next-up__body">
+                  <p className="next-up__label">Feeling unwell?</p>
+                  <p className="next-up__value">Check your pharmacist&rsquo;s sick-day plan</p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                block
+                variant="secondary"
+                className="away-entry__action"
+                icon="thermometer"
+                onClick={() => onOpenSickDay()}
+              >
+                I&rsquo;m feeling unwell
+              </Button>
             </Card>
           )}
 

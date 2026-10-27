@@ -1,4 +1,4 @@
-import type { Dose, HospitalStay, PrescriptionChange } from '../types'
+import type { Dose, HospitalStay, PrescriptionChange, SickDayState } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
@@ -9,6 +9,8 @@ import { allergies, gpPhone, passportPerson, prescribers } from '../data/passpor
 import { doseSummary } from '../utils/dose'
 import { lastTakenDose, takenRecordLabel } from '../utils/hospital'
 import { illustrationLabel } from '../utils/medication'
+import { isPausedMedication, isSickDayActive, sickDayPeriodLabel } from '../utils/sickDay'
+import { StatusPill } from '../components/StatusPill'
 import { formatTime, joinNames, keepTogether } from '../utils/time'
 
 interface PassportScreenProps {
@@ -18,6 +20,7 @@ interface PassportScreenProps {
   nextDose: Dose | null
   change: PrescriptionChange | null
   hospital: HospitalStay | null
+  sickDay: SickDayState | null
   clock: number
   onShowStaff: () => void
   onSendToPhone: () => void
@@ -38,6 +41,7 @@ export function PassportScreen({
   nextDose,
   change,
   hospital,
+  sickDay,
   clock,
   onShowStaff,
   onSendToPhone,
@@ -46,6 +50,7 @@ export function PassportScreen({
   onLoadMedication,
 }: PassportScreenProps) {
   const lastTaken = lastTakenDose(doses)
+  const unwell = isSickDayActive(sickDay)
 
   return (
     <div className="passport stack stack-6">
@@ -122,6 +127,15 @@ export function PassportScreen({
                 Current medications{' '}
                 <span className="passport__count">· {medications.length}</span>
               </h2>
+              {unwell && sickDay ? (
+                <p className="passport__sick">
+                  <Icon name="thermometer" size={22} />
+                  <span>
+                    Sick-day plan {sickDayPeriodLabel(sickDay)}: paused medications are not being
+                    taken.
+                  </span>
+                </p>
+              ) : null}
               <ul className="passport-meds">
                 {medications.map((medication) => {
                   const changing = change?.medicationId === medication.id
@@ -135,6 +149,11 @@ export function PassportScreen({
                         <p className="passport-meds__name">
                           {medication.name} {medication.strength}
                         </p>
+                        {unwell && isPausedMedication(medication.id) ? (
+                          <StatusPill tone="later" icon="thermometer">
+                            Paused · sick day
+                          </StatusPill>
+                        ) : null}
                         <p className="passport-meds__how">
                           1 {medication.form} · {joinNames(medication.times)}
                         </p>

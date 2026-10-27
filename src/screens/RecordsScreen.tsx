@@ -1,15 +1,19 @@
-import type { Prescription, PrescriptionChange } from '../types'
+import type { Prescription, PrescriptionChange, SickDayState } from '../types'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
 import { StatusPill } from '../components/StatusPill'
-import { user } from '../data/medications'
+import { getMedication, user } from '../data/medications'
+import { sickDayPlan } from '../data/sickDay'
+import { sickDayPeriodLabel } from '../utils/sickDay'
+import { joinNames } from '../utils/time'
 
 interface RecordsScreenProps {
   stocked: boolean
   prescriptions: Prescription[]
   change: PrescriptionChange | null
   changeAcknowledgedAt: string | null
+  sickDay: SickDayState | null
   onViewScripts: () => void
   onViewScript: (reference: string) => void
   onLoadMedication: () => void
@@ -25,6 +29,7 @@ export function RecordsScreen({
   prescriptions,
   change,
   changeAcknowledgedAt,
+  sickDay,
   onViewScripts,
   onViewScript,
   onLoadMedication,
@@ -168,6 +173,40 @@ export function RecordsScreen({
                 This is what your pharmacist checked on {user.routineVerifiedOn}. {user.deviceName}{' '}
                 does not check prescriptions itself.
               </p>
+            </Card>
+
+            <Card>
+              <h2 className="section-title">Sick-day plan</h2>
+              <dl className="detail-rows">
+                <div className="detail-row">
+                  <dt className="detail-row__label">Pauses</dt>
+                  <dd className="detail-row__value">
+                    {joinNames(sickDayPlan.pause.map((item) => getMedication(item.medicationId).name))}
+                    <span className="detail-row__detail">While you are being sick, have diarrhoea or a fever</span>
+                  </dd>
+                </div>
+                <div className="detail-row">
+                  <dt className="detail-row__label">Restart</dt>
+                  <dd className="detail-row__value">{sickDayPlan.restartWhen}</dd>
+                </div>
+                <div className="detail-row">
+                  <dt className="detail-row__label">Agreed with</dt>
+                  <dd className="detail-row__value">
+                    {sickDayPlan.writtenBy} · Pharmacist
+                    <span className="detail-row__detail">{sickDayPlan.agreedOn}</span>
+                  </dd>
+                </div>
+                <div className="detail-row">
+                  <dt className="detail-row__label">Today</dt>
+                  <dd className="detail-row__value">
+                    {sickDay
+                      ? sickDay.status === 'active'
+                        ? `In use ${sickDayPeriodLabel(sickDay)}`
+                        : `Used ${sickDayPeriodLabel(sickDay)}`
+                      : 'Not in use'}
+                  </dd>
+                </div>
+              </dl>
             </Card>
           </div>
         </>
