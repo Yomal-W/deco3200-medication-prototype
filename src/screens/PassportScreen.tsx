@@ -21,6 +21,8 @@ interface PassportScreenProps {
   change: PrescriptionChange | null
   hospital: HospitalStay | null
   sickDay: SickDayState | null
+  noteCount: number
+  onOpenNotes: () => void
   clock: number
   onShowStaff: () => void
   onSendToPhone: () => void
@@ -42,6 +44,8 @@ export function PassportScreen({
   change,
   hospital,
   sickDay,
+  noteCount,
+  onOpenNotes,
   clock,
   onShowStaff,
   onSendToPhone,
@@ -236,6 +240,23 @@ export function PassportScreen({
                   </p>
                 </Card>
               ) : null}
+
+              <Card>
+                <div className="next-up">
+                  <span className="next-up__icon" aria-hidden="true">
+                    <Icon name="chat" size={24} />
+                  </span>
+                  <div className="next-up__body">
+                    <p className="next-up__label">Notes for your doctor</p>
+                    <p className="next-up__value">
+                      {noteCount === 0 ? 'Nothing noted yet' : `${noteCount} ${noteCount === 1 ? 'note' : 'notes'}`}
+                    </p>
+                  </div>
+                </div>
+                <Button className="away-card__action" variant="secondary" icon="arrowRight" iconPosition="end" onClick={onOpenNotes}>
+                  See my notes
+                </Button>
+              </Card>
 
               <Card>
                 <h2 className="section-title">Contacts</h2>

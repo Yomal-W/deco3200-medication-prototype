@@ -309,6 +309,23 @@ export interface SickDayState {
   endedAtMinutes: number | null
 }
 
+/**
+ * Something the user wanted their doctor or pharmacist to know, saved through
+ * the assistant. The user's own words and choices only — never a diagnosis.
+ */
+export interface DoctorNote {
+  id: string
+  kind: 'symptom' | 'question'
+  /** "Dizzy", or the question as asked. */
+  title: string
+  /** e.g. ["Started today", "Bothering me a little", "After my medication"] */
+  details: string[]
+  /** What the records say was taken today, when the note was saved. */
+  takenToday: string[]
+  /** Simulated time the note was saved, e.g. "8:10 AM". */
+  notedAt: string
+}
+
 /** One allergy, as the pharmacy has it on record. Prototype data only. */
 export interface Allergy {
   substance: string
@@ -338,8 +355,11 @@ export type Screen =
   | { name: 'passport-staff' }
   | { name: 'passport-phone' }
   | { name: 'hospital' }
+  | { name: 'ask' }
+  | { name: 'ask-notes' }
+  | { name: 'ask-doctor' }
   /** `better` opens straight on "Have you been eating and drinking normally?" */
   | { name: 'sick-day'; step?: 'better' }
 
 /** The persistent navigation destinations. */
-export type TabName = 'passport' | 'today' | 'medications' | 'records'
+export type TabName = 'passport' | 'today' | 'medications' | 'records' | 'ask'

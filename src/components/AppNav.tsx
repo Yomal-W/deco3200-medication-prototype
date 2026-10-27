@@ -7,6 +7,7 @@ const tabs: { id: TabName; label: string; icon: IconName }[] = [
   { id: 'today', label: 'Home', icon: 'home' },
   { id: 'medications', label: 'Medications', icon: 'list' },
   { id: 'records', label: 'Records', icon: 'document' },
+  { id: 'ask', label: 'Ask', icon: 'chat' },
 ]
 
 interface AppNavProps {

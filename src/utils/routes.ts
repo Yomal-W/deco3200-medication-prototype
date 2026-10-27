@@ -35,6 +35,12 @@ export function screenToHash(screen: Screen): string {
       return '#/passport/hospital'
     case 'sick-day':
       return '#/sick-day'
+    case 'ask':
+      return '#/ask'
+    case 'ask-notes':
+      return '#/ask/notes'
+    case 'ask-doctor':
+      return '#/ask/notes/doctor'
     case 'dose':
       return `#/dose/${screen.doseId}`
     case 'dispensing':
@@ -88,5 +94,9 @@ export function hashToScreen(hash: string): Screen {
   if (first === 'change') return { name: 'change' }
   if (first === 'away') return { name: 'away' }
   if (first === 'sick-day') return { name: 'sick-day' }
+  if (first === 'ask') {
+    if (second === 'notes') return third === 'doctor' ? { name: 'ask-doctor' } : { name: 'ask-notes' }
+    return { name: 'ask' }
+  }
   return { name: 'today' }
 }

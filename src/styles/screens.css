@@ -3101,3 +3101,311 @@
 .keep-together {
   white-space: nowrap;
 }
+
+/* --- Ask (assistant) ----------------------------------------------------------- */
+
+.ask__head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chat__row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  max-width: min(46rem, 100%);
+}
+
+.chat__row--user {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.chat__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-text);
+}
+
+.chat__bubble {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-body);
+}
+
+.chat__row--assistant .chat__bubble {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: var(--radius-sm);
+  color: var(--color-heading);
+  box-shadow: var(--shadow-card);
+}
+
+.chat__row--user .chat__bubble {
+  background: var(--color-accent);
+  border-bottom-right-radius: var(--radius-sm);
+  color: var(--color-text-on-accent);
+}
+
+.chat__row--saved .chat__bubble {
+  border-color: var(--color-success-border);
+}
+
+.chat__row--urgent .chat__bubble {
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+  color: var(--color-low-text);
+  font-weight: var(--fw-medium);
+}
+
+.chat__row--urgent .chat__avatar {
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+  color: var(--color-low-text);
+}
+
+/* "Writing…": three soft dots; still under reduced motion. */
+.chat__typing {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 3.25rem;
+}
+
+.chat__typing span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-muted);
+  animation: chat-dot 1s var(--ease) infinite;
+}
+
+.chat__typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat__typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chat-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat__typing span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Answers are full-size buttons, never small chips. */
+.chat-replies {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-3);
+}
+
+.chat-replies .btn {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.chat-replies--stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Icon, then the label, then (for follow-ups) an arrow at the far end. */
+.chat-replies--stacked .btn > span {
+  flex: 1;
+}
+
+.chat-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chat-input__label {
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-label);
+  color: var(--color-text-muted);
+}
+
+.chat-input__row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.chat-input__field {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-control) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--color-heading);
+}
+
+.chat-input__field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.chat-input__field:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.chat-input__row .btn {
+  flex: none;
+}
+
+/* --- Notes for the appointment ------------------------------------------------- */
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.notes__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-4);
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.note__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+}
+
+.note__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.note__title svg {
+  flex: none;
+  color: var(--color-accent-text);
+}
+
+.note__when {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.note__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.note__details li {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--fs-body);
+  color: var(--color-heading);
+}
+
+.note__taken {
+  width: 100%;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-meta);
+  color: var(--color-text);
+}
+
+.note__taken-label {
+  font-weight: var(--fw-label);
+  color: var(--color-text-muted);
+}
+
+.note__taken ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.note__remove {
+  margin-top: auto;
+}
+
+.note__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.note__confirm-text {
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.note__confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.notes--large .note__title {
+  font-size: var(--fs-h2);
+}
+
+.notes--large .note__details li,
+.notes--large .note__taken {
+  font-size: var(--fs-lead);
+}
+
+.ask-notes .screen-actions .btn {
+  flex-basis: 18rem;
+}

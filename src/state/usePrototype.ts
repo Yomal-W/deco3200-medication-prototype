@@ -4,6 +4,7 @@ import type {
   Dose,
   DoseRecord,
   DoseStatus,
+  DoctorNote,
   HospitalStay,
   Inventory,
   SickDayState,
@@ -34,6 +35,7 @@ import {
   planHospitalStay,
   returnFromHospital as returnFromHospitalStay,
 } from '../utils/hospital'
+import { buildQuestionNote, buildSymptomNote } from '../utils/assistant'
 import {
   endSickDay,
   isFullyPaused,
@@ -76,6 +78,8 @@ interface PrototypeState {
   hospital: HospitalStay | null
   /** This session's sick-day plan, once the user has started it. */
   sickDay: SickDayState | null
+  /** Notes for the doctor saved through the assistant, oldest first. */
+  notes: DoctorNote[]
   clock: number
   screen: Screen
   /** Whether the next URL sync should replace the history entry rather than add one. */
@@ -101,6 +105,7 @@ function newSession(options: SessionOptions = {}): PrototypeState {
     trips: [],
     hospital: null,
     sickDay: null,
+    notes: [],
     clock: SESSION_START_MINUTES,
     screen: { name: 'today' },
     navReplace: true,
@@ -204,6 +209,8 @@ function isStocked(state: PrototypeState): boolean {
 function screenForHistory(next: Screen, state: PrototypeState): Screen {
   if (next.name === 'today' || next.name === 'records' || next.name === 'passport') return next
   if (next.name === 'sick-day') return isStocked(state) ? next : { name: 'today' }
+  // The assistant and its notes work at any stage; it simply knows less before loading.
+  if (next.name === 'ask' || next.name === 'ask-notes' || next.name === 'ask-doctor') return next
 
   if (next.name === 'setup' || next.name === 'setup-loading' || next.name === 'setup-ready') {
     // Setup only exists while the device is still empty, and the loading
@@ -555,6 +562,20 @@ export function usePrototype() {
     setState((current) => endSickDay(current))
   }, [])
 
+  // --- Assistant ------------------------------------------------------------
+
+  /** Save a note the assistant built. Its id is given here, so it is unique in the session. */
+  const addNote = useCallback((build: (id: string, clock: number) => DoctorNote) => {
+    setState((current) => ({
+      ...current,
+      notes: [...current.notes, build(`note-${current.notes.length + 1}-${current.clock}`, current.clock)],
+    }))
+  }, [])
+
+  const removeNote = useCallback((noteId: string) => {
+    setState((current) => ({ ...current, notes: current.notes.filter((note) => note.id !== noteId) }))
+  }, [])
+
   // --- Activity 3: restocking ----------------------------------------------
 
   /** Tell the connected pharmacy the device needs more. Frontend state only. */
@@ -655,6 +676,43 @@ export function usePrototype() {
     })
   }, [])
 
+  /**
+   * Demonstrating the assistant: the morning dose taken and two notes and a
+   * question already saved, so the appointment summary can be shown at once.
+   */
+  const setNotesScenario = useCallback(() => {
+    setState((current) => {
+      const base = stocked(
+        newSession({
+          lowStockMedicationId: current.lowStockMedicationId,
+          includeChange: current.change !== null,
+        }),
+      )
+      const taken = withLowStock(confirmTakenAtHome(dispenseDose(base, 'morning', false), 'morning'))
+      const doses = taken.doses.map((dose) => ({
+        ...dose,
+        ...splitDose(dose, null),
+        status: deriveStatus(dose, taken.clock, null, null),
+      }))
+      const notes = [
+        buildSymptomNote(
+          'note-demo-1',
+          { symptomId: 'dizzy', onsetId: 'today', severityId: 'little', extraIds: ['after-medication'] },
+          doses,
+          taken.clock,
+        ),
+        buildSymptomNote(
+          'note-demo-2',
+          { symptomId: 'tired', onsetId: 'few-days', severityId: 'quite', extraIds: ['comes-and-goes'] },
+          doses,
+          taken.clock,
+        ),
+        buildQuestionNote('note-demo-3', 'Can I take my Aspirin later in the day?', taken.clock),
+      ]
+      return { ...taken, notes, screen: { name: 'ask-notes' }, navReplace: true }
+    })
+  }, [])
+
   /** Facilitator recovery: move the simulated clock anywhere in the day. */
   const setClock = useCallback((minutes: number) => {
     setState((current) => ({
@@ -730,6 +788,7 @@ export function usePrototype() {
     trip: activeTrip(state.trips),
     hospital: state.hospital,
     sickDay: state.sickDay,
+    notes: state.notes,
     chooseAwayOption,
     cancelAway,
     startTravelPreparation,
@@ -752,6 +811,9 @@ export function usePrototype() {
     beginSickDay,
     finishSickDay,
     setSickDayScenario,
+    addNote,
+    removeNote,
+    setNotesScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,

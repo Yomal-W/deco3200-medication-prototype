@@ -20,6 +20,8 @@ interface PassportStaffScreenProps {
   doses: Dose[]
   change: PrescriptionChange | null
   sickDay: SickDayState | null
+  noteCount: number
+  onOpenNotes: () => void
   clock: number
   onDone: () => void
 }
@@ -33,6 +35,8 @@ export function PassportStaffScreen({
   doses,
   change,
   sickDay,
+  noteCount,
+  onOpenNotes,
   clock,
   onDone,
 }: PassportStaffScreenProps) {
@@ -134,6 +138,18 @@ export function PassportStaffScreen({
               </span>
             </p>
           </Card>
+
+          {noteCount > 0 ? (
+            <Card>
+              <h2 className="section-title">Patient&rsquo;s own notes</h2>
+              <p className="passport-staff__fact">
+                {noteCount} {noteCount === 1 ? 'note' : 'notes'} for the doctor
+              </p>
+              <Button className="away-card__action" variant="secondary" icon="arrowRight" iconPosition="end" onClick={onOpenNotes}>
+                View notes
+              </Button>
+            </Card>
+          ) : null}
 
           <Card className="passport-qr">
             <QrPattern />

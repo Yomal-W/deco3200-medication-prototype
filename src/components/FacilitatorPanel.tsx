@@ -60,6 +60,7 @@ interface FacilitatorPanelProps {
   onSetIncludeChange: (include: boolean) => void
   onHospitalScenario: (scenario: 'leaving' | 'in-hospital') => void
   onSickDayScenario: (scenario: 'unwell' | 'better') => void
+  onNotesScenario: () => void
   onReset: () => void
   onClose: () => void
 }
@@ -83,6 +84,7 @@ export function FacilitatorPanel({
   onSetIncludeChange,
   onHospitalScenario,
   onSickDayScenario,
+  onNotesScenario,
   onReset,
   onClose,
 }: FacilitatorPanelProps) {
@@ -253,6 +255,19 @@ export function FacilitatorPanel({
               </button>
             ))}
           </div>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Assistant</p>
+          <button type="button" className="facilitator__option" onClick={onNotesScenario}>
+            <Icon name="chat" size={22} />
+            <span>
+              <span className="facilitator__option-name">Assistant with notes</span>
+              <span className="facilitator__option-note">
+                Morning dose taken; two notes and a question saved. Opens the appointment notes.
+              </span>
+            </span>
+          </button>
         </div>
 
         <div>

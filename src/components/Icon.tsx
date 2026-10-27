@@ -56,6 +56,12 @@ const paths: Record<string, ReactElement> = {
       <path d="M10 21v-3.5h4V21" />
     </>
   ),
+  chat: (
+    <>
+      <path d="M20 12.5a7.5 7.5 0 0 1-11.1 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5Z" />
+      <path d="M8.8 12.5h.01M12.5 12.5h.01M16.2 12.5h.01" />
+    </>
+  ),
   thermometer: (
     <>
       <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z" />

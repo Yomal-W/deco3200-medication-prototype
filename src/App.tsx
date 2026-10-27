@@ -32,8 +32,10 @@ import { PassportStaffScreen } from './screens/PassportStaffScreen'
 import { PassportPhoneScreen } from './screens/PassportPhoneScreen'
 import { HospitalScreen } from './screens/HospitalScreen'
 import { SickDayScreen } from './screens/SickDayScreen'
+import { AskScreen } from './screens/AskScreen'
+import { AskDoctorScreen, AskNotesScreen } from './screens/AskNotesScreen'
 
-const tabScreens: TabName[] = ['passport', 'today', 'medications', 'records']
+const tabScreens: TabName[] = ['passport', 'today', 'medications', 'records', 'ask']
 
 function App() {
   const {
@@ -48,6 +50,7 @@ function App() {
     trip,
     hospital,
     sickDay,
+    notes,
     clock,
     screen,
     navReplace,
@@ -89,6 +92,9 @@ function App() {
     beginSickDay,
     finishSickDay,
     setSickDayScenario,
+    addNote,
+    removeNote,
+    setNotesScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,
@@ -186,8 +192,9 @@ function App() {
   const activeTab = tabScreens.includes(screen.name as TabName) ? (screen.name as TabName) : null
   // Locked waiting states: no navigation while the device is working.
   const isBusy = screen.name === 'dispensing' || screen.name === 'setup-loading'
-  // The staff view is handed to someone else, so it carries no navigation.
-  const hideNav = isBusy || screen.name === 'passport-staff'
+  // Views handed to someone else carry no navigation.
+  const hideNav = isBusy || screen.name === 'passport-staff' || screen.name === 'ask-doctor'
+  const openNotes = useCallback(() => goTo({ name: 'ask-notes' }), [goTo])
   const openPassport = useCallback(() => goToTab('passport'), [goToTab])
   const openStaffView = useCallback(() => goTo({ name: 'passport-staff' }), [goTo])
 
@@ -369,6 +376,8 @@ function App() {
             change={change}
             hospital={hospital}
             sickDay={sickDay}
+            noteCount={notes.length}
+            onOpenNotes={openNotes}
             clock={clock}
             onShowStaff={openStaffView}
             onSendToPhone={() => goTo({ name: 'passport-phone' })}
@@ -384,6 +393,8 @@ function App() {
             doses={doses}
             change={change}
             sickDay={sickDay}
+            noteCount={notes.length}
+            onOpenNotes={() => goTo({ name: 'ask-doctor' })}
             clock={clock}
             onDone={openPassport}
           />
@@ -414,6 +425,33 @@ function App() {
             onOpenChange={() => goTo({ name: 'change' })}
           />
         )
+
+      case 'ask':
+        return (
+          <AskScreen
+            doses={doses}
+            nextDose={nextDose}
+            change={change}
+            sickDay={sickDay}
+            notes={notes}
+            onAddNote={addNote}
+            onOpenNotes={openNotes}
+            onShowPassport={openStaffView}
+          />
+        )
+
+      case 'ask-notes':
+        return (
+          <AskNotesScreen
+            notes={notes}
+            onRemove={removeNote}
+            onShowDoctor={() => goTo({ name: 'ask-doctor' })}
+            onBackToAsk={() => goToTab('ask')}
+          />
+        )
+
+      case 'ask-doctor':
+        return <AskDoctorScreen notes={notes} onDone={openNotes} />
 
       case 'sick-day':
         return (
@@ -468,7 +506,11 @@ function App() {
             ? undefined
             : screen.name === 'medication'
               ? { label: 'Medications', onClick: () => goToTab('medications') }
-              : screen.name === 'passport-staff' ||
+              : screen.name === 'ask-notes'
+                ? { label: 'Ask', onClick: () => goToTab('ask') }
+                : screen.name === 'ask-doctor'
+                  ? { label: 'Notes', onClick: openNotes }
+                  : screen.name === 'passport-staff' ||
                   screen.name === 'passport-phone' ||
                   screen.name === 'hospital'
                 ? { label: 'Passport', onClick: openPassport }
@@ -522,6 +564,10 @@ function App() {
           }}
           onSetLowStockMedication={setLowStockMedication}
           onSetIncludeChange={setIncludeChange}
+          onNotesScenario={() => {
+            setNotesScenario()
+            setFacilitatorOpen(false)
+          }}
           onSickDayScenario={(scenario) => {
             setSickDayScenario(scenario)
             setFacilitatorOpen(false)
