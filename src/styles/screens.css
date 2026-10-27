@@ -779,6 +779,16 @@
   flex-wrap: wrap;
 }
 
+/* Side by side, records can differ in length: start them on the same line
+   instead of centring each one in its own box. */
+.record-list--wide .record-line {
+  align-items: flex-start;
+}
+
+.record-list--wide .record-line__icon {
+  margin-top: 0.15rem;
+}
+
 .record-list--wide .record-line {
   flex: 1 1 16rem;
 }
@@ -1417,7 +1427,8 @@
 /* Three answers, each a full-size touch target, side by side when there is room. */
 .travel-report {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  /* One answer per row, full width, so every label stays on one line. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   margin-top: var(--space-4);
 }
@@ -2406,4 +2417,437 @@
   .reminder-layout {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* --- Medication passport ---------------------------------------------------- */
+
+/* Who this is and how current it is, on the blue feature surface. */
+.passport-id {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.passport-id__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.passport-id__icon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+  border-radius: var(--radius-lg);
+  background: var(--feature-inset);
+}
+
+.passport-id__who {
+  min-width: 0;
+}
+
+.passport-id__name {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  color: var(--color-heading);
+}
+
+.passport-id__born {
+  margin-top: var(--space-1);
+  font-size: var(--fs-lead);
+  color: var(--color-text-muted);
+}
+
+.passport-id__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-body);
+}
+
+.passport-id__facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.passport-id__facts svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* The two passport actions sit side by side until a label would wrap, then
+   stack: each label always stays on one line beside its icon. */
+.passport-id__actions .btn,
+.hospital .screen-actions .btn,
+.hospital-card .screen-actions .btn {
+  flex-basis: 18rem;
+}
+
+/* The travel steps pair a short label with a long one, so they stack sooner. */
+.away .screen-actions .btn {
+  flex-basis: 23rem;
+}
+
+.passport__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  /* Both columns share one height and end on the same line: the last card in
+     the side column takes up any difference. Content stays top-aligned. */
+  align-items: stretch;
+}
+
+.passport__columns > .split__column > :last-child,
+.passport-staff__layout > .split__column > :last-child {
+  flex: 1;
+}
+
+/* A phone number never breaks across lines. */
+.passport__phone {
+  white-space: nowrap;
+}
+
+@media (max-width: 62rem) {
+  .passport__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.passport__count {
+  font-weight: var(--fw-regular);
+  color: var(--color-text-muted);
+}
+
+.passport__title-icon {
+  flex: none;
+}
+
+/* A heading that carries a warning icon on the same line. */
+.passport-allergy .section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.passport-meds {
+  display: flex;
+  flex-direction: column;
+}
+
+.passport-meds__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.passport-meds__row:first-child {
+  padding-top: 0;
+}
+
+.passport-meds__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.passport-meds__row .med-visual {
+  flex: none;
+}
+
+.passport-meds__body {
+  min-width: 0;
+}
+
+.passport-meds__name {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.passport-meds__how {
+  margin-top: var(--space-1);
+  font-size: var(--fs-body);
+}
+
+.passport-meds__why {
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.passport-meds__change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  color: var(--amber-800);
+}
+
+/* Honest about where "taken" comes from. */
+.passport__honest {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.passport__honest svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* Allergies use the strongest warning colour in the system, with an icon and
+   a heading, so they never rely on colour alone. */
+.passport-allergy {
+  background: var(--color-low-surface);
+  border-color: var(--color-low-border);
+  box-shadow: none;
+}
+
+.passport-allergy .section-title {
+  color: var(--color-low-text);
+}
+
+/* Short values stay on one line; each time of day gets its own line. */
+.passport-table__nowrap {
+  white-space: nowrap;
+}
+
+.passport-table__time {
+  display: block;
+  white-space: nowrap;
+}
+
+.passport-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--fs-body);
+}
+
+.passport-list strong {
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.passport-list--large {
+  font-size: var(--fs-lead);
+}
+
+.passport-list__detail {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.passport__change {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.passport__change-detail {
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+}
+
+/* --- Passport: staff view ------------------------------------------------- */
+
+.passport-staff .flow__title {
+  font-size: var(--fs-display);
+}
+
+.passport-staff__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+@media (max-width: 62rem) {
+  .passport-staff__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.passport-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-lead);
+}
+
+.passport-table__caption {
+  margin-bottom: var(--space-4);
+  text-align: left;
+  font-size: var(--fs-meta);
+  color: var(--color-text-muted);
+}
+
+.passport-table th,
+.passport-table td {
+  padding: var(--space-3) var(--space-3) var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.passport-table thead th {
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-label);
+  color: var(--color-text-muted);
+}
+
+.passport-table tbody th {
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.passport-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.passport-table__note {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  color: var(--amber-800);
+}
+
+.passport-staff__fact {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.passport-qr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.qr-pattern {
+  width: 7.5rem;
+  height: 7.5rem;
+  flex: none;
+  color: var(--ink-900);
+  border-radius: var(--radius-sm);
+}
+
+.passport-qr__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+/* --- Going to hospital ------------------------------------------------------ */
+
+.away-option__icon {
+  flex: none;
+  color: var(--color-accent-text);
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.checklist__item--attention {
+  background: var(--color-attention-soft);
+  border-color: var(--color-attention-border);
+}
+
+.checklist__item.is-done {
+  border-color: var(--color-success-border);
+}
+
+.checklist__icon {
+  flex: none;
+  color: var(--color-accent-text);
+}
+
+.checklist__item--attention .checklist__icon {
+  color: var(--color-attention-mark);
+}
+
+.checklist__item.is-done .checklist__icon {
+  color: var(--color-success);
+}
+
+.checklist__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.checklist__title {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  color: var(--color-heading);
+}
+
+.checklist__detail {
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+.checklist__body .btn {
+  margin-top: var(--space-2);
+}
+
+/* Home while the station is paused for a hospital stay. */
+.hospital-card__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-6);
+  font-size: var(--fs-body);
+}
+
+.hospital-card__facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.hospital-card__facts svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+/* Long labels stack full width, so each stays on one line with its icon. */
+.screen-actions--stacked {
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.screen-actions--stacked .btn {
+  flex: none;
+  width: 100%;
 }

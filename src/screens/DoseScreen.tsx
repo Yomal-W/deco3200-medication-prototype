@@ -185,14 +185,16 @@ export function DoseScreen({
         <>
           <p className="flow__note">
             <Icon
-              name={dose.status === 'completed' ? 'info' : 'clock'}
+              name={dose.status === 'completed' ? 'info' : dose.status === 'in-hospital' ? 'hospital' : 'clock'}
               size={20}
               className="flow__note-icon"
             />
             <span>
               {dose.status === 'completed'
                 ? 'The device recorded what it dispensed. Only you can confirm that you have taken it.'
-                : `${user.deviceName} will have this ready for you at ${scheduledAt}.`}
+                : dose.status === 'in-hospital'
+                  ? `${user.deviceName} is holding this dose because of your hospital stay. It will not be dispensed or marked as missed.`
+                  : `${user.deviceName} will have this ready for you at ${scheduledAt}.`}
             </span>
           </p>
           <div className="screen-actions">

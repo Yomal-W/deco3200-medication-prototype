@@ -42,6 +42,28 @@ const paths: Record<string, ReactElement> = {
   arrowRight: <path d="M5 12h13.5M13 5.5 19.5 12 13 18.5" />,
   arrowDown: <path d="M12 4.5V18M5.5 12 12 18.5 18.5 12" />,
   chevronDown: <path d="M6 9.5 12 15.5 18 9.5" />,
+  passport: (
+    <>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M9 16.5h6" />
+    </>
+  ),
+  hospital: (
+    <>
+      <path d="M4 21V6.5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1V21M2.5 21h19" />
+      <path d="M12 8.5v5M9.5 11h5" />
+      <path d="M10 21v-3.5h4V21" />
+    </>
+  ),
+  qr: (
+    <>
+      <rect x="4" y="4" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <path d="M14 14h2.5v2.5M20 14v.01M14 20h.01M17 20h3v-3" />
+    </>
+  ),
   home: <path d="M4 10.8 12 4l8 6.8V19a1 1 0 0 1-1 1h-4.2v-5.6H9.2V20H5a1 1 0 0 1-1-1z" />,
   list: (
     <>

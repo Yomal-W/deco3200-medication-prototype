@@ -17,6 +17,7 @@ function markerFor(dose: Dose): { modifier: string; icon: IconName } {
   if (dose.status === 'completed') return { modifier: 'completed', icon: 'check' }
   if (dose.travel) return { modifier: 'upcoming', icon: 'suitcase' }
   if (dose.status === 'missed') return { modifier: 'missed', icon: 'alert' }
+  if (dose.status === 'in-hospital') return { modifier: 'upcoming', icon: 'hospital' }
   if (dose.status === 'due') return { modifier: 'due', icon: dose.dispensedAt ? 'device' : 'clock' }
   return { modifier: 'upcoming', icon: dayPartIcon[dose.dayPart] }
 }

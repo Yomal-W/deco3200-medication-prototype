@@ -20,3 +20,8 @@ export function joinNames(names: string[]): string {
 export function countLabel(count: number): string {
   return `${count} ${count === 1 ? 'medication' : 'medications'}`
 }
+
+/** Keep a number with its unit ("500 mg", "1 tablet") so they never wrap apart. */
+export function keepTogether(text: string): string {
+  return text.replace(/(\d) (?=\S)/g, '$1\u00a0')
+}

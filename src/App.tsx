@@ -27,8 +27,12 @@ import { RecordsScreen } from './screens/RecordsScreen'
 import { ScriptsScreen } from './screens/ScriptsScreen'
 import { ScriptScreen } from './screens/ScriptScreen'
 import { AwayScreen } from './screens/AwayScreen'
+import { PassportScreen } from './screens/PassportScreen'
+import { PassportStaffScreen } from './screens/PassportStaffScreen'
+import { PassportPhoneScreen } from './screens/PassportPhoneScreen'
+import { HospitalScreen } from './screens/HospitalScreen'
 
-const tabScreens: TabName[] = ['today', 'medications', 'records']
+const tabScreens: TabName[] = ['passport', 'today', 'medications', 'records']
 
 function App() {
   const {
@@ -41,6 +45,7 @@ function App() {
     change,
     changeAcknowledgedAt,
     trip,
+    hospital,
     clock,
     screen,
     navReplace,
@@ -71,6 +76,14 @@ function App() {
     reportTravel,
     finishReturnHome,
     requestRestock,
+    openHospital,
+    planHospital,
+    cancelHospital,
+    packForHospital,
+    leaveForHospital,
+    returnFromHospital,
+    finishHospital,
+    setHospitalScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,
@@ -168,6 +181,10 @@ function App() {
   const activeTab = tabScreens.includes(screen.name as TabName) ? (screen.name as TabName) : null
   // Locked waiting states: no navigation while the device is working.
   const isBusy = screen.name === 'dispensing' || screen.name === 'setup-loading'
+  // The staff view is handed to someone else, so it carries no navigation.
+  const hideNav = isBusy || screen.name === 'passport-staff'
+  const openPassport = useCallback(() => goToTab('passport'), [goToTab])
+  const openStaffView = useCallback(() => goTo({ name: 'passport-staff' }), [goTo])
 
   const renderScreen = () => {
     switch (screen.name) {
@@ -337,6 +354,54 @@ function App() {
           />
         )
 
+      case 'passport':
+        return (
+          <PassportScreen
+            stocked={stocked}
+            doses={doses}
+            nextDose={nextDose}
+            change={change}
+            hospital={hospital}
+            clock={clock}
+            onShowStaff={openStaffView}
+            onSendToPhone={() => goTo({ name: 'passport-phone' })}
+            onOpenHospital={openHospital}
+            onReturnFromHospital={returnFromHospital}
+            onLoadMedication={openSetup}
+          />
+        )
+
+      case 'passport-staff':
+        return (
+          <PassportStaffScreen doses={doses} change={change} clock={clock} onDone={openPassport} />
+        )
+
+      case 'passport-phone':
+        return <PassportPhoneScreen doses={doses} clock={clock} onBack={openPassport} />
+
+      case 'hospital':
+        return (
+          <HospitalScreen
+            hospital={hospital}
+            trip={trip}
+            doses={doses}
+            activeDose={activeDose}
+            clock={clock}
+            change={change}
+            changeAcknowledgedAt={changeAcknowledgedAt}
+            onPlan={planHospital}
+            onCancel={cancelHospital}
+            onPack={packForHospital}
+            onLeave={leaveForHospital}
+            onReturn={returnFromHospital}
+            onFinish={finishHospital}
+            onShowStaff={openStaffView}
+            onOpenPassport={openPassport}
+            onOpenDose={openDose}
+            onOpenChange={() => goTo({ name: 'change' })}
+          />
+        )
+
       case 'today':
         return (
           <TodayScreen
@@ -356,6 +421,10 @@ function App() {
             outstandingTravelDoses={outstandingTravelDoses}
             onOpenAway={openAway}
             onReturnHome={returnHome}
+            hospital={hospital}
+            onOpenHospital={openHospital}
+            onReturnFromHospital={returnFromHospital}
+            onShowPassport={openPassport}
           />
         )
     }
@@ -371,7 +440,11 @@ function App() {
             ? undefined
             : screen.name === 'medication'
               ? { label: 'Medications', onClick: () => goToTab('medications') }
-              : screen.name === 'scripts'
+              : screen.name === 'passport-staff' ||
+                  screen.name === 'passport-phone' ||
+                  screen.name === 'hospital'
+                ? { label: 'Passport', onClick: openPassport }
+                : screen.name === 'scripts'
                 ? { label: 'Records', onClick: () => goToTab('records') }
                 : screen.name === 'script'
                   ? { label: 'Scripts', onClick: () => goTo({ name: 'scripts' }) }
@@ -397,7 +470,7 @@ function App() {
         ) : null}
       </div>
 
-      {isBusy ? null : <AppNav active={activeTab} onSelect={goToTab} />}
+      {hideNav ? null : <AppNav active={activeTab} onSelect={goToTab} />}
 
       {facilitatorOpen ? (
         <FacilitatorPanel
@@ -421,6 +494,10 @@ function App() {
           }}
           onSetLowStockMedication={setLowStockMedication}
           onSetIncludeChange={setIncludeChange}
+          onHospitalScenario={(scenario) => {
+            setHospitalScenario(scenario)
+            setFacilitatorOpen(false)
+          }}
           onReset={() => {
             resetSession()
             setFacilitatorOpen(false)

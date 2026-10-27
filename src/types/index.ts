@@ -5,8 +5,12 @@
  * no clinical logic and no real medication record behind any of it.
  */
 
-/** Where a scheduled dose currently sits in the day. */
-export type DoseStatus = 'completed' | 'due' | 'upcoming' | 'missed'
+/**
+ * Where a scheduled dose currently sits in the day. `in-hospital` is a dose
+ * the station is holding back because the user is (or was) in hospital, where
+ * staff may be managing their medication.
+ */
+export type DoseStatus = 'completed' | 'due' | 'upcoming' | 'missed' | 'in-hospital'
 
 /** Part of the day a dose belongs to. Drives the icon shown on the timeline. */
 export type DayPart = 'early-morning' | 'morning' | 'afternoon' | 'evening'
@@ -246,6 +250,37 @@ export interface Prescription {
   replacedOn: string | null
 }
 
+/**
+ * Where a hospital visit is up to. Each stage is a separate user action:
+ *
+ *  planning   — getting ready to go; nothing has changed at the station yet
+ *  away       — the user said they are leaving; the station holds doses back
+ *  returning  — home again, but doses wait until the user has checked with
+ *               their pharmacist, because hospitals often change medications
+ *  returned   — finished; kept for the record
+ */
+export type HospitalStatus = 'planning' | 'away' | 'returning' | 'returned'
+
+/** A visit to hospital. One per session in this prototype. */
+export interface HospitalStay {
+  status: HospitalStatus
+  /** Whether the user expects to stay overnight. Only then is a travel case offered. */
+  overnight: boolean
+  /** Simulated minutes when the user left, or null while planning. */
+  leftAtMinutes: number | null
+  /** Simulated minutes when the user said they were home. */
+  returnedAtMinutes: number | null
+  /** When the user said they had checked with their pharmacist. */
+  checkedAt: string | null
+}
+
+/** One allergy, as the pharmacy has it on record. Prototype data only. */
+export interface Allergy {
+  substance: string
+  /** What happened, in plain words, e.g. "Rash". */
+  reaction: string
+}
+
 /** Screens the participant can be on. Deliberately a small, flat set. */
 export type Screen =
   | { name: 'today' }
@@ -264,6 +299,10 @@ export type Screen =
   | { name: 'whats-next' }
   | { name: 'change' }
   | { name: 'away' }
+  | { name: 'passport' }
+  | { name: 'passport-staff' }
+  | { name: 'passport-phone' }
+  | { name: 'hospital' }
 
-/** The three persistent navigation destinations. */
-export type TabName = 'today' | 'medications' | 'records'
+/** The persistent navigation destinations. */
+export type TabName = 'passport' | 'today' | 'medications' | 'records'
