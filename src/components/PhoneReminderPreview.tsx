@@ -1,7 +1,7 @@
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import type { Dose } from '../types'
 import { getMedication, user } from '../data/medications'
-import { formatTime } from '../utils/time'
+import { formatTime, keepTogether } from '../utils/time'
 
 /*
  * A simulated reminder on a phone lock screen. Not sent anywhere: the phone
@@ -21,10 +21,6 @@ interface PhoneReminderPreviewProps {
   leadMinutes: number
 }
 
-/** Keep a number with its unit ("500 mg", "1 tablet") so they never wrap apart. */
-function keepTogether(text: string): string {
-  return text.replace(/(\d) (?=\S)/g, '$1\u00a0')
-}
 
 /** "9:41" — the lock screen shows the time without AM or PM. */
 function lockTime(minutes: number): string {
@@ -32,6 +28,37 @@ function lockTime(minutes: number): string {
 }
 
 export function PhoneReminderPreview({ dose, remindAt, leadMinutes }: PhoneReminderPreviewProps) {
+  return (
+    <PhoneLockScreen time={remindAt} title={`Medication due in ${leadMinutes} minutes`}>
+      <ul className="iphone__note-meds">
+        {dose.items.map((item) => {
+          const medication = getMedication(item.medicationId)
+          return (
+            <li key={item.medicationId}>
+              {medication.name} {keepTogether(medication.strength)} ·{' '}
+              {keepTogether(item.quantity)}
+            </li>
+          )
+        })}
+      </ul>
+      <p className="iphone__note-detail">
+        Due at {keepTogether(formatTime(dose.scheduledMinutes))} · take from your travel case
+      </p>
+    </PhoneLockScreen>
+  )
+}
+
+interface PhoneLockScreenProps {
+  /** The lock-screen time, minutes after midnight. */
+  time: number
+  /** The notification's bold first line. */
+  title: string
+  /** The rest of the notification. */
+  children: ReactNode
+}
+
+/** The phone itself, showing one MediFlow notification on its lock screen. */
+export function PhoneLockScreen({ time, title, children }: PhoneLockScreenProps) {
   const id = useId().replace(/:/g, '')
   const g = (name: string) => `${name}-${id}`
 
@@ -108,7 +135,7 @@ export function PhoneReminderPreview({ dose, remindAt, leadMinutes }: PhoneRemin
           {/* Live lock-screen content. */}
           <div className="iphone__lock">
             <p className="iphone__date">{user.today}</p>
-            <p className="iphone__clock">{lockTime(remindAt)}</p>
+            <p className="iphone__clock">{lockTime(time)}</p>
           </div>
 
           <div className="iphone__notification">
@@ -124,22 +151,8 @@ export function PhoneReminderPreview({ dose, remindAt, leadMinutes }: PhoneRemin
                 <span className="iphone__note-app">{user.deviceName}</span>
                 <span className="iphone__note-when">now</span>
               </p>
-              <p className="iphone__note-title">Medication due in {leadMinutes} minutes</p>
-              <ul className="iphone__note-meds">
-                {dose.items.map((item) => {
-                  const medication = getMedication(item.medicationId)
-                  return (
-                    <li key={item.medicationId}>
-                      {medication.name} {keepTogether(medication.strength)} ·{' '}
-                      {keepTogether(item.quantity)}
-                    </li>
-                  )
-                })}
-              </ul>
-              <p className="iphone__note-detail">
-                Due at {keepTogether(formatTime(dose.scheduledMinutes))} · take from your travel
-                case
-              </p>
+              <p className="iphone__note-title">{title}</p>
+              {children}
             </div>
           </div>
 

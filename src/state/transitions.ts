@@ -69,9 +69,15 @@ export function canDispenseForTravel(state: DoseState, doseId: string): boolean 
 
 /**
  * The station releases a dose into the tray and its stock goes down by what
- * it released. Happens at most once per dose.
+ * it released. Happens at most once per dose. Medications the sick-day plan
+ * pauses are left out and recorded as such.
  */
-export function dispenseDose<S extends DoseState>(state: S, doseId: string, forTravel: boolean): S {
+export function dispenseDose<S extends DoseState>(
+  state: S,
+  doseId: string,
+  forTravel: boolean,
+  pausedMedicationIds: string[] = [],
+): S {
   const allowed = forTravel ? canDispenseForTravel(state, doseId) : canDispenseAtHome(state, doseId)
   const dose = findDose(state, doseId)
   if (!allowed || !dose) return state
@@ -79,6 +85,7 @@ export function dispenseDose<S extends DoseState>(state: S, doseId: string, forT
   const clock = state.clock + DISPENSE_MINUTES
   const inventory = { ...state.inventory }
   dose.items.forEach((item) => {
+    if (pausedMedicationIds.includes(item.medicationId)) return
     const level = inventory[item.medicationId]
     if (level) inventory[item.medicationId] = { ...level, remaining: Math.max(0, level.remaining - 1) }
   })
@@ -91,6 +98,7 @@ export function dispenseDose<S extends DoseState>(state: S, doseId: string, forT
       ...item,
       dispensedAt: formatTime(clock),
       travel: forTravel ? { packedAt: null, outcome: null, reportedAt: null } : null,
+      ...(pausedMedicationIds.length > 0 ? { pausedMedicationIds } : {}),
     })),
   }
 }

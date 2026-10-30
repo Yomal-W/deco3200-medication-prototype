@@ -3,6 +3,7 @@ import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { Icon } from '../components/Icon'
+import { StatusPill } from '../components/StatusPill'
 import { DoseDetails } from '../components/DoseDetails'
 import { MedicationItem } from '../components/MedicationItem'
 import { RoutineProgress } from '../components/RoutineProgress'
@@ -80,11 +81,35 @@ export function DoseScreen({
         </Card>
       ) : null}
 
-      <ul className="med-list med-list--grid">
-        {dose.items.map((item) => (
-          <MedicationItem key={item.medicationId} item={item} showInstruction />
-        ))}
-      </ul>
+      {dose.items.length > 0 ? (
+        <ul className="med-list med-list--grid">
+          {dose.items.map((item) => (
+            <MedicationItem key={item.medicationId} item={item} showInstruction />
+          ))}
+        </ul>
+      ) : null}
+
+      {dose.pausedItems.length > 0 ? (
+        <section className="paused-items" aria-labelledby="paused-items-title">
+          <h2 id="paused-items-title" className="paused-items__title">
+            <Icon name="thermometer" size={22} />
+            {dose.dispensedAt ? 'Left out by your sick-day plan' : 'Paused by your sick-day plan'}
+          </h2>
+          <ul className="med-list">
+            {dose.pausedItems.map((item) => (
+              <MedicationItem
+                key={item.medicationId}
+                item={item}
+                aside={
+                  <StatusPill tone="later" icon="thermometer">
+                    Paused
+                  </StatusPill>
+                }
+              />
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {dose.travel ? (
         <>
@@ -162,8 +187,11 @@ export function DoseScreen({
             <p className="action-line">
               <Icon name="device" size={26} />
               <span>
-                Press <strong>Dispense medication</strong>. {user.deviceName} releases these{' '}
-                {countLabel(dose.items.length).toLowerCase()} into the tray.
+                Press <strong>Dispense medication</strong>. {user.deviceName} releases{' '}
+                {dose.items.length === 1
+                  ? 'this medication'
+                  : `these ${countLabel(dose.items.length).toLowerCase()}`}{' '}
+                into the tray.
               </span>
             </p>
             <div className="screen-actions">
@@ -185,14 +213,26 @@ export function DoseScreen({
         <>
           <p className="flow__note">
             <Icon
-              name={dose.status === 'completed' ? 'info' : 'clock'}
+              name={
+                dose.status === 'completed'
+                  ? 'info'
+                  : dose.status === 'in-hospital'
+                    ? 'hospital'
+                    : dose.status === 'sick-day'
+                      ? 'thermometer'
+                      : 'clock'
+              }
               size={20}
               className="flow__note-icon"
             />
             <span>
               {dose.status === 'completed'
                 ? 'The device recorded what it dispensed. Only you can confirm that you have taken it.'
-                : `${user.deviceName} will have this ready for you at ${scheduledAt}.`}
+                : dose.status === 'sick-day'
+                  ? `Your sick-day plan pauses everything in this dose, so ${user.deviceName} will not dispense it. It is not marked as missed, and you should not take it later.`
+                  : dose.status === 'in-hospital'
+                  ? `${user.deviceName} is holding this dose because of your hospital stay. It will not be dispensed or marked as missed.`
+                  : `${user.deviceName} will have this ready for you at ${scheduledAt}.`}
             </span>
           </p>
           <div className="screen-actions">

@@ -48,6 +48,22 @@ export function DoseStatusPill({ dose, isNext = false }: DoseStatusPillProps) {
     )
   }
 
+  if (dose.status === 'sick-day') {
+    return (
+      <StatusPill tone="later" icon="thermometer">
+        Paused · sick day
+      </StatusPill>
+    )
+  }
+
+  if (dose.status === 'in-hospital') {
+    return (
+      <StatusPill tone="later" icon="hospital">
+        In hospital
+      </StatusPill>
+    )
+  }
+
   if (dose.status === 'missed') {
     return (
       <StatusPill tone="danger" icon="alert">

@@ -113,7 +113,7 @@ export function AwayScreen({
   if (trip && previewing) {
     const preview = reminderPreview(trip, doses, clock, REMINDER_LEAD_MINUTES)
     return (
-      <div className="flow flow--wide" ref={rootRef}>
+      <div className="flow flow--wide away" ref={rootRef}>
         <div className="flow__intro">
           <div>
             <h1 className="flow__title" tabIndex={-1}>
@@ -210,7 +210,7 @@ export function AwayScreen({
 
   if (!trip) {
     return (
-      <div className="flow" ref={rootRef}>
+      <div className="flow away" ref={rootRef}>
         <div className="flow__intro">
           <div>
             <h1 className="flow__title" tabIndex={-1}>
@@ -268,7 +268,7 @@ export function AwayScreen({
     const blocking = unresolvedHomeDose(doses, clock)
 
     return (
-      <div className="flow flow--wide" ref={rootRef}>
+      <div className="flow flow--wide away" ref={rootRef}>
         <div className="flow__intro">
           <div>
             <h1 className="flow__title" tabIndex={-1}>
@@ -375,7 +375,7 @@ export function AwayScreen({
       const nothingDispensed = tripDoses.every((item) => !item.dispensedAt)
 
       return (
-        <div className="flow flow--wide" ref={rootRef}>
+        <div className="flow flow--wide away" ref={rootRef}>
           <div className="flow__intro">
             <div>
               <p className="flow__eyebrow">Preparing travel case · {progress}</p>
@@ -441,7 +441,7 @@ export function AwayScreen({
     }
 
     return (
-      <div className="flow flow--wide" ref={rootRef}>
+      <div className="flow flow--wide away" ref={rootRef}>
         <Card className="hero-status hero-status--accent hero-status--row">
           <MedicationTray items={dose.items} />
           <div className="hero-status__content">
@@ -492,7 +492,7 @@ export function AwayScreen({
 
   if (trip.status === 'preparing') {
     return (
-      <div className="flow" ref={rootRef}>
+      <div className="flow away" ref={rootRef}>
         <Card className="hero-status hero-status--success">
           <span className="hero-status__badge">
             <Icon name="suitcase" size={42} strokeWidth={2.4} />
@@ -545,7 +545,7 @@ export function AwayScreen({
 
   if (trip.status === 'away') {
     return (
-      <div className="flow" ref={rootRef}>
+      <div className="flow away" ref={rootRef}>
         <Card className="hero-status hero-status--accent feature">
           <span className="hero-status__badge">
             <Icon name="suitcase" size={42} strokeWidth={2.4} />
@@ -597,7 +597,7 @@ export function AwayScreen({
   const anyUnsure = toReport.some((dose) => dose.travel?.outcome === 'unsure')
 
   return (
-    <div className="flow flow--wide" ref={rootRef}>
+    <div className="flow flow--wide away" ref={rootRef}>
       <div className="flow__intro">
         <div>
           <h1 className="flow__title" tabIndex={-1}>

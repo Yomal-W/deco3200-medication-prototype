@@ -3,9 +3,11 @@ import { Icon } from './Icon'
 import type { IconName } from './Icon'
 
 const tabs: { id: TabName; label: string; icon: IconName }[] = [
+  { id: 'passport', label: 'Passport', icon: 'passport' },
   { id: 'today', label: 'Home', icon: 'home' },
   { id: 'medications', label: 'Medications', icon: 'list' },
   { id: 'records', label: 'Records', icon: 'document' },
+  { id: 'ask', label: 'Ask', icon: 'chat' },
 ]
 
 interface AppNavProps {

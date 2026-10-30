@@ -4,7 +4,10 @@ import type {
   Dose,
   DoseRecord,
   DoseStatus,
+  DoctorNote,
+  HospitalStay,
   Inventory,
+  SickDayState,
   PrescriptionChange,
   Screen,
   SessionStage,
@@ -23,7 +26,23 @@ import {
 } from '../data/session'
 import { buildPrescriptions } from '../data/prescriptions'
 import { formatTime } from '../utils/time'
-import { activeTrip, isTaken, trayDose } from '../utils/travel'
+import { activeTrip, isTaken, preparationStep, trayDose } from '../utils/travel'
+import {
+  cancelHospitalStay,
+  finishHospitalStay,
+  isHeldForHospital,
+  leaveForHospital as leaveForHospitalStay,
+  planHospitalStay,
+  returnFromHospital as returnFromHospitalStay,
+} from '../utils/hospital'
+import { buildQuestionNote, buildSymptomNote } from '../utils/assistant'
+import {
+  endSickDay,
+  isFullyPaused,
+  pausedMedicationIdsFor,
+  splitDose,
+  startSickDay,
+} from '../utils/sickDay'
 import {
   arriveHome,
   canDispenseAtHome,
@@ -55,6 +74,12 @@ interface PrototypeState {
   changeAcknowledgedAt: string | null
   /** Every trip this session. At most one is unfinished at a time. */
   trips: AwayPlan[]
+  /** This session's hospital visit, if any. */
+  hospital: HospitalStay | null
+  /** This session's sick-day plan, once the user has started it. */
+  sickDay: SickDayState | null
+  /** Notes for the doctor saved through the assistant, oldest first. */
+  notes: DoctorNote[]
   clock: number
   screen: Screen
   /** Whether the next URL sync should replace the history entry rather than add one. */
@@ -78,6 +103,9 @@ function newSession(options: SessionOptions = {}): PrototypeState {
     change: options.includeChange ? buildPrescriptionChange() : null,
     changeAcknowledgedAt: null,
     trips: [],
+    hospital: null,
+    sickDay: null,
+    notes: [],
     clock: SESSION_START_MINUTES,
     screen: { name: 'today' },
     navReplace: true,
@@ -115,9 +143,27 @@ function withLowStock(state: PrototypeState): PrototypeState {
  * it is due, and it is complete once the user has confirmed it. Nothing else
  * needs updating when time moves forward.
  */
-function deriveStatus(dose: DoseRecord, clock: number): DoseStatus {
+function deriveStatus(
+  dose: DoseRecord,
+  clock: number,
+  hospital: HospitalStay | null,
+  sickDay: SickDayState | null,
+): DoseStatus {
   if (isTaken(dose)) return 'completed'
+  if (isHeldForHospital(dose, hospital)) return 'in-hospital'
+  if (isFullyPaused(dose, sickDay)) return 'sick-day'
   return clock >= dose.scheduledMinutes ? 'due' : 'upcoming'
+}
+
+/** What the sick-day plan leaves out of this dose right now. */
+function pausedFor(state: PrototypeState, doseId: string): string[] {
+  const dose = state.doses.find((item) => item.id === doseId)
+  return dose ? pausedMedicationIdsFor(dose, state.sickDay) : []
+}
+
+/** Held back by a hospital stay or by the sick-day plan: the station never offers it. */
+function isWithheld(dose: DoseRecord, state: PrototypeState): boolean {
+  return isHeldForHospital(dose, state.hospital) || isFullyPaused(dose, state.sickDay)
 }
 
 /** A dose whose time has come but which the user has not confirmed yet. */
@@ -126,7 +172,11 @@ function unresolvedDose(state: PrototypeState): DoseRecord | null {
     [...state.doses]
       .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
       .find(
-        (dose) => !dose.travel && !dose.confirmedAt && state.clock >= dose.scheduledMinutes,
+        (dose) =>
+          !dose.travel &&
+          !dose.confirmedAt &&
+          !isWithheld(dose, state) &&
+          state.clock >= dose.scheduledMinutes,
       ) ?? null
   )
 }
@@ -137,7 +187,11 @@ function upcomingDose(state: PrototypeState): DoseRecord | null {
     [...state.doses]
       .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
       .find(
-        (dose) => !dose.travel && dose.scheduledMinutes > state.clock && !dose.confirmedAt,
+        (dose) =>
+          !dose.travel &&
+          !isWithheld(dose, state) &&
+          dose.scheduledMinutes > state.clock &&
+          !dose.confirmedAt,
       ) ?? null
   )
 }
@@ -153,7 +207,10 @@ function isStocked(state: PrototypeState): boolean {
  * Back/Forward safe after a reset and stops setup being bypassed by URL.
  */
 function screenForHistory(next: Screen, state: PrototypeState): Screen {
-  if (next.name === 'today' || next.name === 'records') return next
+  if (next.name === 'today' || next.name === 'records' || next.name === 'passport') return next
+  if (next.name === 'sick-day') return isStocked(state) ? next : { name: 'today' }
+  // The assistant and its notes work at any stage; it simply knows less before loading.
+  if (next.name === 'ask' || next.name === 'ask-notes' || next.name === 'ask-doctor') return next
 
   if (next.name === 'setup' || next.name === 'setup-loading' || next.name === 'setup-ready') {
     // Setup only exists while the device is still empty, and the loading
@@ -171,8 +228,19 @@ function screenForHistory(next: Screen, state: PrototypeState): Screen {
     const exists = buildPrescriptions(state.change).some((item) => item.reference === next.reference)
     return exists ? next : { name: 'scripts' }
   }
-  if (next.name === 'medications' || next.name === 'whats-next' || next.name === 'away') {
+  if (
+    next.name === 'medications' ||
+    next.name === 'whats-next' ||
+    next.name === 'away' ||
+    next.name === 'passport-staff' ||
+    next.name === 'passport-phone'
+  ) {
     return next
+  }
+  // The hospital flow picks up wherever the visit is up to; once it is over,
+  // the passport is where it is remembered.
+  if (next.name === 'hospital') {
+    return state.hospital?.status === 'returned' ? { name: 'passport' } : next
   }
   if (next.name === 'medication') {
     return findMedication(next.medicationId) ? next : { name: 'medications' }
@@ -267,11 +335,14 @@ export function usePrototype() {
   }, [])
 
   const startDispensing = useCallback((doseId: string) => {
-    setState((current) =>
-      canDispenseAtHome(current, doseId)
+    setState((current) => {
+      const dose = current.doses.find((item) => item.id === doseId)
+      // Held for a hospital stay or paused in full: the station never releases it.
+      if (dose && isWithheld(dose, current)) return current
+      return canDispenseAtHome(current, doseId)
         ? { ...current, screen: { name: 'dispensing', doseId }, navReplace: false }
-        : current,
-    )
+        : current
+    })
   }, [])
 
   /**
@@ -281,7 +352,7 @@ export function usePrototype() {
    */
   const finishDispensing = useCallback((doseId: string) => {
     setState((current) => ({
-      ...dispenseDose(current, doseId, false),
+      ...dispenseDose(current, doseId, false, pausedFor(current, doseId)),
       screen: { name: 'collect', doseId },
       navReplace: true,
     }))
@@ -367,7 +438,7 @@ export function usePrototype() {
 
   const finishTravelDispensing = useCallback((doseId: string) => {
     setState((current) => ({
-      ...dispenseDose(current, doseId, true),
+      ...dispenseDose(current, doseId, true, pausedFor(current, doseId)),
       screen: { name: 'away' },
       navReplace: true,
     }))
@@ -404,6 +475,105 @@ export function usePrototype() {
       const next = finishReturn(current)
       return next === current ? current : { ...next, screen: { name: 'today' }, navReplace: false }
     })
+  }, [])
+
+  // --- Going to hospital ---------------------------------------------------
+
+  const openHospital = useCallback(() => {
+    setState((current) =>
+      current.hospital?.status === 'returned'
+        ? current
+        : { ...current, screen: { name: 'hospital' }, navReplace: false },
+    )
+  }, [])
+
+  const planHospital = useCallback((overnight: boolean) => {
+    setState((current) => planHospitalStay(current, overnight))
+  }, [])
+
+  /** Back to the passport; any travel plan is the user's to keep or cancel. */
+  const cancelHospital = useCallback(() => {
+    setState((current) => ({
+      ...cancelHospitalStay(current),
+      screen: { name: 'passport' },
+      navReplace: false,
+    }))
+  }, [])
+
+  /**
+   * Overnight: pack the rest of today's doses with the existing travel flow.
+   * A plan already under way is picked up rather than replaced.
+   */
+  const packForHospital = useCallback(() => {
+    setState((current) => {
+      const option = awayOptions.find((item) => item.minutes === null)
+      const planned = activeTrip(current.trips) || !option ? current : chooseTripLength(current, option)
+      return { ...planned, screen: { name: 'away' }, navReplace: false }
+    })
+  }, [])
+
+  /**
+   * "I'm leaving for hospital". A travel case that is fully packed leaves with
+   * the user; a plan that was only being looked at is dropped. One that is
+   * half packed must be finished first, so the screen never offers this then.
+   */
+  const leaveForHospital = useCallback(() => {
+    setState((current) => {
+      const trip = activeTrip(current.trips)
+      if (trip?.status === 'preparing' && preparationStep(trip, current.doses).kind !== 'ready') {
+        return current
+      }
+      const left = leaveForHospitalStay(current)
+      if (left === current) return current
+      const withTrip =
+        trip?.status === 'preparing' ? leaveHome(left) : trip?.status === 'reviewing' ? cancelTrip(left) : left
+      return { ...withTrip, screen: { name: 'today' }, navReplace: false }
+    })
+  }, [])
+
+  /** "I'm back home". The travel case, if any, comes home too. */
+  const returnFromHospital = useCallback(() => {
+    setState((current) => {
+      const returned = returnFromHospitalStay(current)
+      if (returned === current) return current
+      return { ...arriveHome(returned), screen: { name: 'hospital' }, navReplace: false }
+    })
+  }, [])
+
+  /** Checked with the pharmacist. Packed doses are reported next, if there are any. */
+  const finishHospital = useCallback(() => {
+    setState((current) => {
+      const finished = finishHospitalStay(current)
+      if (finished === current) return current
+      const reporting = activeTrip(finished.trips)?.status === 'returning'
+      return { ...finished, screen: { name: reporting ? 'away' : 'today' }, navReplace: false }
+    })
+  }, [])
+
+  // --- Sick-day plan ---------------------------------------------------------
+
+  /** The user is unwell: the pharmacist's plan starts. The screen shows it running. */
+  const beginSickDay = useCallback(() => {
+    setState((current) => startSickDay(current))
+  }, [])
+
+  /** Eating and drinking normally again. The screen confirms the routine is back. */
+  const finishSickDay = useCallback(() => {
+    setState((current) => endSickDay(current))
+  }, [])
+
+  // --- Assistant ------------------------------------------------------------
+
+  /** Save a note the assistant built. Its id is given here, so it is unique in the session. */
+  const addNote = useCallback((build: (id: string, clock: number) => DoctorNote) => {
+    setState((current) => ({
+      ...current,
+      notes: [...current.notes, build(`note-${current.notes.length + 1}-${current.clock}`, current.clock)],
+    }))
+  }, [])
+
+  const removeNote = useCallback((noteId: string) => {
+    setState((current) => ({ ...current, notes: current.notes.filter((note) => note.id !== noteId) }))
   }, [])
 
   // --- Activity 3: restocking ----------------------------------------------
@@ -462,6 +632,87 @@ export function usePrototype() {
     })
   }, [])
 
+  /**
+   * Demonstrating the passport: medication loaded and the morning dose taken,
+   * ready to go to hospital — or already there, late in the afternoon, so the
+   * afternoon dose has been held back.
+   */
+  const setHospitalScenario = useCallback((scenario: 'leaving' | 'in-hospital') => {
+    setState((current) => {
+      const base = stocked(
+        newSession({
+          lowStockMedicationId: current.lowStockMedicationId,
+          includeChange: current.change !== null,
+        }),
+      )
+      const taken = withLowStock(confirmTakenAtHome(dispenseDose(base, 'morning', false), 'morning'))
+      if (scenario === 'leaving') {
+        return { ...taken, screen: { name: 'passport' }, navReplace: true }
+      }
+      const away = leaveForHospitalStay(planHospitalStay(taken, false))
+      return { ...away, clock: 17 * 60, screen: { name: 'today' }, navReplace: true }
+    })
+  }, [])
+
+  /**
+   * Demonstrating the sick-day plan: unwell from the start of the session, so
+   * the Morning dose is only partly given — or already better by late
+   * afternoon, with the Afternoon dose paused in the record.
+   */
+  const setSickDayScenario = useCallback((scenario: 'unwell' | 'better') => {
+    setState((current) => {
+      const base = stocked(
+        newSession({
+          lowStockMedicationId: current.lowStockMedicationId,
+          includeChange: current.change !== null,
+        }),
+      )
+      const unwell = startSickDay(base)
+      if (scenario === 'unwell') return { ...unwell, screen: { name: 'today' }, navReplace: true }
+      const dispensed = dispenseDose(unwell, 'morning', false, pausedFor(unwell, 'morning'))
+      const taken = withLowStock(confirmTakenAtHome(dispensed, 'morning'))
+      const better = endSickDay({ ...taken, clock: 17 * 60 })
+      return { ...better, screen: { name: 'today' }, navReplace: true }
+    })
+  }, [])
+
+  /**
+   * Demonstrating the assistant: the morning dose taken and two notes and a
+   * question already saved, so the appointment summary can be shown at once.
+   */
+  const setNotesScenario = useCallback(() => {
+    setState((current) => {
+      const base = stocked(
+        newSession({
+          lowStockMedicationId: current.lowStockMedicationId,
+          includeChange: current.change !== null,
+        }),
+      )
+      const taken = withLowStock(confirmTakenAtHome(dispenseDose(base, 'morning', false), 'morning'))
+      const doses = taken.doses.map((dose) => ({
+        ...dose,
+        ...splitDose(dose, null),
+        status: deriveStatus(dose, taken.clock, null, null),
+      }))
+      const notes = [
+        buildSymptomNote(
+          'note-demo-1',
+          { symptomId: 'dizzy', onsetId: 'today', severityId: 'little', extraIds: ['after-medication'] },
+          doses,
+          taken.clock,
+        ),
+        buildSymptomNote(
+          'note-demo-2',
+          { symptomId: 'tired', onsetId: 'few-days', severityId: 'quite', extraIds: ['comes-and-goes'] },
+          doses,
+          taken.clock,
+        ),
+        buildQuestionNote('note-demo-3', 'Can I take my Aspirin later in the day?', taken.clock),
+      ]
+      return { ...taken, notes, screen: { name: 'ask-notes' }, navReplace: true }
+    })
+  }, [])
+
   /** Facilitator recovery: move the simulated clock anywhere in the day. */
   const setClock = useCallback((minutes: number) => {
     setState((current) => ({
@@ -483,8 +734,12 @@ export function usePrototype() {
     () =>
       [...state.doses]
         .sort((a, b) => a.scheduledMinutes - b.scheduledMinutes)
-        .map((dose) => ({ ...dose, status: deriveStatus(dose, state.clock) })),
-    [state.doses, state.clock],
+        .map((dose) => ({
+          ...dose,
+          ...splitDose(dose, state.sickDay),
+          status: deriveStatus(dose, state.clock, state.hospital, state.sickDay),
+        })),
+    [state.doses, state.clock, state.hospital, state.sickDay],
   )
 
   // Doses in the travel case are never offered by the station again, so they
@@ -531,6 +786,9 @@ export function usePrototype() {
     skipToNextDose,
     acknowledgeChange,
     trip: activeTrip(state.trips),
+    hospital: state.hospital,
+    sickDay: state.sickDay,
+    notes: state.notes,
     chooseAwayOption,
     cancelAway,
     startTravelPreparation,
@@ -542,6 +800,20 @@ export function usePrototype() {
     reportTravel,
     finishReturnHome,
     requestRestock,
+    openHospital,
+    planHospital,
+    cancelHospital,
+    packForHospital,
+    leaveForHospital,
+    returnFromHospital,
+    finishHospital,
+    setHospitalScenario,
+    beginSickDay,
+    finishSickDay,
+    setSickDayScenario,
+    addNote,
+    removeNote,
+    setNotesScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,

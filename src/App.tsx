@@ -27,8 +27,15 @@ import { RecordsScreen } from './screens/RecordsScreen'
 import { ScriptsScreen } from './screens/ScriptsScreen'
 import { ScriptScreen } from './screens/ScriptScreen'
 import { AwayScreen } from './screens/AwayScreen'
+import { PassportScreen } from './screens/PassportScreen'
+import { PassportStaffScreen } from './screens/PassportStaffScreen'
+import { PassportPhoneScreen } from './screens/PassportPhoneScreen'
+import { HospitalScreen } from './screens/HospitalScreen'
+import { SickDayScreen } from './screens/SickDayScreen'
+import { AskScreen } from './screens/AskScreen'
+import { AskDoctorScreen, AskNotesScreen } from './screens/AskNotesScreen'
 
-const tabScreens: TabName[] = ['today', 'medications', 'records']
+const tabScreens: TabName[] = ['passport', 'today', 'medications', 'records', 'ask']
 
 function App() {
   const {
@@ -41,6 +48,9 @@ function App() {
     change,
     changeAcknowledgedAt,
     trip,
+    hospital,
+    sickDay,
+    notes,
     clock,
     screen,
     navReplace,
@@ -71,6 +81,20 @@ function App() {
     reportTravel,
     finishReturnHome,
     requestRestock,
+    openHospital,
+    planHospital,
+    cancelHospital,
+    packForHospital,
+    leaveForHospital,
+    returnFromHospital,
+    finishHospital,
+    setHospitalScenario,
+    beginSickDay,
+    finishSickDay,
+    setSickDayScenario,
+    addNote,
+    removeNote,
+    setNotesScenario,
     setStage,
     setLowStockMedication,
     setIncludeChange,
@@ -168,6 +192,11 @@ function App() {
   const activeTab = tabScreens.includes(screen.name as TabName) ? (screen.name as TabName) : null
   // Locked waiting states: no navigation while the device is working.
   const isBusy = screen.name === 'dispensing' || screen.name === 'setup-loading'
+  // Views handed to someone else carry no navigation.
+  const hideNav = isBusy || screen.name === 'passport-staff' || screen.name === 'ask-doctor'
+  const openNotes = useCallback(() => goTo({ name: 'ask-notes' }), [goTo])
+  const openPassport = useCallback(() => goToTab('passport'), [goToTab])
+  const openStaffView = useCallback(() => goTo({ name: 'passport-staff' }), [goTo])
 
   const renderScreen = () => {
     switch (screen.name) {
@@ -222,6 +251,7 @@ function App() {
             prescriptions={prescriptions}
             change={change}
             changeAcknowledgedAt={changeAcknowledgedAt}
+            sickDay={sickDay}
             onViewScripts={() => goTo({ name: 'scripts' })}
             onViewScript={(reference) => goTo({ name: 'script', reference })}
             onLoadMedication={openSetup}
@@ -337,6 +367,105 @@ function App() {
           />
         )
 
+      case 'passport':
+        return (
+          <PassportScreen
+            stocked={stocked}
+            doses={doses}
+            nextDose={nextDose}
+            change={change}
+            hospital={hospital}
+            sickDay={sickDay}
+            noteCount={notes.length}
+            onOpenNotes={openNotes}
+            clock={clock}
+            onShowStaff={openStaffView}
+            onSendToPhone={() => goTo({ name: 'passport-phone' })}
+            onOpenHospital={openHospital}
+            onReturnFromHospital={returnFromHospital}
+            onLoadMedication={openSetup}
+          />
+        )
+
+      case 'passport-staff':
+        return (
+          <PassportStaffScreen
+            doses={doses}
+            change={change}
+            sickDay={sickDay}
+            noteCount={notes.length}
+            onOpenNotes={() => goTo({ name: 'ask-doctor' })}
+            clock={clock}
+            onDone={openPassport}
+          />
+        )
+
+      case 'passport-phone':
+        return <PassportPhoneScreen doses={doses} clock={clock} onBack={openPassport} />
+
+      case 'hospital':
+        return (
+          <HospitalScreen
+            hospital={hospital}
+            trip={trip}
+            doses={doses}
+            activeDose={activeDose}
+            clock={clock}
+            change={change}
+            changeAcknowledgedAt={changeAcknowledgedAt}
+            onPlan={planHospital}
+            onCancel={cancelHospital}
+            onPack={packForHospital}
+            onLeave={leaveForHospital}
+            onReturn={returnFromHospital}
+            onFinish={finishHospital}
+            onShowStaff={openStaffView}
+            onOpenPassport={openPassport}
+            onOpenDose={openDose}
+            onOpenChange={() => goTo({ name: 'change' })}
+          />
+        )
+
+      case 'ask':
+        return (
+          <AskScreen
+            doses={doses}
+            nextDose={nextDose}
+            change={change}
+            sickDay={sickDay}
+            notes={notes}
+            onAddNote={addNote}
+            onOpenNotes={openNotes}
+            onShowPassport={openStaffView}
+          />
+        )
+
+      case 'ask-notes':
+        return (
+          <AskNotesScreen
+            notes={notes}
+            onRemove={removeNote}
+            onShowDoctor={() => goTo({ name: 'ask-doctor' })}
+            onBackToAsk={() => goToTab('ask')}
+          />
+        )
+
+      case 'ask-doctor':
+        return <AskDoctorScreen notes={notes} onDone={openNotes} />
+
+      case 'sick-day':
+        return (
+          <SickDayScreen
+            key={screen.step ?? 'plan'}
+            sickDay={sickDay}
+            startOnBetter={screen.step === 'better'}
+            onStart={beginSickDay}
+            onEnd={finishSickDay}
+            onShowStaff={openStaffView}
+            onBackToToday={goHome}
+          />
+        )
+
       case 'today':
         return (
           <TodayScreen
@@ -356,6 +485,12 @@ function App() {
             outstandingTravelDoses={outstandingTravelDoses}
             onOpenAway={openAway}
             onReturnHome={returnHome}
+            hospital={hospital}
+            onOpenHospital={openHospital}
+            onReturnFromHospital={returnFromHospital}
+            onShowPassport={openPassport}
+            sickDay={sickDay}
+            onOpenSickDay={(step) => goTo({ name: 'sick-day', step })}
           />
         )
     }
@@ -371,7 +506,15 @@ function App() {
             ? undefined
             : screen.name === 'medication'
               ? { label: 'Medications', onClick: () => goToTab('medications') }
-              : screen.name === 'scripts'
+              : screen.name === 'ask-notes'
+                ? { label: 'Ask', onClick: () => goToTab('ask') }
+                : screen.name === 'ask-doctor'
+                  ? { label: 'Notes', onClick: openNotes }
+                  : screen.name === 'passport-staff' ||
+                  screen.name === 'passport-phone' ||
+                  screen.name === 'hospital'
+                ? { label: 'Passport', onClick: openPassport }
+                : screen.name === 'scripts'
                 ? { label: 'Records', onClick: () => goToTab('records') }
                 : screen.name === 'script'
                   ? { label: 'Scripts', onClick: () => goTo({ name: 'scripts' }) }
@@ -397,7 +540,7 @@ function App() {
         ) : null}
       </div>
 
-      {isBusy ? null : <AppNav active={activeTab} onSelect={goToTab} />}
+      {hideNav ? null : <AppNav active={activeTab} onSelect={goToTab} />}
 
       {facilitatorOpen ? (
         <FacilitatorPanel
@@ -421,6 +564,18 @@ function App() {
           }}
           onSetLowStockMedication={setLowStockMedication}
           onSetIncludeChange={setIncludeChange}
+          onNotesScenario={() => {
+            setNotesScenario()
+            setFacilitatorOpen(false)
+          }}
+          onSickDayScenario={(scenario) => {
+            setSickDayScenario(scenario)
+            setFacilitatorOpen(false)
+          }}
+          onHospitalScenario={(scenario) => {
+            setHospitalScenario(scenario)
+            setFacilitatorOpen(false)
+          }}
           onReset={() => {
             resetSession()
             setFacilitatorOpen(false)

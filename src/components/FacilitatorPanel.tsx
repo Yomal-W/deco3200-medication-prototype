@@ -21,6 +21,32 @@ const stages: { id: SessionStage; label: string; note: string }[] = [
   },
 ]
 
+const hospitalScenarios: { id: 'leaving' | 'in-hospital'; label: string; note: string }[] = [
+  {
+    id: 'leaving',
+    label: 'Going to hospital',
+    note: 'Medication loaded, morning dose taken. Opens the Passport tab.',
+  },
+  {
+    id: 'in-hospital',
+    label: 'In hospital',
+    note: 'Left for hospital after the morning dose; now 5:00 PM, so the afternoon dose is held.',
+  },
+]
+
+const sickDayScenarios: { id: 'unwell' | 'better'; label: string; note: string }[] = [
+  {
+    id: 'unwell',
+    label: 'Sick day',
+    note: 'Plan active from 8:02 AM: the Morning dose gives Aspirin only.',
+  },
+  {
+    id: 'better',
+    label: 'Feeling better',
+    note: 'Plan ended at 5:00 PM; the Afternoon dose stays paused in the record.',
+  },
+]
+
 interface FacilitatorPanelProps {
   stage: SessionStage
   /** Routine times in this session, for jumping the simulated clock. */
@@ -32,6 +58,9 @@ interface FacilitatorPanelProps {
   onSetStage: (stage: SessionStage) => void
   onSetLowStockMedication: (medicationId: string) => void
   onSetIncludeChange: (include: boolean) => void
+  onHospitalScenario: (scenario: 'leaving' | 'in-hospital') => void
+  onSickDayScenario: (scenario: 'unwell' | 'better') => void
+  onNotesScenario: () => void
   onReset: () => void
   onClose: () => void
 }
@@ -53,6 +82,9 @@ export function FacilitatorPanel({
   onSetStage,
   onSetLowStockMedication,
   onSetIncludeChange,
+  onHospitalScenario,
+  onSickDayScenario,
+  onNotesScenario,
   onReset,
   onClose,
 }: FacilitatorPanelProps) {
@@ -180,6 +212,59 @@ export function FacilitatorPanel({
               <span className="facilitator__option-name">Prescription change</span>
               <span className="facilitator__option-note">
                 Adds the pharmacist-verified Ramipril dose change to Today.
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Medication passport</p>
+          <div className="facilitator__list">
+            {hospitalScenarios.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="facilitator__option"
+                onClick={() => onHospitalScenario(item.id)}
+              >
+                <Icon name="hospital" size={22} />
+                <span>
+                  <span className="facilitator__option-name">{item.label}</span>
+                  <span className="facilitator__option-note">{item.note}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Sick-day plan</p>
+          <div className="facilitator__list">
+            {sickDayScenarios.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="facilitator__option"
+                onClick={() => onSickDayScenario(item.id)}
+              >
+                <Icon name="thermometer" size={22} />
+                <span>
+                  <span className="facilitator__option-name">{item.label}</span>
+                  <span className="facilitator__option-note">{item.note}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Assistant</p>
+          <button type="button" className="facilitator__option" onClick={onNotesScenario}>
+            <Icon name="chat" size={22} />
+            <span>
+              <span className="facilitator__option-name">Assistant with notes</span>
+              <span className="facilitator__option-note">
+                Morning dose taken; two notes and a question saved. Opens the appointment notes.
               </span>
             </span>
           </button>
