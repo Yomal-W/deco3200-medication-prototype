@@ -1041,11 +1041,19 @@
 }
 
 
-.today--empty {
+/* The empty Home is one card that fills the screen down to the tab bar, so
+   there is no empty band below it. Its contents stay centred inside. */
+.shell:has(> .today--empty) {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
+  flex-direction: column;
+}
+
+.today--empty {
+  flex: 1;
+}
+
+.today--empty > .home-hero {
+  flex: 1;
 }
 
 /* --- Stock on a medication card ------------------------------------------- */
@@ -1850,12 +1858,12 @@
    of the gradient; white stays above 5:1 even at its brightest point. */
 .home-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* The words get the wider column, so the heading keeps to one line. */
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   align-items: center;
   gap: var(--space-8);
   width: 100%;
-  min-height: min(34rem, 100%);
-  padding: clamp(2rem, 1rem + 3vw, 3.5rem);
+  padding: clamp(1.5rem, 0.5rem + 2.5vw, 3rem) clamp(2rem, 1rem + 3vw, 3.5rem);
   border-radius: var(--radius-xl);
   background: var(--gradient-feature);
   color: var(--feature-text);
@@ -1868,6 +1876,13 @@
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+}
+
+.home-hero__greeting {
+  margin-bottom: var(--space-3);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-medium);
+  color: #dfe7fb;
 }
 
 .home-hero__title {
@@ -1894,7 +1909,7 @@
   align-items: center;
   gap: var(--space-3);
   min-height: 4.75rem;
-  margin-top: var(--space-7);
+  margin-top: var(--space-6);
   padding: var(--space-4) var(--space-8);
   border: 0;
   border-radius: var(--radius-md);
@@ -1929,10 +1944,20 @@
   }
 }
 
-.home-hero__note {
+.home-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   margin-top: var(--space-5);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--feature-inset);
   font-size: var(--fs-body);
-  color: #e8eefc;
+  color: #ffffff;
+}
+
+.home-hero__badge svg {
+  flex: none;
 }
 
 .home-hero__figure {
@@ -1948,11 +1973,15 @@
   display: block;
   width: 100%;
   max-width: 30rem;
+  /* Never so tall that the card needs scrolling, even with large text. */
+  max-height: 34vh;
   height: auto;
 }
 
 .home-hero__caption {
-  max-width: 24rem;
+  max-width: 34rem;
+  /* Even lines, never one word left on its own. */
+  text-wrap: balance;
   font-size: var(--fs-body);
   line-height: var(--lh-snug);
   text-align: center;
@@ -1963,6 +1992,8 @@
 @media (max-width: 62rem) {
   .home-hero {
     grid-template-columns: minmax(0, 1fr);
+    /* Words and picture stay together in the middle of a tall card. */
+    align-content: center;
     gap: var(--space-6);
     min-height: 0;
   }
@@ -3430,3 +3461,20 @@
 .today__quick .next-up {
   margin-bottom: var(--space-5);
 }
+
+/* --- Home: greeting and how it works ---------------------------------------- */
+
+.home-greeting__hello {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+}
+
+.home-greeting__line {
+  margin-top: var(--space-2);
+  font-size: var(--fs-lead);
+  color: var(--color-text-muted);
+}
+
