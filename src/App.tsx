@@ -491,6 +491,7 @@ function App() {
             onShowPassport={openPassport}
             sickDay={sickDay}
             onOpenSickDay={(step) => goTo({ name: 'sick-day', step })}
+            clock={clock}
           />
         )
     }

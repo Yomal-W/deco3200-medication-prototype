@@ -5,6 +5,8 @@ import { ChangeNotice } from '../components/ChangeNotice'
 import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
 import { HomeEmptyHero } from '../components/HomeEmptyHero'
+import { HomeGreeting } from '../components/HomeGreeting'
+import { greetingFor } from '../utils/greeting'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
 import { RoutineProgress } from '../components/RoutineProgress'
@@ -46,6 +48,8 @@ interface TodayScreenProps {
   /** The sick-day plan, once started. */
   sickDay: SickDayState | null
   onOpenSickDay: (step?: 'better') => void
+  /** Simulated minutes after midnight, for the greeting. */
+  clock: number
 }
 
 /** The landing screen. Answers "what do I need to do now?" at a glance. */
@@ -72,6 +76,7 @@ export function TodayScreen({
   onShowPassport,
   sickDay,
   onOpenSickDay,
+  clock,
 }: TodayScreenProps) {
   const unwell = sickDay?.status === 'active'
   // In hospital, or home but not yet checked: the station is paused, so its
@@ -85,13 +90,24 @@ export function TodayScreen({
   if (!stocked) {
     return (
       <div className="today today--empty">
-        <HomeEmptyHero onLoad={onLoadMedication} />
+        <HomeEmptyHero onLoad={onLoadMedication} greeting={greetingFor(clock)} />
       </div>
     )
   }
 
   return (
     <div className="today">
+      <HomeGreeting
+        clock={clock}
+        line={
+          activeDose
+            ? 'Your medication is ready.'
+            : nextDose
+              ? `Next: ${nextDose.periodLabel.toLowerCase()} at ${formatTime(nextDose.scheduledMinutes)}.`
+              : 'You’re all done for today.'
+        }
+      />
+
       {change ? (
         <ChangeNotice
           change={change}

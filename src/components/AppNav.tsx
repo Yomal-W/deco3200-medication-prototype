@@ -29,8 +29,12 @@ export function AppNav({ active, onSelect }: AppNavProps) {
             aria-current={active === tab.id ? 'page' : undefined}
             onClick={() => onSelect(tab.id)}
           >
-            <Icon name={tab.icon} size={26} />
-            {tab.label}
+            {/* Every icon sits on the same tile, so the tabs read as evenly
+                spaced whatever the length of their labels. */}
+            <span className="app-nav__tile" aria-hidden="true">
+              <Icon name={tab.icon} size={24} />
+            </span>
+            <span className="app-nav__label">{tab.label}</span>
           </button>
         ))}
       </div>

@@ -303,25 +303,38 @@
     color var(--duration-fast) var(--ease);
 }
 
-.app-nav__item:active {
+.app-nav__tile {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.app-nav__label {
+  line-height: var(--lh-tight);
+}
+
+.app-nav__item:active .app-nav__tile {
+  background: var(--color-border);
   color: var(--color-heading);
 }
 
+/* The selected tab: a filled tile, a white icon and a bold label, so it
+   never relies on colour alone. */
 .app-nav__item.is-active {
-  background: var(--color-accent-soft);
   color: var(--color-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
 }
 
-/* The selected tab also carries a bar, so it never relies on colour alone. */
-.app-nav__item.is-active::before {
-  content: '';
-  width: 1.75rem;
-  height: 3px;
-  margin-bottom: 2px;
-  border-radius: var(--radius-pill);
+.app-nav__item.is-active .app-nav__tile {
   background: var(--color-accent);
+  color: var(--color-text-on-accent);
 }
 
 /* --- Cards ---------------------------------------------------------------- */
@@ -812,8 +825,8 @@
     color: var(--color-accent-text);
   }
 
-  .app-nav__item:hover:not(:active) {
-    background: var(--color-surface-sunken);
+  .app-nav__item:hover:not(:active):not(.is-active) .app-nav__tile {
+    background: var(--color-border);
     color: var(--color-heading);
   }
 
