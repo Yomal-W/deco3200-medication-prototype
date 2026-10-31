@@ -515,7 +515,7 @@ function App() {
                   screen.name === 'hospital'
                 ? { label: 'Passport', onClick: openPassport }
                 : screen.name === 'scripts'
-                ? { label: 'Records', onClick: () => goToTab('records') }
+                ? { label: 'Scripts', onClick: () => goToTab('records') }
                 : screen.name === 'script'
                   ? { label: 'Scripts', onClick: () => goTo({ name: 'scripts' }) }
                   : screen.name === 'setup' || screen.name === 'setup-ready'

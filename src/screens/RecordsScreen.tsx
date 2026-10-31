@@ -43,7 +43,7 @@ export function RecordsScreen({
     <div className="stack stack-6">
       <div className="screen-head">
         <div className="screen-head__titles">
-          <h1>Records</h1>
+          <h1>Scripts</h1>
           <p className="text-muted">View the information behind your medication routine.</p>
         </div>
       </div>

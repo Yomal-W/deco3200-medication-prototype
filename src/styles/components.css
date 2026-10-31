@@ -280,7 +280,10 @@
 }
 
 .app-nav__item {
-  flex: 1;
+  /* Every tab the same width, so the icons are evenly spaced and Home, the
+     middle tab, sits exactly in the centre. */
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;

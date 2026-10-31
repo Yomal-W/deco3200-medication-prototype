@@ -4,9 +4,10 @@ import type { IconName } from './Icon'
 
 const tabs: { id: TabName; label: string; icon: IconName }[] = [
   { id: 'passport', label: 'Passport', icon: 'passport' },
-  { id: 'today', label: 'Home', icon: 'home' },
   { id: 'medications', label: 'Medications', icon: 'list' },
-  { id: 'records', label: 'Records', icon: 'document' },
+  // Home sits in the middle, two tabs either side.
+  { id: 'today', label: 'Home', icon: 'home' },
+  { id: 'records', label: 'Scripts', icon: 'document' },
   { id: 'ask', label: 'Ask', icon: 'chat' },
 ]
 
