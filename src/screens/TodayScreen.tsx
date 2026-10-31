@@ -77,6 +77,8 @@ export function TodayScreen({
   // In hospital, or home but not yet checked: the station is paused, so its
   // usual "what now" card gives way to the hospital card.
   const paused = hospital?.status === 'away' || hospital?.status === 'returning'
+  const showUnwell = !unwell && !paused
+  const showAway = !trip && !(hospital && hospital.status !== 'returned')
   const heldCount = doses.filter((dose) => dose.status === 'in-hospital').length
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
 
@@ -398,53 +400,6 @@ export function TodayScreen({
             </Card>
           )}
 
-          {unwell || paused ? null : (
-            <Card tone="sunken">
-              <div className="next-up">
-                <span className="next-up__icon" aria-hidden="true">
-                  <Icon name="thermometer" size={24} />
-                </span>
-                <div className="next-up__body">
-                  <p className="next-up__label">Feeling unwell?</p>
-                  <p className="next-up__value">Check your pharmacist&rsquo;s sick-day plan</p>
-                </div>
-              </div>
-              <Button
-                size="lg"
-                block
-                variant="secondary"
-                className="away-entry__action"
-                icon="thermometer"
-                onClick={() => onOpenSickDay()}
-              >
-                I&rsquo;m feeling unwell
-              </Button>
-            </Card>
-          )}
-
-          {trip || (hospital && hospital.status !== 'returned') ? null : (
-            <Card tone="sunken">
-              <div className="next-up">
-                <span className="next-up__icon" aria-hidden="true">
-                  <Icon name="suitcase" size={24} />
-                </span>
-                <div className="next-up__body">
-                  <p className="next-up__label">Going out?</p>
-                  <p className="next-up__value">See what to take with you</p>
-                </div>
-              </div>
-              <Button
-                size="lg"
-                block
-                variant="secondary"
-                className="away-entry__action"
-                icon="suitcase"
-                onClick={onOpenAway}
-              >
-                I&rsquo;m away from home
-              </Button>
-            </Card>
-          )}
         </div>
 
         <div className="today__aside">
@@ -470,6 +425,59 @@ export function TodayScreen({
 
         </div>
       </div>
+
+      {/* Other moments in the day, side by side so neither leaves a gap. */}
+      {showUnwell || showAway ? (
+        <div className="today__quick">
+          {showUnwell ? (
+            <Card tone="sunken">
+              <div className="next-up">
+                <span className="next-up__icon" aria-hidden="true">
+                  <Icon name="thermometer" size={24} />
+                </span>
+                <div className="next-up__body">
+                  <p className="next-up__label">Feeling unwell?</p>
+                  <p className="next-up__value">Check your pharmacist&rsquo;s sick-day plan</p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                block
+                variant="secondary"
+                className="away-entry__action"
+                icon="thermometer"
+                onClick={() => onOpenSickDay()}
+              >
+                I&rsquo;m feeling unwell
+              </Button>
+            </Card>
+          ) : null}
+
+          {showAway ? (
+            <Card tone="sunken">
+              <div className="next-up">
+                <span className="next-up__icon" aria-hidden="true">
+                  <Icon name="suitcase" size={24} />
+                </span>
+                <div className="next-up__body">
+                  <p className="next-up__label">Going out?</p>
+                  <p className="next-up__value">See what to take with you</p>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                block
+                variant="secondary"
+                className="away-entry__action"
+                icon="suitcase"
+                onClick={onOpenAway}
+              >
+                I&rsquo;m away from home
+              </Button>
+            </Card>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

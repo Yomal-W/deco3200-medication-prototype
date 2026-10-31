@@ -3409,3 +3409,24 @@
 .ask-notes .screen-actions .btn {
   flex-basis: 18rem;
 }
+
+/* Home: the smaller "other moments" cards share one row, and stack only when
+   a label would otherwise wrap. Their actions line up at the bottom. */
+.today__quick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-5);
+}
+
+.today__quick > .card {
+  display: flex;
+  flex-direction: column;
+}
+
+.today__quick .away-entry__action {
+  margin-top: auto;
+}
+
+.today__quick .next-up {
+  margin-bottom: var(--space-5);
+}
