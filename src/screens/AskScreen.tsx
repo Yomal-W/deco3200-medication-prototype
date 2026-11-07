@@ -3,6 +3,7 @@ import type { Dose, DoctorNote, PrescriptionChange, SickDayState } from '../type
 import { Button } from '../components/Button'
 import { Icon, type IconName } from '../components/Icon'
 import { PrototypeNote } from '../components/PrototypeNote'
+import { ReadAloudButton } from '../components/ReadAloudButton'
 import { user } from '../data/medications'
 import {
   ASSISTANT_DISCLAIMER,
@@ -348,6 +349,10 @@ export function AskScreen({
           <p className="flow__subtitle">Answers come from your own records. Pre-written for testing.</p>
         </div>
         <div className="ask__head-actions">
+          <ReadAloudButton
+            label="Read answer"
+            text={() => [...messages].reverse().find((message) => message.from === 'assistant')?.lines.join(' ') ?? ''}
+          />
           <Button variant="secondary" icon="document" onClick={onOpenNotes}>
             My notes{notes.length > 0 ? ` · ${notes.length}` : ''}
           </Button>

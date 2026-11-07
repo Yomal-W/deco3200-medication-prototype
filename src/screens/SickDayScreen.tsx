@@ -5,6 +5,7 @@ import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
 import { MedicationVisualBox } from '../components/MedicationVisual'
 import { PrototypeNote } from '../components/PrototypeNote'
+import { ReadAloudButton } from '../components/ReadAloudButton'
 import { getMedication, medications, user } from '../data/medications'
 import { SICK_DAY_DISCLAIMER, sickDayPlan } from '../data/sickDay'
 import { illustrationLabel } from '../utils/medication'
@@ -216,6 +217,7 @@ function Intro({
   title: string
   children: ReactNode
 }) {
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
   return (
     <div className="flow__intro">
       <div>
@@ -223,8 +225,11 @@ function Intro({
         <h1 className="flow__title" tabIndex={-1}>
           {title}
         </h1>
-        <p className="flow__subtitle">{children}</p>
+        <p className="flow__subtitle" ref={subtitleRef}>
+          {children}
+        </p>
       </div>
+      <ReadAloudButton text={() => `${title}. ${subtitleRef.current?.textContent ?? ''}`} />
     </div>
   )
 }

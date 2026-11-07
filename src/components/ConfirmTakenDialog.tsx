@@ -3,6 +3,9 @@ import type { Dose } from '../types'
 import { getMedication, user } from '../data/medications'
 import { countLabel } from '../utils/time'
 import { Button } from './Button'
+import { ReadAloudButton } from './ReadAloudButton'
+import { useAnnounce } from '../state/useAnnounce'
+import { confirmPhrase } from '../utils/speech'
 
 interface ConfirmTakenDialogProps {
   dose: Dose
@@ -20,6 +23,9 @@ export function ConfirmTakenDialog({ dose, onConfirm, onCancel }: ConfirmTakenDi
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
+
+  // Asked out loud every time the question appears.
+  useAnnounce('confirm', confirmPhrase(dose), { source: 'confirm', once: false })
 
   // Announce the question first; buttons are one Tab away.
   useEffect(() => {
@@ -77,7 +83,10 @@ export function ConfirmTakenDialog({ dose, onConfirm, onCancel }: ConfirmTakenDi
           })}
         </ul>
 
-        <p className="confirm-dialog__note">{user.deviceName} records what you tell it.</p>
+        <div className="confirm-dialog__note-row">
+          <p className="confirm-dialog__note">{user.deviceName} records what you tell it.</p>
+          <ReadAloudButton text={confirmPhrase(dose)} />
+        </div>
 
         <div className="confirm-dialog__actions">
           <Button size="xl" icon="check" onClick={onConfirm}>

@@ -6,6 +6,10 @@ import { DoseStatusPill } from '../components/DoseStatusPill'
 import { DoseTimeline } from '../components/DoseTimeline'
 import { HomeEmptyHero } from '../components/HomeEmptyHero'
 import { HomeGreeting } from '../components/HomeGreeting'
+import { ReadAloudButton } from '../components/ReadAloudButton'
+import { VoiceToggle } from '../components/VoiceToggle'
+import { useAnnounce } from '../state/useAnnounce'
+import { duePhrase, homePhrase } from '../utils/speech'
 import { greetingFor } from '../utils/greeting'
 import { Icon } from '../components/Icon'
 import { MedicationThumbs } from '../components/MedicationTray'
@@ -87,6 +91,13 @@ export function TodayScreen({
   const heldCount = doses.filter((dose) => dose.status === 'in-hospital').length
   const awaitingConfirmation = activeDose?.dispensedAt != null && activeDose.confirmedAt == null
 
+  // When a dose becomes due, MediFlow says so, once, with a soft chime.
+  const dueKey = stocked && activeDose && !awaitingConfirmation && !paused ? `due:${activeDose.id}` : null
+  useAnnounce(dueKey, dueKey && activeDose ? duePhrase(activeDose, clock) : '', {
+    chime: true,
+    source: 'home',
+  })
+
   if (!stocked) {
     return (
       <div className="today today--empty">
@@ -98,6 +109,12 @@ export function TodayScreen({
   return (
     <div className="today">
       <HomeGreeting
+        aside={
+          <>
+            <VoiceToggle />
+            <ReadAloudButton text={() => homePhrase({ clock, activeDose, nextDose, paused })} />
+          </>
+        }
         clock={clock}
         line={
           activeDose
