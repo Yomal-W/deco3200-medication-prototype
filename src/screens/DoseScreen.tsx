@@ -8,6 +8,8 @@ import { DoseDetails } from '../components/DoseDetails'
 import { MedicationItem } from '../components/MedicationItem'
 import { RoutineProgress } from '../components/RoutineProgress'
 import { TravelReport } from '../components/TravelReport'
+import { ReadAloudButton } from '../components/ReadAloudButton'
+import { dosePhrase } from '../utils/speech'
 import { user } from '../data/medications'
 import { travelRecordLines } from '../utils/dose'
 import { countLabel, formatTime } from '../utils/time'
@@ -57,7 +59,10 @@ export function DoseScreen({
           <h1 className="flow__title">{dose.title}</h1>
           <p className="flow__subtitle">Scheduled for {scheduledAt}</p>
         </div>
-        <DoseStatusPill dose={dose} />
+        <div className="flow__intro-aside">
+          <DoseStatusPill dose={dose} />
+          <ReadAloudButton text={dosePhrase(dose)} />
+        </div>
       </div>
 
       {dose.status === 'completed' && !dose.travel ? (

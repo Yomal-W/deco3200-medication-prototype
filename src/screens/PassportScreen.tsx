@@ -4,6 +4,8 @@ import { Card } from '../components/Card'
 import { Icon } from '../components/Icon'
 import { MedicationVisualBox } from '../components/MedicationVisual'
 import { PrototypeNote } from '../components/PrototypeNote'
+import { ReadAloudButton } from '../components/ReadAloudButton'
+import { passportPhrase } from '../utils/speech'
 import { medications, user } from '../data/medications'
 import { allergies, gpPhone, passportPerson, prescribers } from '../data/passport'
 import { doseSummary } from '../utils/dose'
@@ -63,6 +65,7 @@ export function PassportScreen({
           <h1>Your medication passport</h1>
           <p className="text-muted">Show this to a paramedic, hospital or new doctor.</p>
         </div>
+        {stocked ? <ReadAloudButton text={passportPhrase()} className="screen-head__end" /> : null}
       </div>
 
       {!stocked ? (

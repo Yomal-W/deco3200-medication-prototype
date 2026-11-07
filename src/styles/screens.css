@@ -3478,3 +3478,39 @@
   color: var(--color-text-muted);
 }
 
+
+/* Home greeting with the voice controls beside it. */
+.home-greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-5);
+}
+
+.home-greeting__text {
+  min-width: 0;
+}
+
+.home-greeting__aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* A status and an action side by side at the top right of a flow screen. */
+.flow__intro-aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.screen-head__end {
+  margin-left: auto;
+}
+
+.screen-head {
+  justify-content: space-between;
+}

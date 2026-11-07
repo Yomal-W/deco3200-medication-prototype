@@ -1171,3 +1171,90 @@
     padding: var(--space-5);
   }
 }
+
+/* --- Voice ------------------------------------------------------------------- */
+
+/* Voice on/off: a pill with an icon and words, never colour alone. */
+.voice-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: var(--border-control) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.voice-toggle.is-on {
+  border-color: var(--color-border-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-weight: var(--fw-semibold);
+}
+
+.read-aloud {
+  white-space: nowrap;
+}
+
+/* What is being said, written out, in its own bar just above the tab bar.
+   It takes its own space, so it never covers a button; a pop-up stays on top. */
+.voice-caption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(44rem, calc(100% - 2 * var(--space-6)));
+  margin: var(--space-2) auto var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-heading);
+  color: #fff;
+  box-shadow: var(--shadow-raised);
+}
+
+.voice-caption__icon {
+  flex: none;
+}
+
+.voice-caption__text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+}
+
+.voice-caption__action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.voice-caption__action:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.confirm-dialog__note-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}

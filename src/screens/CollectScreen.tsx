@@ -10,6 +10,8 @@ import { MedicationItem } from '../components/MedicationItem'
 import { RoutineProgress } from '../components/RoutineProgress'
 import { user } from '../data/medications'
 import { countLabel } from '../utils/time'
+import { useAnnounce } from '../state/useAnnounce'
+import { trayPhrase } from '../utils/speech'
 
 interface CollectScreenProps {
   dose: Dose
@@ -38,6 +40,9 @@ const CONFIRM_PROMPT_DELAY_MS = 5000
 export function CollectScreen({ dose, doses, onConfirm, onLater }: CollectScreenProps) {
   const [confirming, setConfirming] = useState(false)
   const takenButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Said once, as the medication arrives in the tray.
+  useAnnounce(`tray:${dose.id}`, trayPhrase(dose), { source: 'tray' })
 
   // While the question is closed, ask again after the delay. Leaving the
   // screen clears the timer, so it never fires anywhere else.

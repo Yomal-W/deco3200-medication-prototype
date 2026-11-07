@@ -3,6 +3,8 @@ import type { TabName } from './types'
 import { AppHeader } from './components/AppHeader'
 import { AppNav } from './components/AppNav'
 import { FacilitatorPanel } from './components/FacilitatorPanel'
+import { VoiceCaption } from './components/VoiceCaption'
+import { useVoice } from './state/voice'
 import { Icon } from './components/Icon'
 import { findMedication, user } from './data/medications'
 import { buildPrescriptions } from './data/prescriptions'
@@ -106,6 +108,7 @@ function App() {
   const [hasMoreBelow, setHasMoreBelow] = useState(false)
   const bodyRef = useRef<HTMLElement>(null)
   const reduceMotion = usePrefersReducedMotion()
+  const voice = useVoice()
 
   // Laptop entry point to facilitator mode. The tablet entry point is five
   // taps on the device mark in the header.
@@ -541,6 +544,8 @@ function App() {
         ) : null}
       </div>
 
+      <VoiceCaption />
+
       {hideNav ? null : <AppNav active={activeTab} onSelect={goToTab} />}
 
       {facilitatorOpen ? (
@@ -554,33 +559,43 @@ function App() {
             minutes: dose.scheduledMinutes,
           }))}
           onSetClock={(minutes) => {
+            voice.resetAnnounced()
             setClock(minutes)
             setFacilitatorOpen(false)
           }}
           lowStockMedicationId={lowStockMedicationId}
           includeChange={change !== null}
           onSetStage={(next) => {
+            voice.resetAnnounced()
             setStage(next)
             setFacilitatorOpen(false)
           }}
           onSetLowStockMedication={setLowStockMedication}
           onSetIncludeChange={setIncludeChange}
           onNotesScenario={() => {
+            voice.resetAnnounced()
             setNotesScenario()
             setFacilitatorOpen(false)
           }}
           onSickDayScenario={(scenario) => {
+            voice.resetAnnounced()
             setSickDayScenario(scenario)
             setFacilitatorOpen(false)
           }}
           onHospitalScenario={(scenario) => {
+            voice.resetAnnounced()
             setHospitalScenario(scenario)
             setFacilitatorOpen(false)
           }}
           onReset={() => {
+            voice.resetAnnounced()
             resetSession()
             setFacilitatorOpen(false)
           }}
+          voiceEnabled={voice.enabled}
+          voiceRate={voice.rate}
+          onSetVoiceEnabled={voice.setEnabled}
+          onSetVoiceRate={voice.setRate}
           onClose={closeFacilitator}
         />
       ) : null}

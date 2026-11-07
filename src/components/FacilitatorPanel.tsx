@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { SessionStage } from '../types'
 import { medications } from '../data/medications'
 import { Icon } from './Icon'
+import type { VoiceRate } from '../state/voice'
 
 const stages: { id: SessionStage; label: string; note: string }[] = [
   {
@@ -61,6 +62,10 @@ interface FacilitatorPanelProps {
   onHospitalScenario: (scenario: 'leaving' | 'in-hospital') => void
   onSickDayScenario: (scenario: 'unwell' | 'better') => void
   onNotesScenario: () => void
+  voiceEnabled: boolean
+  voiceRate: VoiceRate
+  onSetVoiceEnabled: (enabled: boolean) => void
+  onSetVoiceRate: (rate: VoiceRate) => void
   onReset: () => void
   onClose: () => void
 }
@@ -85,6 +90,10 @@ export function FacilitatorPanel({
   onHospitalScenario,
   onSickDayScenario,
   onNotesScenario,
+  voiceEnabled,
+  voiceRate,
+  onSetVoiceEnabled,
+  onSetVoiceRate,
   onReset,
   onClose,
 }: FacilitatorPanelProps) {
@@ -268,6 +277,34 @@ export function FacilitatorPanel({
               </span>
             </span>
           </button>
+        </div>
+
+        <div>
+          <p className="facilitator__section-label">Voice</p>
+          <p className="facilitator__readout">
+            MediFlow speaks after the first tap on the screen. Turn it off in a noisy room.
+          </p>
+          <div className="facilitator__chips">
+            <button
+              type="button"
+              className={`facilitator__chip${voiceEnabled ? ' is-active' : ''}`}
+              aria-pressed={voiceEnabled}
+              onClick={() => onSetVoiceEnabled(!voiceEnabled)}
+            >
+              {voiceEnabled ? 'Voice on' : 'Voice off'}
+            </button>
+            {(['slower', 'normal'] as const).map((rate) => (
+              <button
+                key={rate}
+                type="button"
+                className={`facilitator__chip${voiceRate === rate ? ' is-active' : ''}`}
+                aria-pressed={voiceRate === rate}
+                onClick={() => onSetVoiceRate(rate)}
+              >
+                {rate === 'slower' ? 'Slower speech' : 'Normal speech'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
